@@ -2805,10 +2805,10 @@ function editEvent(id) {
 }
 
 function deleteEvent(id) {
-  lsSave();
   if (!confirm('Remover este evento?')) return;
   events = events.filter(e=>e.id!==id);
   renderCalendar();
+  lsSave();
   showToast('🗑️ Evento removido');
 }
 
@@ -2930,14 +2930,28 @@ function gcalLoadScripts(clientId, callback) {
 }
 
 function gcalConnect() {
-  const clientId = document.getElementById('gcal-client-id').value.trim();
+  const clientId = document.getElementById('gcal-client-id')?.value.trim() || gcalState.clientId;
   if (!clientId) { showToast('⚠️ Cole o Client ID primeiro'); return; }
   gcalState.clientId = clientId;
+  // Save clientId for auto-reconnect
+  localStorage.setItem('gcal_client_id', clientId);
   gcalSetStatus('loading', 'Carregando…');
 
   gcalLoadScripts(clientId, () => {
-    // Request token
+    // Request token — use 'select_account' for manual connect, '' for silent
     gcalState.tokenClient.requestAccessToken({prompt: 'consent'});
+  });
+}
+
+function gcalAutoConnect() {
+  // Silent reconnect on page load — no consent prompt
+  const clientId = gcalState.clientId;
+  if (!clientId) return;
+  gcalSetStatus('loading', 'Reconectando…');
+
+  gcalLoadScripts(clientId, () => {
+    // Try silent token — no consent prompt
+    gcalState.tokenClient.requestAccessToken({prompt: ''});
   });
 }
 
@@ -3412,9 +3426,9 @@ function toggleModalPin() {
 
 // ── Delete / Duplicate ──
 function deleteNote(id) {
-  lsSave();
   if (!confirm('Excluir esta nota?')) return;
   notes = notes.filter(n => n.id !== id);
+  lsSave();
   renderNotes();
   showToast('🗑️ Nota excluída');
 }
@@ -5953,11 +5967,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Auto-reconnect Google Calendar if clientId was saved
+  // Auto-reconnect Google Calendar silently if clientId was saved
   if (gcalState.clientId) {
-    setTimeout(function() {
-      gcalConnect();
-    }, 500);
+    setTimeout(gcalAutoConnect, 800);
   }
 });
 </script>
