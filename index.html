@@ -566,6 +566,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   .inbox-input{font-size:16px}
 }
 </style>
+
+  <!-- PWA -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Flow">
+  <meta name="application-name" content="Flow">
+  <meta name="theme-color" content="#0A0A0F">
+  <link rel="apple-touch-icon" id="pwa-apple-icon" href="">
+  <link rel="manifest" id="pwa-manifest-link" href="">
 </head>
 <body>
 
@@ -5801,6 +5811,121 @@ function driveMenu() {
     driveSave();
   }
 }
+
+
+// ══════════════════════════════════════════
+//  PWA — PROGRESSIVE WEB APP
+// ══════════════════════════════════════════
+function pwaGenerateIcon(size) {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  // Background — dark with violet gradient
+  const bg = ctx.createLinearGradient(0, 0, size, size);
+  bg.addColorStop(0, '#1a0533');
+  bg.addColorStop(1, '#0A0A0F');
+  ctx.fillStyle = bg;
+  const r = size * 0.18;
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(size - r, 0);
+  ctx.quadraticCurveTo(size, 0, size, r);
+  ctx.lineTo(size, size - r);
+  ctx.quadraticCurveTo(size, size, size - r, size);
+  ctx.lineTo(r, size);
+  ctx.quadraticCurveTo(0, size, 0, size - r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  // Violet glow circle behind letter
+  const glow = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size*0.45);
+  glow.addColorStop(0, 'rgba(124,58,237,0.35)');
+  glow.addColorStop(1, 'rgba(124,58,237,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(size/2, size/2, size*0.45, 0, Math.PI*2);
+  ctx.fill();
+
+  // Letter "F" — clean, bold
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `bold ${size * 0.52}px "Inter", "Helvetica Neue", sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('F', size * 0.5, size * 0.52);
+
+  // Violet accent dot bottom-right
+  ctx.fillStyle = '#7C3AED';
+  ctx.beginPath();
+  ctx.arc(size * 0.72, size * 0.72, size * 0.07, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Inner glow on dot
+  ctx.fillStyle = 'rgba(167,139,250,0.6)';
+  ctx.beginPath();
+  ctx.arc(size * 0.72, size * 0.72, size * 0.04, 0, Math.PI * 2);
+  ctx.fill();
+
+  return canvas.toDataURL('image/png');
+}
+
+function pwaInit() {
+  // Generate icons
+  const icon192 = pwaGenerateIcon(192);
+  const icon512 = pwaGenerateIcon(512);
+
+  // Set apple touch icon
+  const appleLink = document.getElementById('pwa-apple-icon');
+  if (appleLink) appleLink.href = icon192;
+
+  // Create manifest
+  const manifest = {
+    name: 'Flow — Gestão Pessoal',
+    short_name: 'Flow',
+    description: 'Painel de gestão pessoal — SEFAZ/RS',
+    start_url: window.location.href,
+    display: 'standalone',
+    orientation: 'portrait-primary',
+    background_color: '#0A0A0F',
+    theme_color: '#0A0A0F',
+    icons: [
+      { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+      { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+    ],
+  };
+
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+  const manifestUrl = URL.createObjectURL(blob);
+  const manifestLink = document.getElementById('pwa-manifest-link');
+  if (manifestLink) manifestLink.href = manifestUrl;
+
+  // Register service worker for offline support
+  if ('serviceWorker' in navigator) {
+    const swCode = `
+      const CACHE = 'flow-v1';
+      self.addEventListener('install', e => {
+        e.waitUntil(caches.open(CACHE).then(c => c.addAll([self.location.href.replace('sw.js','')])));
+        self.skipWaiting();
+      });
+      self.addEventListener('fetch', e => {
+        e.respondWith(
+          fetch(e.request).catch(() => caches.match(e.request))
+        );
+      });
+    `;
+    const swBlob = new Blob([swCode], { type: 'application/javascript' });
+    const swUrl = URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swUrl).catch(() => {});
+  }
+}
+
+// Run after DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(pwaInit, 100);
+});
 
 // ══════════════════════════════════════════
 //  INIT
