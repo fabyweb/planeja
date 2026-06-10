@@ -1398,6 +1398,7 @@ function saveEvent() {
   events.push(newEv);
   if (originId) removeFromBacklog(originId);
   closeModal('modal-event');
+  lsSave();
   renderCalendar();
   showToast('📅 Evento adicionado ao calendário');
   if (gcalState.connected) gcalCreateEvent(newEv);
@@ -1461,6 +1462,7 @@ function openListPick(originId, text) {
 }
 
 function saveToList() {
+  lsSave();
   const originId = parseInt(document.getElementById('list-origin-id').value);
   const destId   = document.getElementById('list-dest-select').value;
   const tag      = document.getElementById('list-item-tag').value.trim();
@@ -1971,6 +1973,7 @@ function addListItem(e, listId, inp) {
   if (!text) return;
   const list = lists.find(l=>l.id===listId);
   if (list) list.items.push({id:nextListItemId++, text, tag:'', done:false});
+  lsSave();
   renderLists();
 }
 
@@ -2112,6 +2115,7 @@ function addToBacklogFull() {
   if (btn) btn.style.color = '';
   if (lbl) lbl.textContent = '';
   closeTagAC();
+  lsSave();
   renderBacklog();
 }
 
@@ -2445,10 +2449,12 @@ function addFinCategory() {
   document.getElementById('new-cat-label').value = '';
   renderManageCats();
   updateFinCategorySelects();
+  lsSave();
   showToast(`✅ Categoria "${label}" adicionada`);
 }
 
 function deleteFinCategory(idx) {
+  lsSave();
   const c = finCategories[idx];
   if (confirm(`Remover categoria "${c.label}"?`)) {
     finCategories.splice(idx, 1);
@@ -2503,6 +2509,7 @@ function addKanbanCol() {
   document.getElementById('new-col-name').value = '';
   renderManageCols();
   updateTaskColSelect();
+  lsSave();
   showToast(`✅ Coluna "${name}" criada`);
 }
 
@@ -2585,10 +2592,12 @@ function addList() {
   document.getElementById('new-list-icon').value = '';
   renderManageListsModal();
   updateListDestSelect();
+  lsSave();
   showToast(`✅ Lista "${name}" criada`);
 }
 
 function deleteList(idx) {
+  lsSave();
   if (confirm(`Remover lista "${lists[idx].name}" e todos os seus itens?`)) {
     lists.splice(idx, 1);
     renderManageListsModal();
@@ -2796,6 +2805,7 @@ function editEvent(id) {
 }
 
 function deleteEvent(id) {
+  lsSave();
   if (!confirm('Remover este evento?')) return;
   events = events.filter(e=>e.id!==id);
   renderCalendar();
@@ -3052,7 +3062,8 @@ async function gcalDeleteEvent(googleId) {
       eventId: googleId,
     });
     gcalState.googleEvents = gcalState.googleEvents.filter(e => e.googleId !== googleId);
-    renderCalendar();
+    lsSave();
+  renderCalendar();
     showToast('🗑️ Evento removido do Google Calendar');
   } catch(e) {
     showToast('Erro ao remover: ' + (e.message || e));
@@ -3674,6 +3685,7 @@ function addFolder() {
   if (!noteFolders.includes(name)) noteFolders.push(name);
   document.getElementById('new-folder-name').value = '';
   renderFoldersModal();
+  lsSave();
   showToast('📁 Pasta "' + name + '" criada');
 }
 
@@ -3687,6 +3699,7 @@ function renameFolder(idx) {
 }
 
 function deleteFolder(idx) {
+  lsSave();
   const f = noteFolders[idx];
   if (!confirm('Remover pasta "' + f + '"? As notas ficam sem pasta.')) return;
   notes.forEach(n => { if (n.folder === f) n.folder = ''; });
@@ -5939,6 +5952,13 @@ document.addEventListener('DOMContentLoaded', function() {
       renderEstudosPainel();
     }
   });
+
+  // Auto-reconnect Google Calendar if clientId was saved
+  if (gcalState.clientId) {
+    setTimeout(function() {
+      gcalConnect();
+    }, 500);
+  }
 });
 </script>
 
