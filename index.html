@@ -2884,45 +2884,60 @@ function gcalSync() {
 
 async function gcalFetchEvents() {
   try {
-    // Fetch 3 months window
+    // Step 1: get all calendars
+    const calListResp = await gapi.client.calendar.calendarList.list();
+    const calendars = calListResp.result.items || [];
+
+    // Step 2: fetch events from each calendar
     const tMin = new Date(calYear, calMonth - 1, 1).toISOString();
     const tMax = new Date(calYear, calMonth + 2, 1).toISOString();
+    const allEvents = [];
 
-    const resp = await gapi.client.calendar.events.list({
-      calendarId: 'primary',
-      timeMin: tMin,
-      timeMax: tMax,
-      singleEvents: true,
-      orderBy: 'startTime',
-      maxResults: 250,
-    });
+    for (const cal of calendars) {
+      try {
+        const resp = await gapi.client.calendar.events.list({
+          calendarId: cal.id,
+          timeMin: tMin,
+          timeMax: tMax,
+          singleEvents: true,
+          orderBy: 'startTime',
+          maxResults: 250,
+        });
 
-    const items = resp.result.items || [];
-    gcalState.googleEvents = items.map(ev => {
-      const start = ev.start.dateTime || ev.start.date;
-      const end   = ev.end.dateTime   || ev.end.date;
-      const date  = start.split('T')[0];
-      const time  = start.includes('T') ? start.split('T')[1].slice(0,5) : '';
-      const durationMs = new Date(end) - new Date(start);
-      const duration = Math.round(durationMs / 60000);
-      return {
-        id: 'g_' + ev.id,
-        googleId: ev.id,
-        title: ev.summary || '(sem título)',
-        date,
-        time,
-        duration,
-        location: ev.location || '',
-        recur: 'nunca',
-        color: 'var(--blue)',
-        fromGoogle: true,
-        htmlLink: ev.htmlLink,
-      };
-    });
+        const items = resp.result.items || [];
+        const calColor = cal.backgroundColor || 'var(--blue)';
 
-    gcalSetStatus('connected', 'Google Calendar conectado (' + gcalState.googleEvents.length + ' eventos)');
+        items.forEach(ev => {
+          const start = ev.start.dateTime || ev.start.date;
+          const end   = ev.end.dateTime   || ev.end.date;
+          const date  = start.split('T')[0];
+          const time  = start.includes('T') ? start.split('T')[1].slice(0,5) : '';
+          const durationMs = new Date(end) - new Date(start);
+          const duration = Math.round(durationMs / 60000);
+          allEvents.push({
+            id: 'g_' + ev.id,
+            googleId: ev.id,
+            title: ev.summary || '(sem título)',
+            date,
+            time,
+            duration: duration > 0 ? duration : 60,
+            location: ev.location || '',
+            recur: 'nunca',
+            color: calColor,
+            fromGoogle: true,
+            htmlLink: ev.htmlLink,
+            calendarName: cal.summary || '',
+          });
+        });
+      } catch(calErr) {
+        // Skip calendars that fail (e.g. read-only issues)
+      }
+    }
+
+    gcalState.googleEvents = allEvents;
+    gcalSetStatus('connected', 'Google Calendar conectado (' + allEvents.length + ' eventos)');
     renderCalendar();
-    showToast('↻ ' + gcalState.googleEvents.length + ' eventos sincronizados');
+    showToast('↻ ' + allEvents.length + ' eventos de ' + calendars.length + ' calendários');
   } catch(e) {
     gcalSetStatus('connected', 'Google Calendar conectado');
     showToast('Erro ao buscar eventos: ' + (e.message || e));
