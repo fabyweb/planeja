@@ -5617,6 +5617,7 @@ async function driveLoad() {
     if (d.questaoSessoes)   { questaoSessoes = d.questaoSessoes; nextQId = d.nextQId || nextQId; }
     if (d.revisoesPendentes){ revisoesPendentes = d.revisoesPendentes; nextRevId = d.nextRevId || nextRevId; }
 
+    lsSave(); // sync Drive data back to localStorage
     renderBacklog();
     renderCalendar();
     const time = d.savedAt ? new Date(d.savedAt).toLocaleString('pt-BR') : '';
@@ -5642,8 +5643,17 @@ const _origGcalSetStatus2 = gcalSetStatus;
 gcalSetStatus = function(state, text) {
   _origGcalSetStatus2(state, text);
   if (state === 'connected') {
-    // Small delay to ensure token is set
-    setTimeout(driveLoad, 500);
+    // Only load from Drive if no local data exists
+    // localStorage always takes priority over Drive
+    const hasLocalData = !!localStorage.getItem(LS_KEY);
+    if (!hasLocalData) {
+      setTimeout(driveLoad, 500);
+    } else {
+      // Local data exists — just sync it to Drive to keep it up to date
+      setTimeout(driveSave, 1000);
+      saveSetStatus('saved', '✓ Nuvem');
+      setTimeout(() => saveSetStatus('idle', 'Drive'), 3000);
+    }
   }
 };
 
@@ -5772,6 +5782,24 @@ function deleteTag(idx) {
   renderLists();
   lsSave();
   showToast('🗑️ Tag removida');
+}
+
+
+function driveMenu() {
+  if (!gcalState.connected) {
+    showToast('⚠️ Conecte o Google Calendar para usar o Drive');
+    return;
+  }
+  const choice = confirm(
+    'Gerenciar salvamento no Drive:\n\n' +
+    'OK = Carregar dados do Drive (substitui dados locais)\n' +
+    'Cancelar = Salvar dados locais no Drive agora'
+  );
+  if (choice) {
+    driveLoad();
+  } else {
+    driveSave();
+  }
 }
 
 // ══════════════════════════════════════════
