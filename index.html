@@ -5681,18 +5681,195 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+
+
+
+<!-- ══ MODAL — NOTA ══ -->
+<div class="modal-overlay" id="modal-note">
+  <div class="modal" style="max-width:560px" id="modal-note-inner">
+    <div class="modal-header" id="modal-note-header" style="border-bottom:none;padding-bottom:8px">
+      <input class="form-input" id="mnote-title" placeholder="Título" style="font-size:15px;font-weight:600;border:none;background:transparent;padding:0;flex:1">
+      <button class="note-pin" id="mnote-pin-btn" onclick="toggleModalPin()" title="Fixar" style="font-size:14px;cursor:pointer;opacity:0.5;background:none;border:none;color:var(--amber)">📌</button>
+      <button class="modal-close" onclick="closeNoteModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding-top:4px">
+      <textarea class="form-textarea" id="mnote-body" placeholder="Nota…" style="min-height:120px;margin-bottom:10px"></textarea>
+      <div id="mnote-checklist-area" style="margin-bottom:10px"></div>
+      <div id="mnote-img-area" style="margin-bottom:10px"></div>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--text-dim)">Cor:</span>
+        <button class="color-dot" id="mdot-default" style="width:18px;height:18px;border-radius:50%;cursor:pointer;background:var(--card);border:2px solid transparent" onclick="selectModalColor('default',this)"></button>
+        <button class="color-dot" style="width:18px;height:18px;border-radius:50%;cursor:pointer;background:#1e3a5f;border:2px solid transparent" onclick="selectModalColor('blue',this)"></button>
+        <button class="color-dot" style="width:18px;height:18px;border-radius:50%;cursor:pointer;background:#3d2a00;border:2px solid transparent" onclick="selectModalColor('amber',this)"></button>
+        <button class="color-dot" style="width:18px;height:18px;border-radius:50%;cursor:pointer;background:#1a3d2b;border:2px solid transparent" onclick="selectModalColor('green',this)"></button>
+        <button class="color-dot" style="width:18px;height:18px;border-radius:50%;cursor:pointer;background:#3d1a2b;border:2px solid transparent" onclick="selectModalColor('rose',this)"></button>
+        <button class="color-dot" style="width:18px;height:18px;border-radius:50%;cursor:pointer;background:#2a1a3d;border:2px solid transparent" onclick="selectModalColor('violet',this)"></button>
+        <div style="width:1px;height:16px;background:var(--border);margin:0 4px"></div>
+        <button class="btn btn-ghost btn-sm" onclick="addModalChecklistItem()">☑ Item</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mnote-img-input').click()">🖼 Imagem</button>
+        <input type="file" id="mnote-img-input" accept="image/*" style="display:none" onchange="loadModalImage(this)">
+      </div>
+      <div class="form-grid" style="gap:8px">
+        <div class="form-row" style="margin-bottom:0"><label>Tag</label><input class="form-input" id="mnote-tag" placeholder="#tag, #outra"></div>
+        <div class="form-row" style="margin-bottom:0"><label>Pasta</label><select class="form-select" id="mnote-folder"></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="mnote-delete-btn" style="margin-right:auto;display:none" onclick="deleteCurrentNote()">🗑️ Excluir</button>
+      <button class="btn btn-ghost" onclick="closeNoteModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveNoteModal()">Salvar nota</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL — PASTAS ══ -->
+<div class="modal-overlay" id="modal-folders">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header"><span class="modal-title">📁 Pastas</span><button class="modal-close" onclick="closeModal('modal-folders')">✕</button></div>
+    <div class="modal-body">
+      <div id="folders-list" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:8px">
+        <input class="form-input" id="new-folder-name" placeholder="Nome da nova pasta…">
+        <button class="btn btn-primary btn-sm" onclick="addFolder()">+ Criar</button>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal('modal-folders');renderNotes()">Fechar</button></div>
+  </div>
+</div>
+
+<!-- ══ MODAL — MATÉRIA ══ -->
+<div class="modal-overlay" id="modal-materia">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header"><span class="modal-title" id="modal-materia-title">Nova Matéria</span><button class="modal-close" onclick="closeModal('modal-materia')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="mat-edit-id">
+      <div class="form-row"><label>Nome da matéria</label><input class="form-input" id="mat-nome" placeholder="Ex: Direito Tributário"></div>
+      <div class="form-row">
+        <label>Tópicos (um por linha)</label>
+        <textarea class="form-textarea" id="mat-topicos-bulk" placeholder="Cole aqui os tópicos, um por linha…" style="min-height:140px"></textarea>
+        <div class="form-hint">Você pode colar a lista completa de uma vez ou adicionar tópicos depois</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="mat-delete-btn" style="margin-right:auto;display:none" onclick="deleteMateriaAtual()">🗑️ Excluir matéria</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-materia')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveMateria()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL — TÓPICO ══ -->
+<div class="modal-overlay" id="modal-topico">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header"><span class="modal-title" id="modal-topico-title">Novo Tópico</span><button class="modal-close" onclick="closeModal('modal-topico')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="top-edit-idx">
+      <div class="form-row"><label>Nome do tópico</label><input class="form-input" id="top-nome" placeholder="Ex: Competência tributária"></div>
+      <div class="form-row">
+        <label>Status inicial</label>
+        <select class="form-select" id="top-status">
+          <option value="pendente">Pendente</option>
+          <option value="andamento">Em andamento</option>
+          <option value="estudado">Estudado</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="top-delete-btn" style="margin-right:auto;display:none" onclick="deleteTopicoAtual()">🗑️</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-topico')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveTopico()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL — ATIVIDADE GURUJÁ ══ -->
+<div class="modal-overlay" id="modal-atividade">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" id="modal-ativ-title">Nova Atividade</span><button class="modal-close" onclick="closeModal('modal-atividade')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="ativ-edit-id">
+      <div class="form-row"><label>Descrição</label><input class="form-input" id="ativ-desc" placeholder="Ex: Dir. Tributário — Cap. 4 + 30 questões"></div>
+      <div class="form-grid">
+        <div class="form-row"><label>Disciplina</label><select class="form-select" id="ativ-disciplina"></select></div>
+        <div class="form-row"><label>Tipo</label>
+          <select class="form-select" id="ativ-tipo">
+            <option value="leitura">Leitura</option>
+            <option value="questoes">Questões</option>
+            <option value="resumo">Resumo</option>
+            <option value="revisao">Revisão</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>Dia da semana</label>
+          <select class="form-select" id="ativ-dia">
+            <option value="0">Segunda</option><option value="1">Terça</option><option value="2">Quarta</option>
+            <option value="3">Quinta</option><option value="4">Sexta</option><option value="5">Sábado</option><option value="6">Domingo</option>
+          </select>
+        </div>
+        <div class="form-row"><label>Tempo estimado (min)</label><input class="form-input" id="ativ-tempo" type="number" min="15" step="15" value="60"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="ativ-delete-btn" style="margin-right:auto;display:none" onclick="deleteAtividade()">🗑️ Excluir</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-atividade')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveAtividade()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL — REGISTRAR QUESTÕES ══ -->
+<div class="modal-overlay" id="modal-questao">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Registrar Sessão de Questões</span><button class="modal-close" onclick="closeModal('modal-questao')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><label>Disciplina</label><select class="form-select" id="q-disciplina"></select></div>
+      <div class="form-grid">
+        <div class="form-row"><label>Total de questões</label><input class="form-input" id="q-total" type="number" min="1" value="10"></div>
+        <div class="form-row"><label>Acertos</label><input class="form-input" id="q-acertos" type="number" min="0" value="7"></div>
+      </div>
+      <div class="form-row"><label>Fonte (opcional)</label><input class="form-input" id="q-fonte" placeholder="TEC Concursos, prova 2023…"></div>
+      <div class="form-row"><label>Agendar revisão?</label>
+        <select class="form-select" id="q-revisao">
+          <option value="1">Sim — revisão espaçada automática</option>
+          <option value="0">Não</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Tema/subtema</label><input class="form-input" id="q-tema" placeholder="Ex: ISS, ICMS, Competência tributária…"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-questao')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveQuestao()">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL — GERENCIAR COLUNAS KANBAN ══ -->
+<div class="modal-overlay" id="modal-cols">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header"><span class="modal-title">Gerenciar Colunas</span><button class="modal-close" onclick="closeModal('modal-cols')">✕</button></div>
+    <div class="modal-body">
+      <div id="cols-list" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:8px">
+        <input class="form-input" id="new-col-name" placeholder="Nome da nova coluna…">
+        <button class="btn btn-primary btn-sm" onclick="addKanbanCol()">+ Criar</button>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal('modal-cols');renderKanban()">Fechar</button></div>
+  </div>
+</div>
+
 <!-- ══ SEARCH OVERLAY ══ -->
 <div class="search-overlay" id="search-overlay" onclick="if(event.target===this)closeSearch()">
   <div class="search-box" id="search-box" style="display:none">
     <div class="search-input-wrap">
-      <span class="ico" style="width:18px;height:18px;color:var(--text-muted);flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
-      <input class="search-input" id="search-input" placeholder="Buscar em todos os módulos…" oninput="doSearch(this.value)" autofocus>
+      <span style="width:18px;height:18px;color:var(--text-muted);flex-shrink:0;display:inline-flex;align-items:center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <input class="search-input" id="search-input" placeholder="Buscar em todos os módulos…" oninput="doSearch(this.value)">
       <kbd class="search-kbd">ESC</kbd>
     </div>
     <div id="search-results" style="display:none;max-height:400px;overflow-y:auto;padding:8px 0"></div>
   </div>
 </div>
-
 
 </body>
 </html>
