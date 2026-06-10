@@ -1253,11 +1253,13 @@ function handleInboxKey(e) {
 }
 
 function deleteBacklog(id) {
+  lsSave();
   backlog = backlog.filter(i => i.id !== id);
   renderBacklog();
 }
 
 function removeFromBacklog(id) {
+  lsSave();
   backlog = backlog.filter(i => i.id !== id);
   renderBacklog();
 }
@@ -1953,6 +1955,7 @@ function renderLists() {
 }
 
 function toggleListItem(listId, itemId) {
+  lsSave();
   const list = lists.find(l=>l.id===listId);
   if (!list) return;
   const item = list.items.find(i=>i.id===itemId);
@@ -2746,6 +2749,7 @@ function saveListItemEdit() {
 }
 
 function deleteListItem(listId, itemId) {
+  lsSave();
   const list = lists.find(l=>l.id===listId);
   if (!list) return;
   list.items = list.items.filter(i=>i.id!==itemId);
@@ -3374,6 +3378,7 @@ function filterNoteTag(tag) {
 
 // ── Pin ──
 function toggleNotePin(id) {
+  lsSave();
   scheduleSave();
   const n = notes.find(x => x.id === id);
   if (n) { n.pinned = !n.pinned; renderNotes(); }
@@ -3387,6 +3392,7 @@ function toggleModalPin() {
 
 // ── Delete / Duplicate ──
 function deleteNote(id) {
+  lsSave();
   if (!confirm('Excluir esta nota?')) return;
   notes = notes.filter(n => n.id !== id);
   renderNotes();
@@ -3400,6 +3406,7 @@ function deleteCurrentNote() {
 }
 
 function duplicateNote(id) {
+  lsSave();
   const n = notes.find(x => x.id === id);
   if (!n) return;
   notes.unshift({...n, id: nextNoteId++, title: n.title + ' (cópia)', pinned: false, created: Date.now()});
@@ -3499,6 +3506,7 @@ function focusNewNote() {
 }
 
 function saveNewNote() {
+  lsSave();
   const title = document.getElementById('note-new-title').value.trim();
   const body  = document.getElementById('note-new-body').value.trim();
   const tag   = document.getElementById('note-new-tag').value.trim();
@@ -3877,6 +3885,7 @@ function renderAtividades() {
 }
 
 function toggleAtividade(id) {
+  lsSave();
   scheduleSave();
   const a = atividades.find(x => x.id === id);
   if (!a) return;
@@ -3937,6 +3946,7 @@ function saveAtividade() {
 }
 
 function deleteAtividade() {
+  lsSave();
   if (!editAtivId) return;
   if (!confirm('Excluir esta atividade?')) return;
   atividades = atividades.filter(a => a.id !== editAtivId);
@@ -3977,6 +3987,7 @@ function timerPause() {
 }
 
 function timerStop() {
+  lsSave();
   scheduleSave();
   clearInterval(timerInterval);
   timerRunning = false;
@@ -4172,6 +4183,7 @@ function renderRevisoes() {
 }
 
 function marcarRevisaoConcluida(id) {
+  lsSave();
   scheduleSave();
   revisoesPendentes = revisoesPendentes.filter(r => r.id !== id);
   renderRevisoes();
@@ -5064,6 +5076,7 @@ function curNextStatus(s) {
   return s==='pendente' ? 'andamento' : s==='andamento' ? 'estudado' : 'pendente';
 }
 function curToggle(mid, idx) {
+  lsSave();
   scheduleSave();
   const cur = curGetStatus(mid, idx);
   curTopicosStatus[mid+'_'+idx] = curNextStatus(cur);
@@ -5675,7 +5688,7 @@ const LS_KEY = 'painel_dados_v1';
 
 function lsSave() {
   try {
-    localStorage.setItem(LS_KEY, JSON.stringify({
+    const payload = {
       backlog, nextBacklogId,
       tasks, nextTaskId,
       kanbanCols, nextColId,
@@ -5687,13 +5700,14 @@ function lsSave() {
       sessoes, nextSessaoId,
       questaoSessoes, nextQId,
       revisoesPendentes, nextRevId,
-    }));
-  } catch(e) { /* storage full - ignore */ }
+    };
+    localStorage.setItem('painel_dados_v1', JSON.stringify(payload));
+  } catch(e) { console.warn('lsSave error:', e); }
 }
 
 function lsLoad() {
   try {
-    const raw = localStorage.getItem(LS_KEY);
+    const raw = localStorage.getItem('painel_dados_v1');
     if (!raw) return false;
     const d = JSON.parse(raw);
     if (d.backlog)          { backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId; }
@@ -5899,16 +5913,14 @@ function pwaInit() {
   }
 }
 
-// Run after DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(pwaInit, 100);
-});
+// pwaInit called from main DOMContentLoaded below
 
 // ══════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', function() {
   lsLoad(); // restore local data
+  pwaInit();
   renderBacklog();
   renderCalendar();
   requestAnimationFrame(function() {
