@@ -1444,6 +1444,7 @@ function saveFinance() {
   finances.unshift({id: nextFinId++, desc, type, value:val, date, method, category, source, obs});
   if (originId) removeFromBacklog(originId);
   closeModal('modal-fin');
+  lsSave();
   renderFinance();
   showToast(`💰 Lançamento registrado — R$ ${val.toFixed(2)}`);
 }
@@ -1604,7 +1605,8 @@ function editTask(id) {
     closeModal('modal-task');
     resetTaskModal();
     renderKanban();
-    showToast('✏️ Tarefa atualizada');
+    lsSave();
+  showToast('✏️ Tarefa atualizada');
   };
   openModal('modal-task');
 }
@@ -2508,7 +2510,8 @@ function deleteKanbanCol(idx) {
   const c = kanbanCols[idx];
   const hasTasks = tasks.some(t => t.col === c.id);
   if (hasTasks) {
-    showToast(`⚠️ Mova as tarefas de "${c.name}" antes de remover`);
+    lsSave();
+  showToast(`⚠️ Mova as tarefas de "${c.name}" antes de remover`);
     return;
   }
   if (confirm(`Remover coluna "${c.name}"?`)) {
@@ -2633,6 +2636,7 @@ function saveBacklogEdit(e, id) {
     const item = backlog.find(i=>i.id===id);
     if (item) item.text = val;
   }
+  lsSave();
   renderBacklog();
 }
 
@@ -2671,6 +2675,7 @@ function editFinance(id) {
     f.type     = document.getElementById('fin-type').value;
     closeModal('modal-fin');
     resetFinModal();
+    lsSave();
     renderFinance();
     showToast('✏️ Lançamento atualizado');
   };
@@ -2680,6 +2685,7 @@ function editFinance(id) {
 function deleteFinance(id) {
   if (!confirm('Remover este lançamento?')) return;
   finances = finances.filter(f=>f.id!==id);
+  lsSave();
   renderFinance();
   showToast('🗑️ Lançamento removido');
 }
@@ -2834,6 +2840,7 @@ let gcalState = {
 (function() {
   const saved = localStorage.getItem('gcal_client_id');
   if (saved) {
+    gcalState.clientId = saved;
     const inp = document.getElementById('gcal-client-id');
     if (inp) inp.value = saved;
   }
@@ -2872,6 +2879,8 @@ function gcalLoadScripts(clientId, callback) {
         });
         gcalState.gapiReady = true;
         if (gcalState.gisReady) callback();
+        // Auto-reconnect if clientId was saved
+        if (gcalState.gisReady && gcalState.clientId && !gcalState.connected) { setTimeout(gcalConnect, 200); }
       });
     };
     document.head.appendChild(s);
