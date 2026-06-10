@@ -574,8 +574,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   <meta name="apple-mobile-web-app-title" content="Flow">
   <meta name="application-name" content="Flow">
   <meta name="theme-color" content="#0A0A0F">
-  <link rel="apple-touch-icon" id="pwa-apple-icon" href="">
-  <link rel="manifest" id="pwa-manifest-link" href="">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
@@ -5873,42 +5873,19 @@ function pwaGenerateIcon(size) {
 }
 
 function pwaInit() {
-  // Generate icons
-  const icon192 = pwaGenerateIcon(192);
-  const icon512 = pwaGenerateIcon(512);
-
-  // Set apple touch icon
-  const appleLink = document.getElementById('pwa-apple-icon');
-  if (appleLink) appleLink.href = icon192;
-
-  // Create manifest
-  const manifest = {
-    name: 'Flow — Gestão Pessoal',
-    short_name: 'Flow',
-    description: 'Painel de gestão pessoal — SEFAZ/RS',
-    start_url: window.location.href,
-    display: 'standalone',
-    orientation: 'portrait-primary',
-    background_color: '#0A0A0F',
-    theme_color: '#0A0A0F',
-    icons: [
-      { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-      { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
-    ],
-  };
-
-  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-  const manifestUrl = URL.createObjectURL(blob);
-  const manifestLink = document.getElementById('pwa-manifest-link');
-  if (manifestLink) manifestLink.href = manifestUrl;
-
   // Register service worker for offline support
   if ('serviceWorker' in navigator) {
     const swCode = `
-      const CACHE = 'flow-v1';
+      const CACHE = 'flow-v2';
+      const URLS = ['./', './manifest.json', './icon-192.png'];
       self.addEventListener('install', e => {
-        e.waitUntil(caches.open(CACHE).then(c => c.addAll([self.location.href.replace('sw.js','')])));
+        e.waitUntil(caches.open(CACHE).then(c => c.addAll(URLS).catch(()=>{})));
         self.skipWaiting();
+      });
+      self.addEventListener('activate', e => {
+        e.waitUntil(caches.keys().then(keys =>
+          Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))
+        ));
       });
       self.addEventListener('fetch', e => {
         e.respondWith(
