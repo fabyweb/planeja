@@ -5731,3 +5731,172 @@ async function driveLoad() {
 }
 
 
+// ══════════════════════════════════════════
+//  LOCAL STORAGE — PERSISTÊNCIA LOCAL
+// ══════════════════════════════════════════
+const LS_KEY = 'painel_dados_v1';
+
+function lsSave() {
+  try {
+    const payload = {
+      savedAt: new Date().toISOString(),
+      backlog, nextBacklogId,
+      tasks, nextTaskId,
+      kanbanCols, nextColId,
+      finances, nextFinId, finCategories,
+      lists, nextListId, nextListItemId,
+      notes, nextNoteId, noteFolders,
+      curTopicosStatus, curTopicosData,
+      atividades, nextAtivId,
+      sessoes, nextSessaoId,
+      questaoSessoes, nextQId,
+      revisoesPendentes, nextRevId,
+    };
+    localStorage.setItem('painel_dados_v1', JSON.stringify(payload));
+  } catch(e) { console.warn('lsSave error:', e); }
+}
+
+function lsLoad() {
+  try {
+    const raw = localStorage.getItem('painel_dados_v1');
+    if (!raw) return false;
+    const d = JSON.parse(raw);
+    if (d.backlog)          { backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId; }
+    if (d.tasks)            { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
+    if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
+    if (d.finances)         { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
+    if (d.finCategories)    { finCategories = d.finCategories; }
+    if (d.lists)            { lists = d.lists; nextListId = d.nextListId || nextListId; nextListItemId = d.nextListItemId || nextListItemId; }
+    if (d.notes)            { notes = d.notes; nextNoteId = d.nextNoteId || nextNoteId; }
+    if (d.noteFolders)      { noteFolders = d.noteFolders; }
+    if (d.curTopicosStatus) { curTopicosStatus = d.curTopicosStatus; }
+    if (d.curTopicosData)   { curTopicosData = d.curTopicosData; }
+    if (d.atividades)       { atividades = d.atividades; nextAtivId = d.nextAtivId || nextAtivId; }
+    if (d.sessoes)          { sessoes = d.sessoes; nextSessaoId = d.nextSessaoId || nextSessaoId; }
+    if (d.questaoSessoes)   { questaoSessoes = d.questaoSessoes; nextQId = d.nextQId || nextQId; }
+    if (d.revisoesPendentes){ revisoesPendentes = d.revisoesPendentes; nextRevId = d.nextRevId || nextRevId; }
+    return true;
+  } catch(e) { return false; }
+}
+
+function scheduleSave() {
+  lsSave();
+  if (!gcalState || !gcalState.connected) return;
+  if (typeof saveTimer !== 'undefined' && saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(driveSave, 2000);
+}
+
+
+
+// ══ CURRICULO CRUD — FUNÇÕES RESTAURADAS ══
+
+function saveMateria() {
+  const nome = document.getElementById('mat-nome').value.trim();
+  if (!nome) { showToast('⚠️ Informe o nome da matéria'); return; }
+  const bulk = document.getElementById('mat-topicos-bulk').value;
+  const topicos = bulk.split('\n').map(t => t.trim()).filter(Boolean);
+  const editId = parseInt(document.getElementById('mat-edit-id').value);
+  if (editId) {
+    const mat = curriculo.find(m => m.id === editId);
+    if (mat) {
+      mat.nome = nome;
+      topicos.forEach(t => { if (!mat.topicos.includes(t)) mat.topicos.push(t); });
+    }
+    showToast('✏️ Matéria atualizada');
+  } else {
+    const newId = curNextId++;
+    curriculo.push({ id: newId, nome, topicos, tags: [] });
+    curSelectedMatId = newId;
+    showToast('✅ Matéria "' + nome + '" criada com ' + topicos.length + ' tópicos');
+  }
+  closeModal('modal-materia');
+  if (!DISCIPLINAS.includes(nome)) DISCIPLINAS.push(nome);
+  lsSave();
+  renderCurriculo();
+}
+
+function deleteMateriaAtual() {
+  const mat = curriculo.find(m => m.id === curSelectedMatId);
+  if (!mat) return;
+  if (!confirm('Excluir matéria "' + mat.nome + '" e todos os seus tópicos?')) return;
+  curriculo = curriculo.filter(m => m.id !== curSelectedMatId);
+  curSelectedMatId = curriculo[0]?.id || null;
+  closeModal('modal-materia');
+  lsSave();
+  renderCurriculo();
+  showToast('🗑️ Matéria excluída');
+}
+
+function saveTopico() {
+  const nome = document.getElementById('top-nome').value.trim();
+  const status = document.getElementById('top-status').value;
+  if (!nome) { showToast('⚠️ Informe o nome do tópico'); return; }
+  const mat = curriculo.find(m => m.id === curSelectedMatId);
+  if (!mat) return;
+  if (curEditTopicoIdx !== null) {
+    mat.topicos[curEditTopicoIdx] = nome;
+    curTopicosStatus[mat.id + '_' + curEditTopicoIdx] = status;
+    if (status === 'estudado') curTopicosData[mat.id + '_' + curEditTopicoIdx] = new Date().toISOString().split('T')[0];
+    showToast('✏️ Tópico atualizado');
+  } else {
+    const newIdx = mat.topicos.length;
+    mat.topicos.push(nome);
+    curTopicosStatus[mat.id + '_' + newIdx] = status;
+    if (status === 'estudado') curTopicosData[mat.id + '_' + newIdx] = new Date().toISOString().split('T')[0];
+    showToast('✅ Tópico adicionado');
+  }
+  closeModal('modal-topico');
+  lsSave();
+  renderCurriculo();
+  curEditTopicoIdx = null;
+}
+
+function deleteTopico(mid, idx) {
+  const mat = curriculo.find(m => m.id === mid);
+  if (!mat) return;
+  if (!confirm('Excluir tópico "' + mat.topicos[idx] + '"?')) return;
+  mat.topicos.splice(idx, 1);
+  const newStatus = {}, newData = {};
+  Object.entries(curTopicosStatus).forEach(([k, v]) => {
+    const [m, i] = k.split('_').map(Number);
+    if (m !== mid) { newStatus[k] = v; if (curTopicosData[k]) newData[k] = curTopicosData[k]; }
+    else if (i < idx) { newStatus[k] = v; if (curTopicosData[k]) newData[k] = curTopicosData[k]; }
+    else if (i > idx) { newStatus[mid + '_' + (i-1)] = v; if (curTopicosData[k]) newData[mid + '_' + (i-1)] = curTopicosData[k]; }
+  });
+  curTopicosStatus = newStatus;
+  curTopicosData = newData;
+  lsSave();
+  renderCurriculo();
+}
+
+function deleteTopicoAtual() {
+  if (curEditTopicoIdx === null) return;
+  deleteTopico(curSelectedMatId, curEditTopicoIdx);
+  closeModal('modal-topico');
+  curEditTopicoIdx = null;
+}
+
+function openEditTopicoModal(mid, idx) {
+  const mat = curriculo.find(m => m.id === mid);
+  if (!mat) return;
+  curEditTopicoIdx = idx;
+  document.getElementById('top-edit-idx').value = idx;
+  document.getElementById('top-nome').value = mat.topicos[idx] || '';
+  document.getElementById('top-status').value = curGetStatus(mid, idx);
+  document.getElementById('top-delete-btn').style.display = 'inline-flex';
+  document.getElementById('modal-topico-title').textContent = 'Editar Tópico';
+  openModal('modal-topico');
+}
+
+function openTagsModal(listId) {
+  currentTagListId = listId;
+  const list = lists.find(l => l.id === listId);
+  if (!list) return;
+  if (!list.tags) list.tags = [];
+  document.getElementById('tags-modal-title').textContent = '🏷️ Tags — ' + list.name;
+  renderTagsList();
+  openModal('modal-tags');
+}
+
+
+
