@@ -5773,7 +5773,7 @@ async function cloudConnect() {
   localStorage.setItem('jsonbin_key', key);
 
   try {
-    // Check if bin already exists
+    // If we already have a bin ID, just reconnect
     if (cloudBinId) {
       cloudSetBtn('ok', '✓ Nuvem');
       closeModal('modal-cloud');
@@ -5781,7 +5781,27 @@ async function cloudConnect() {
       return;
     }
 
-    // Create new bin
+    // Search for existing bin by name
+    showToast('🔍 Procurando dados na nuvem…');
+    var searchResp = await fetch('https://api.jsonbin.io/v3/c/uncategorized/bins', {
+      headers: { 'X-Master-Key': key },
+    });
+    var bins = await searchResp.json();
+
+    if (Array.isArray(bins)) {
+      var existing = bins.find(function(b) { return b.snippetMeta && b.snippetMeta.name === 'painel-gestao-dados'; });
+      if (existing) {
+        cloudBinId = existing.record;
+        localStorage.setItem('jsonbin_bin_id', cloudBinId);
+        cloudSetBtn('ok', '✓ Nuvem');
+        closeModal('modal-cloud');
+        showToast('✅ Dados encontrados na nuvem! Sincronizando…');
+        cloudLoad();
+        return;
+      }
+    }
+
+    // No existing bin found — create new one
     var resp = await fetch('https://api.jsonbin.io/v3/b', {
       method: 'POST',
       headers: {
@@ -5799,7 +5819,7 @@ async function cloudConnect() {
       localStorage.setItem('jsonbin_bin_id', cloudBinId);
       cloudSetBtn('ok', '✓ Nuvem');
       closeModal('modal-cloud');
-      showToast('✅ Nuvem conectada! Salvando dados…');
+      showToast('✅ Nuvem configurada! Salvando dados…');
       cloudSave();
     } else {
       showToast('❌ Erro: ' + (json.message || JSON.stringify(json)));
