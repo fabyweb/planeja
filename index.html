@@ -532,7 +532,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .k-back-btn:hover{color:var(--violet-light);background:rgba(124,58,237,0.1)}
 .note-back-btn{position:absolute;top:6px;right:6px;font-size:11px;background:var(--surface);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;padding:2px 6px;border-radius:6px;opacity:0;transition:opacity 0.15s;z-index:2}
 .note-card:hover .note-back-btn{opacity:1}
-.note-link{font-size:11px;color:var(--violet-light);text-decoration:none;padding:2px 6px;border-radius:4px;background:rgba(124,58,237,0.1);transition:all 0.15s;white-space:nowrap}
+.note-link{display:block;font-size:11px;color:var(--violet-light);text-decoration:none;padding:4px 8px;border-radius:4px;background:rgba(124,58,237,0.1);transition:all 0.15s;margin-bottom:6px;text-align:center}
 .note-link:hover{background:rgba(124,58,237,0.2);color:var(--violet-light)}
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px;height:4px}
@@ -3426,10 +3426,10 @@ function renderNoteCard(n) {
       </div>
       ${checkHtml}
       ${bodyHtml}
+      ${n.link?`<a href="${n.link}" target="_blank" rel="noopener noreferrer" class="note-link" onclick="event.stopPropagation()">🔗 ${n.link.replace(/^https?:\/\//,'').split('/')[0].replace(/^www\./,'')}</a>`:''}
       <div class="note-footer">
         ${tagsHtml}
         ${n.folder?`<span class="note-folder">📁 ${escHtml(n.folder)}</span>`:''}
-        ${n.link?`<a href="${escHtml(n.link)}" target="_blank" rel="noopener" class="note-link" onclick="event.stopPropagation()">🔗 Abrir</a>`:''}
       </div>
       <div class="note-actions">
         <button class="note-action-btn" onclick="event.stopPropagation();sendToBacklog('note',${n.id})" title="↩ Backlog" style="color:var(--violet-light)">↩</button>
