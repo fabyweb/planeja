@@ -255,11 +255,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .list-name{font-size:13px;font-weight:600;color:var(--text);flex:1}
 .list-count{font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
 .list-items{padding:6px 0}
-.list-item{display:flex;align-items:center;gap:6px;padding:7px 10px;cursor:pointer;transition:background 0.12s;user-select:none;overflow:visible}
+.list-item{display:flex;align-items:flex-start;gap:6px;padding:7px 10px;transition:background 0.12s;user-select:none}
 .list-item:hover{background:var(--card)}
-.check-box{width:15px;height:15px;border:1.5px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.12s;font-size:9px}
+.check-box{width:15px;height:15px;border:1.5px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;flex-shrink:0;margin-top:2px;justify-content:center;transition:all 0.12s;font-size:9px}
 .list-item.done .check-box{background:var(--green);border-color:var(--green);color:#fff}
-.list-item-text{flex:1;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list-item-text{flex:1;font-size:13px;min-width:0;word-break:break-word;line-height:1.4;padding-top:1px}
 .list-item.done .list-item-text{color:var(--text-dim);text-decoration:line-through}
 .list-item-tag{font-size:9px;padding:2px 5px;border-radius:3px;background:var(--bg);color:var(--text-dim);border:1px solid var(--border-soft);white-space:nowrap;flex-shrink:0}
 .list-footer{padding:8px 14px;border-top:1px solid var(--border-soft)}
@@ -1962,7 +1962,7 @@ function renderLists() {
             <div class="check-box" onclick="toggleListItem('${list.id}',${item.id})">${item.done?'✓':''}</div>
             <span class="list-item-text" onclick="toggleListItem('${list.id}',${item.id})">${escHtml(item.text)}</span>
             ${item.tag?`<span class="list-item-tag" onclick="editListItem('${list.id}',${item.id})" style="cursor:pointer" title="Clique para editar">${escHtml(item.tag)}</span>`:`<span style="font-size:9px;color:var(--text-dim);cursor:pointer" onclick="editListItem('${list.id}',${item.id})" title="Adicionar tag">+tag</span>`}
-            <button class="btn btn-ghost btn-sm" style="padding:2px 5px;font-size:10px;flex-shrink:0;color:var(--text-dim)" onclick="sendToBacklog('list-item',{listId:'${list.id}',itemId:${item.id}})" title="↩ Backlog">↩</button>
+            <button class="btn btn-ghost btn-sm" style="padding:2px 4px;font-size:10px;flex-shrink:0;color:var(--text-dim);margin-top:1px" onclick="sendToBacklog('list-item',{listId:'${list.id}',itemId:${item.id}})" title="↩ Backlog">↩</button>
             <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:10px;opacity:0.5;flex-shrink:0" onclick="editListItem('${list.id}',${item.id})">✏️</button>
             <button class="btn btn-danger btn-sm" style="padding:2px 6px;font-size:10px;flex-shrink:0" onclick="deleteListItem('${list.id}',${item.id})">✕</button>
           </div>`).join('')}
