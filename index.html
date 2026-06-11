@@ -255,11 +255,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .list-name{font-size:13px;font-weight:600;color:var(--text);flex:1}
 .list-count{font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
 .list-items{padding:6px 0}
-.list-item{display:flex;align-items:center;gap:9px;padding:7px 14px;cursor:pointer;transition:background 0.12s;user-select:none}
+.list-item{display:flex;align-items:center;gap:6px;padding:7px 10px;cursor:pointer;transition:background 0.12s;user-select:none;overflow:visible}
 .list-item:hover{background:var(--card)}
 .check-box{width:15px;height:15px;border:1.5px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.12s;font-size:9px}
 .list-item.done .check-box{background:var(--green);border-color:var(--green);color:#fff}
-.list-item-text{font-size:12px;color:var(--text);flex:1;word-break:break-word}
+.list-item-text{flex:1;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .list-item.done .list-item-text{color:var(--text-dim);text-decoration:line-through}
 .list-item-tag{font-size:9px;padding:2px 5px;border-radius:3px;background:var(--bg);color:var(--text-dim);border:1px solid var(--border-soft);white-space:nowrap;flex-shrink:0}
 .list-footer{padding:8px 14px;border-top:1px solid var(--border-soft)}
@@ -526,6 +526,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .cloud-btn.ok{background:rgba(16,185,129,0.1);border-color:var(--green);color:var(--green)}
 .cloud-btn.busy{background:rgba(245,158,11,0.1);border-color:var(--amber);color:var(--amber)}
 .cloud-btn.off{border-color:var(--border);color:var(--text-dim)}
+
+/* ── BACK TO BACKLOG ── */
+.k-back-btn{font-size:10px;color:var(--text-dim);background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:4px;transition:all 0.15s;text-align:right;margin-top:4px;display:block;width:100%}
+.k-back-btn:hover{color:var(--violet-light);background:rgba(124,58,237,0.1)}
+.note-back-btn{position:absolute;top:6px;right:6px;font-size:11px;background:var(--surface);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;padding:2px 6px;border-radius:6px;opacity:0;transition:opacity 0.15s;z-index:2}
+.note-card:hover .note-back-btn{opacity:1}
+.note-link{font-size:11px;color:var(--violet-light);text-decoration:none;padding:2px 6px;border-radius:4px;background:rgba(124,58,237,0.1);transition:all 0.15s;white-space:nowrap}
+.note-link:hover{background:rgba(124,58,237,0.2);color:var(--violet-light)}
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -601,7 +609,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
     <button class="nav-btn" title="Notificações" onclick="showToast('Sem novas notificações')"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span></button>
   </div>
   <div class="sidebar-bottom">
-    <button class="nav-btn" title="Configurações" onclick="showToast('Configurações em breve'"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span></button>
+    <button class="nav-btn" title="Configurações" onclick="openSettingsModal()"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span></button>
     <div class="avatar">F</div>
   </div>
 </nav>
@@ -1184,12 +1192,13 @@ function switchView(name, btn) {
 
   activeFilters = {};
   if (filterPanelOpen) { filterPanelOpen=false; document.getElementById('filter-panel').classList.remove('open'); document.getElementById('filter-toggle-btn').classList.remove('active'); }
+  if (name === 'inbox')    renderBacklog();
   if (name === 'kanban')   renderKanban();
   if (name === 'calendar') renderCalendar();
   if (name === 'finance')  renderFinance();
   if (name === 'lists')    renderLists();
   if (name === 'notes')    renderNotes();
-  if (name === 'estudos') renderEstudos();
+  if (name === 'estudos')  renderEstudos();
 }
 
 function onTopbarAction() {
@@ -1535,6 +1544,7 @@ function renderKanban() {
                   ${t.progress}%
                 </div>
               </div>
+              <div class="k-back-btn" onclick="event.stopPropagation();sendToBacklog('task',${t.id})" title="Devolver ao Backlog">↩ Backlog</div>
             </div>`;
           }).join('')}
           <div class="col-drop-zone" id="dz-${col.id}"></div>
@@ -1827,7 +1837,7 @@ function showDayEvents(dateKey) {
             : '<button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:10px" onclick="editEvent('+ev.id+')">✏️</button>'}
           ${ev.fromGoogle
             ? '<button class="btn btn-danger btn-sm" style="padding:2px 6px;font-size:10px" onclick="gcalDeleteEvent(\''+ev.googleId+'\')">✕</button>'
-            : '<button class="btn btn-danger btn-sm" style="padding:2px 6px;font-size:10px" onclick="deleteEvent('+ev.id+')">✕</button>'}
+            : '<button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:10px" onclick="sendToBacklog(\\"event\\",'+ev.id+')">↩</button><button class="btn btn-danger btn-sm" style="padding:2px 6px;font-size:10px" onclick="deleteEvent('+ev.id+')">✕</button>'}
         </div>
       </div>`).join('') : ''}
     ${dayTasks.length ? `
@@ -1912,7 +1922,8 @@ function renderFinance() {
         <span class="tx-method">${f.method}</span>
         <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px">
           <span class="tx-amount ${f.type==='entrada'?'pos':'neg'}">${f.type==='entrada'?'+':'-'}${fmtMoney(f.value)}</span>
-          <button class="btn btn-danger btn-sm" style="padding:3px 7px;font-size:10px" onclick="event.stopPropagation();deleteFinance(${f.id})">✕</button>
+          <button class="btn btn-danger btn-sm" style="padding:3px 7px;font-size:10px" onclick="event.stopPropagation();finToBacklog(${f.id})" title="↩ Backlog" style="padding:2px 6px;font-size:10px">↩</button>
+              <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteFinance(${f.id})">✕</button>
         </div>
       </div>`).join('')
     : '<p style="color:var(--text-dim);font-size:13px;padding:16px">Nenhum lançamento ainda.</p>');
@@ -1951,6 +1962,7 @@ function renderLists() {
             <div class="check-box" onclick="toggleListItem('${list.id}',${item.id})">${item.done?'✓':''}</div>
             <span class="list-item-text" onclick="toggleListItem('${list.id}',${item.id})">${escHtml(item.text)}</span>
             ${item.tag?`<span class="list-item-tag" onclick="editListItem('${list.id}',${item.id})" style="cursor:pointer" title="Clique para editar">${escHtml(item.tag)}</span>`:`<span style="font-size:9px;color:var(--text-dim);cursor:pointer" onclick="editListItem('${list.id}',${item.id})" title="Adicionar tag">+tag</span>`}
+            <button class="btn btn-ghost btn-sm" style="padding:2px 5px;font-size:10px;flex-shrink:0;color:var(--text-dim)" onclick="sendToBacklog('list-item',{listId:'${list.id}',itemId:${item.id}})" title="↩ Backlog">↩</button>
             <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:10px;opacity:0.5;flex-shrink:0" onclick="editListItem('${list.id}',${item.id})">✏️</button>
             <button class="btn btn-danger btn-sm" style="padding:2px 6px;font-size:10px;flex-shrink:0" onclick="deleteListItem('${list.id}',${item.id})">✕</button>
           </div>`).join('')}
@@ -2577,8 +2589,12 @@ function renameList(idx) {
     const newIcon = prompt('Emoji (atual: ' + lists[idx].icon + '):', lists[idx].icon);
     lists[idx].name = newName.trim();
     if (newIcon && newIcon.trim()) lists[idx].icon = newIcon.trim();
+    lsSave();
+    scheduleSave();
     renderManageListsModal();
+    renderLists();
     updateListDestSelect();
+    showToast('✏️ Lista renomeada');
   }
 }
 
@@ -3413,8 +3429,10 @@ function renderNoteCard(n) {
       <div class="note-footer">
         ${tagsHtml}
         ${n.folder?`<span class="note-folder">📁 ${escHtml(n.folder)}</span>`:''}
+        ${n.link?`<a href="${escHtml(n.link)}" target="_blank" rel="noopener" class="note-link" onclick="event.stopPropagation()">🔗 Abrir</a>`:''}
       </div>
       <div class="note-actions">
+        <button class="note-action-btn" onclick="event.stopPropagation();sendToBacklog('note',${n.id})" title="↩ Backlog" style="color:var(--violet-light)">↩</button>
         <button class="note-action-btn" onclick="event.stopPropagation();duplicateNote(${n.id})" title="Duplicar">⧉</button>
         <button class="note-action-btn" onclick="event.stopPropagation();deleteNote(${n.id})" title="Excluir" style="color:var(--red)">✕</button>
       </div>
@@ -3670,6 +3688,7 @@ function saveNoteModal() {
   const tagRaw = document.getElementById('mnote-tag').value.trim();
   const folder = document.getElementById('mnote-folder').value;
   const tags   = tagRaw ? tagRaw.split(/[,\s]+/).filter(Boolean).map(t=>t.replace(/^#/,'')) : [];
+  const link   = document.getElementById('mnote-link').value.trim();
 
   if (currentNoteId !== null) {
     // Edit existing
@@ -3678,12 +3697,12 @@ function saveNoteModal() {
       n.title = title; n.body = body; n.tags = tags; n.folder = folder;
       n.pinned = modalNotePin; n.color = modalNoteColor;
       n.checklist = JSON.parse(JSON.stringify(modalNoteChecklist));
-      n.image = modalNoteImage;
+      n.image = modalNoteImage; n.link = link;
     }
   } else {
     // New
     notes.unshift({
-      id: nextNoteId++, title, body, tags, folder,
+      id: nextNoteId++, title, body, tags, folder, link,
       pinned: modalNotePin, color: modalNoteColor,
       checklist: JSON.parse(JSON.stringify(modalNoteChecklist)),
       image: modalNoteImage, created: Date.now(),
@@ -5942,6 +5961,223 @@ function pwaInit() {
   }
 }
 
+
+function openSettingsModal() {
+  // Update cloud status
+  var cs = document.getElementById('settings-cloud-status');
+  if (cs) cs.textContent = (cloudKey && cloudBinId) ? '✅ Conectado' : 'Não configurado';
+
+  // Update gcal status
+  var gs = document.getElementById('settings-gcal-status');
+  var gd = document.getElementById('settings-gcal-disconnect');
+  var gi = document.getElementById('settings-gcal-id');
+  if (gs) gs.textContent = gcalState.connected ? '✅ Conectado' : 'Não conectado';
+  if (gd) gd.style.display = gcalState.connected ? 'inline-flex' : 'none';
+  if (gi && gcalState.clientId) gi.value = gcalState.clientId;
+  openModal('modal-settings');
+}
+
+function settingsGcalConnect() {
+  var inp = document.getElementById('settings-gcal-id');
+  if (!inp || !inp.value.trim()) { showToast('⚠️ Cole o Client ID'); return; }
+  var gcalInp = document.getElementById('gcal-client-id');
+  if (gcalInp) gcalInp.value = inp.value.trim();
+  gcalConnect();
+  closeModal('modal-settings');
+}
+
+function exportData() {
+  lsSave();
+  var data = localStorage.getItem('painel_dados_v1');
+  if (!data) { showToast('Sem dados para exportar'); return; }
+  var blob = new Blob([data], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'painel-backup-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  showToast('📤 Backup exportado!');
+}
+
+function importData(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var d = JSON.parse(e.target.result);
+      localStorage.setItem('painel_dados_v1', JSON.stringify(d));
+      lsLoad();
+      renderBacklog();
+      renderCalendar();
+      showToast('📥 Dados importados com sucesso!');
+    } catch(err) {
+      showToast('❌ Arquivo inválido');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function resetAllData() {
+  if (!confirm('Apagar TODOS os dados do painel? Esta ação não pode ser desfeita.')) return;
+  localStorage.removeItem('painel_dados_v1');
+  location.reload();
+}
+
+
+
+// ══ ENVIAR PARA BACKLOG ══
+function sendToBacklog(type, id) {
+  var item = null;
+  var text = '';
+
+  if (type === 'task') {
+    item = tasks.find(t => t.id === id);
+    if (!item) return;
+    text = item.title + (item.notes ? ' — ' + item.notes : '');
+    tasks = tasks.filter(t => t.id !== id);
+    lsSave();
+    renderKanban();
+  } else if (type === 'note') {
+    item = notes.find(n => n.id === id);
+    if (!item) return;
+    text = (item.title || '') + (item.body ? (item.title ? ' — ' : '') + item.body.slice(0,100) : '');
+    notes = notes.filter(n => n.id !== id);
+    lsSave();
+    renderNotes();
+  } else if (type === 'event') {
+    item = events.find(ev => ev.id === id);
+    if (!item) return;
+    text = item.title + (item.date ? ' (' + item.date + ')' : '') + (item.location ? ' — ' + item.location : '');
+    events = events.filter(ev => ev.id !== id);
+    lsSave();
+    renderCalendar();
+  } else if (type === 'finance') {
+    item = finances.find(f => f.id === id);
+    if (!item) return;
+    text = (item.type === 'expense' ? '↓ ' : '↑ ') + item.desc + ' R$' + Math.abs(item.value).toFixed(2);
+    finances = finances.filter(f => f.id !== id);
+    lsSave();
+    renderFinance();
+  } else if (type === 'list-item') {
+    // id = {listId, itemId}
+    var list = lists.find(l => l.id === id.listId);
+    if (!list) return;
+    var li = list.items.find(i => i.id === id.itemId);
+    if (!li) return;
+    text = li.text + (li.tag ? ' [' + li.tag + ']' : '');
+    list.items = list.items.filter(i => i.id !== id.itemId);
+    lsSave();
+    renderLists();
+  }
+
+  if (!text.trim()) return;
+
+  // Add to backlog
+  backlog.push({
+    id: nextBacklogId++,
+    text: text.trim(),
+    tag: type,
+    priority: 'normal',
+    timestamp: Date.now(),
+    origin: type,
+  });
+  lsSave();
+  scheduleSave();
+  showToast('↩ Enviado para o Backlog');
+
+  // Switch to inbox view
+  var inboxBtn = document.querySelector('.nav-btn[onclick*=\"inbox\"]') ||
+                 document.querySelector('.bnav-btn[onclick*=\"inbox\"]');
+  switchView('inbox', inboxBtn);
+  renderBacklog();
+}
+
+
+
+// ══ COLUNAS KANBAN ══
+function openManageCols() {
+  var el = document.getElementById('cols-list');
+  if (el) {
+    el.innerHTML = kanbanCols.map((c,i) => `
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border-soft)">
+        <span style="flex:1;font-size:13px">${escHtml(c.name)}</span>
+        <span style="font-size:10px;color:var(--text-dim)">${tasks.filter(t=>t.col===c.id).length} tarefas</span>
+        <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:11px"
+          onclick="renameCol('${c.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" style="padding:2px 6px;font-size:11px"
+          onclick="deleteKanbanCol('${c.id}')">✕</button>
+      </div>`).join('');
+  }
+  openModal('modal-cols');
+}
+
+function renameCol(colId) {
+  var col = kanbanCols.find(c => c.id === colId);
+  if (!col) return;
+  var name = prompt('Novo nome:', col.name);
+  if (name && name.trim()) {
+    col.name = name.trim();
+    lsSave();
+    renderKanban();
+    openManageCols();
+    showToast('✏️ Coluna renomeada');
+  }
+}
+
+// ══ CATEGORIAS FINANCEIRO ══
+function openManageCats() {
+  renderFinCatsModal();
+  openModal('modal-fin-cats');
+}
+
+function renderFinCatsModal() {
+  var el = document.getElementById('fin-cats-list');
+  if (!el) return;
+  el.innerHTML = finCategories.map((c, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border-soft)">
+      <span style="flex:1;font-size:13px">${escHtml(c)}</span>
+      <span style="font-size:10px;color:var(--text-dim)">${finances.filter(f=>f.category===c).length} lançamentos</span>
+      <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:11px"
+        onclick="renameCat(${i})">✏️</button>
+      <button class="btn btn-danger btn-sm" style="padding:2px 6px;font-size:11px"
+        onclick="deleteFinCategory(${i});renderFinCatsModal()">✕</button>
+    </div>`).join('');
+}
+
+function renameCat(idx) {
+  var name = prompt('Novo nome:', finCategories[idx]);
+  if (name && name.trim()) {
+    var old = finCategories[idx];
+    finCategories[idx] = name.trim();
+    finances.forEach(function(f) { if (f.category === old) f.category = name.trim(); });
+    lsSave();
+    renderFinance();
+    renderFinCatsModal();
+    showToast('✏️ Categoria renomeada');
+  }
+}
+
+// ══ NOTA → BACKLOG (fix — add to renderNotes) ══
+// The CSS class exists but injection failed — using onclick on note card directly
+
+// ══ FINANCE → BACKLOG (fix) ══
+function finToBacklog(id) {
+  var item = finances.find(function(f) { return f.id === id; });
+  if (!item) return;
+  var text = (item.type === 'expense' ? '↓ ' : '↑ ') + item.desc + ' R$' + Math.abs(item.value).toFixed(2);
+  finances = finances.filter(function(f) { return f.id !== id; });
+  backlog.push({ id: nextBacklogId++, text: text, tag: 'financeiro', priority: 'normal', timestamp: Date.now(), origin: 'finance' });
+  lsSave();
+  scheduleSave();
+  renderFinance();
+  var inboxBtn2 = document.querySelector('.nav-btn[onclick*=\"inbox\"]') ||
+                  document.querySelector('.bnav-btn[onclick*=\"inbox\"]');
+  switchView('inbox', inboxBtn2);
+  renderBacklog();
+  showToast('↩ Enviado para o Backlog');
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
   lsLoad();
   pwaInit();
@@ -6185,6 +6421,111 @@ document.addEventListener('DOMContentLoaded', function() {
       <kbd class="search-kbd">ESC</kbd>
     </div>
     <div id="search-results" style="display:none;max-height:400px;overflow-y:auto;padding:8px 0"></div>
+  </div>
+</div>
+
+
+<!-- ══ MODAL — CONFIGURAÇÕES ══ -->
+<div class="modal-overlay" id="modal-settings">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <span class="modal-title">⚙️ Configurações</span>
+      <button class="modal-close" onclick="closeModal('modal-settings')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0">
+
+      <!-- Nuvem -->
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border-soft)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:13px;font-weight:600;color:var(--text)">☁️ Sincronização na nuvem</span>
+          <span id="settings-cloud-status" style="font-size:11px;color:var(--text-dim)">Não configurado</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Salva e sincroniza seus dados entre dispositivos via JSONBin.io</div>
+        <button class="btn btn-primary btn-sm" onclick="closeModal('modal-settings');openCloudModal()">Configurar JSONBin</button>
+      </div>
+
+      <!-- Google Calendar -->
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border-soft)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:13px;font-weight:600;color:var(--text)">📅 Google Calendar</span>
+          <span id="settings-gcal-status" style="font-size:11px;color:var(--text-dim)">Não conectado</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Sincroniza seus eventos e agendas do Google</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="form-input" id="settings-gcal-id" placeholder="Cole o Client ID aqui…" style="flex:1;font-size:11px">
+          <button class="btn btn-primary btn-sm" onclick="settingsGcalConnect()">Conectar</button>
+          <button class="btn btn-ghost btn-sm" id="settings-gcal-disconnect" style="display:none;color:var(--red)" onclick="gcalDisconnect()">Desconectar</button>
+        </div>
+      </div>
+
+      <!-- Gmail -->
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border-soft)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:13px;font-weight:600;color:var(--text)">📩 Gmail → Backlog</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">E-mails com o marcador configurado viram itens no Backlog</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:12px;color:var(--text-muted)">Marcador:</span>
+          <input class="form-input" id="settings-gmail-label" placeholder="painel" style="width:120px;font-size:12px" value="painel">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('gmail-label-input')&&(document.getElementById('gmail-label-input').value=document.getElementById('settings-gmail-label').value);showToast('✅ Label atualizada')">Salvar</button>
+        </div>
+      </div>
+
+      <!-- Dados -->
+      <div style="padding:14px 18px">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">🗄️ Dados locais</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="exportData()">📤 Exportar JSON</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()">📥 Importar JSON</button>
+          <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
+          <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="resetAllData()">🗑️ Limpar tudo</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ MODAL — CATEGORIAS FINANCEIRO ══ -->
+<div class="modal-overlay" id="modal-fin-cats">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <span class="modal-title">💰 Categorias</span>
+      <button class="modal-close" onclick="closeModal('modal-fin-cats')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="fin-cats-list" style="margin-bottom:14px"></div>
+      <div class="form-grid" style="gap:8px;margin-bottom:10px">
+        <div class="form-row" style="margin-bottom:0"><label>Nome</label><input class="form-input" id="new-cat-label" placeholder="Ex: Moradia"></div>
+        <div class="form-row" style="margin-bottom:0"><label>Tipo</label><select class="form-select" id="new-cat-type"><option value="expense">Despesa</option><option value="income">Receita</option><option value="both">Ambos</option></select></div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="addFinCategory();renderFinCatsModal()">+ Criar categoria</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeModal('modal-fin-cats');renderFinance()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL — GERENCIAR LISTAS ══ -->
+<div class="modal-overlay" id="modal-manage-lists">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <span class="modal-title">📋 Gerenciar Listas</span>
+      <button class="modal-close" onclick="closeModal('modal-manage-lists')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="lists-manage-list" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input class="form-input" id="new-list-name" placeholder="Nova lista…" style="flex:1">
+        <select class="form-select" id="new-list-icon" style="width:60px"><option value="📋">📋</option><option value="📝">📝</option><option value="🛒">🛒</option><option value="🎬">🎬</option><option value="📚">📚</option><option value="🏃">🏃</option><option value="💡">💡</option><option value="⭐">⭐</option><option value="🎯">🎯</option><option value="🏠">🏠</option></select>
+        <button class="btn btn-primary btn-sm" onclick="addList()">+ Criar</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeModal('modal-manage-lists');renderLists()">Fechar</button>
+    </div>
   </div>
 </div>
 
