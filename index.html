@@ -3635,6 +3635,7 @@ function openNoteModal(id) {
     if (!n) return;
     document.getElementById('mnote-title').value = n.title || '';
     document.getElementById('mnote-body').value  = n.body  || '';
+  const lnkEl = document.getElementById('mnote-link'); if (lnkEl) lnkEl.value = n.link || '';
     document.getElementById('mnote-tag').value   = (n.tags||[]).map(t=>'#'+t).join(', ');
     if (fsel) fsel.value = n.folder || '';
     modalNotePin = n.pinned;
@@ -6269,6 +6270,10 @@ document.addEventListener('DOMContentLoaded', function() {
         <button class="btn btn-ghost btn-sm" onclick="addModalChecklistItem()">☑ Item</button>
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mnote-img-input').click()">🖼 Imagem</button>
         <input type="file" id="mnote-img-input" accept="image/*" style="display:none" onchange="loadModalImage(this)">
+      </div>
+      <div class="form-row" style="margin-bottom:10px">
+        <label>🔗 Link</label>
+        <input class="form-input" id="mnote-link" placeholder="https://docs.google.com/…" type="url">
       </div>
       <div class="form-grid" style="gap:8px">
         <div class="form-row" style="margin-bottom:0"><label>Tag</label><input class="form-input" id="mnote-tag" placeholder="#tag"></div>
