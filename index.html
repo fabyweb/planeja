@@ -5857,28 +5857,22 @@ async function cloudLoad() {
     var d = json.record || json;
 
     if (!d || d.init) {
-      // Empty bin — save current data
       cloudSave();
       showToast('☁️ Primeiro uso — dados salvos na nuvem');
       return;
     }
 
-    // Compare timestamps
     var driveTime = d.savedAt ? new Date(d.savedAt).getTime() : 0;
     var localRaw = localStorage.getItem('painel_dados_v1');
     var localTime = 0;
-    if (localRaw) {
-      try { localTime = new Date(JSON.parse(localRaw).savedAt).getTime(); } catch(e) {}
-    }
+    if (localRaw) { try { localTime = new Date(JSON.parse(localRaw).savedAt).getTime(); } catch(e) {} }
 
     if (driveTime <= localTime && localRaw) {
-      // Local is newer — push to cloud
       cloudSave();
       cloudSetBtn('ok', '✓ Nuvem');
       return;
     }
 
-    // Cloud is newer — load it
     if (d.backlog)          { backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId; }
     if (d.tasks)            { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
     if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
@@ -5915,5 +5909,42 @@ function cloudDisconnect() {
   showToast('Nuvem desconectada');
 }
 
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
 
+function pwaInit() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+      regs.forEach(function(r) { r.unregister(); });
+    });
+  }
+}
 
+document.addEventListener('DOMContentLoaded', function() {
+  lsLoad();
+  pwaInit();
+  renderBacklog();
+  renderCalendar();
+  requestAnimationFrame(function() {
+    var c = document.getElementById('estudos-tab-content');
+    if (c && !c.querySelector('#timer-display')) {
+      c.innerHTML = buildEstudosPainelHTML();
+      renderEstudosPainel();
+    }
+  });
+
+  // Auto-sync from cloud if connected
+  if (cloudKey && cloudBinId) {
+    cloudSetBtn('ok', '✓ Nuvem');
+    setTimeout(cloudLoad, 1000);
+  }
+
+  // Auto-reconnect Google Calendar
+  if (gcalState.clientId) {
+    setTimeout(gcalAutoConnect, 800);
+  }
+});
+</script>
+</body>
+</html>
