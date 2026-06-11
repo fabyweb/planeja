@@ -518,18 +518,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .fb-status.saving{background:rgba(245,158,11,0.1);border-color:var(--amber);color:var(--amber)}
 .fb-status.error{background:rgba(239,68,68,0.1);border-color:var(--red);color:var(--red)}
 
-/* ── DRIVE SAVE ── */
-.save-status{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);color:var(--text-muted);background:transparent;font-family:'Inter',sans-serif;transition:all 0.15s;cursor:default}
-.save-status.saved{background:rgba(16,185,129,0.1);border-color:var(--green);color:var(--green)}
-.save-status.saving{background:rgba(245,158,11,0.1);border-color:var(--amber);color:var(--amber)}
-.save-status.error{background:rgba(239,68,68,0.1);border-color:var(--red);color:var(--red)}
 
-/* ── SYNC BANNER ── */
-.sync-banner{display:none;position:fixed;bottom:70px;left:50%;transform:translateX(-50%);
-  background:var(--surface);border:1px solid var(--violet);border-radius:var(--radius);
-  padding:12px 18px;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.4);
-  display:flex;align-items:center;gap:12px;max-width:340px;width:90%}
-.sync-banner.hidden{display:none!important}
+
+/* ── CLOUD SYNC ── */
+.cloud-btn{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);color:var(--text-muted);background:transparent;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.15s}
+.cloud-btn:hover{border-color:var(--violet);color:var(--violet-light)}
+.cloud-btn.ok{background:rgba(16,185,129,0.1);border-color:var(--green);color:var(--green)}
+.cloud-btn.busy{background:rgba(245,158,11,0.1);border-color:var(--amber);color:var(--amber)}
+.cloud-btn.off{border-color:var(--border);color:var(--text-dim)}
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -5576,217 +5572,6 @@ function curClearSearch() {
 
 
 
-// ══════════════════════════════════════════
-//  SALVAMENTO AUTOMÁTICO — GOOGLE DRIVE
-// ══════════════════════════════════════════
-const SAVE_FILE_NAME = 'painel-gestao-dados.json';
-let driveFileId = localStorage.getItem('drive_file_id') || null;
-let saveTimer   = null;
-let saveStatus  = 'idle'; // idle | saving | saved | error
-
-function saveSetStatus(state, text) {
-  saveStatus = state;
-  const btn  = document.getElementById('save-status-btn');
-  const span = document.getElementById('save-status-text');
-  if (!btn || !span) return;
-  btn.className = 'save-status' + (state !== 'idle' ? ' ' + state : '');
-  span.textContent = text;
-}
-
-function collectState() {
-  return JSON.stringify({
-    backlog, nextBacklogId,
-    tasks, nextTaskId,
-    kanbanCols, nextColId,
-    finances, nextFinId, finCategories,
-    lists, nextListId, nextListItemId,
-    notes, nextNoteId, noteFolders,
-    curTopicosStatus, curTopicosData,
-    atividades, nextAtivId,
-    sessoes, nextSessaoId,
-    questaoSessoes, nextQId,
-    revisoesPendentes, nextRevId,
-    savedAt: new Date().toISOString(),
-  });
-}
-
-async function driveSave() {
-  if (!gcalState.connected || !gcalState.token) return; // needs Google login
-  saveSetStatus('saving', 'Salvando…');
-  try {
-    const body = collectState();
-    const token = gcalState.token;
-
-    if (driveFileId) {
-      // Update existing file
-      await fetch('https://www.googleapis.com/upload/drive/v3/files/' + driveFileId + '?uploadType=media', {
-        method: 'PATCH',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body,
-      });
-    } else {
-      // Create new file
-      // Step 1: create metadata
-      const meta = await fetch('https://www.googleapis.com/drive/v3/files', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: SAVE_FILE_NAME, mimeType: 'application/json' }),
-      });
-      const metaJson = await meta.json();
-      driveFileId = metaJson.id;
-      localStorage.setItem('drive_file_id', driveFileId);
-
-      // Step 2: upload content
-      await fetch('https://www.googleapis.com/upload/drive/v3/files/' + driveFileId + '?uploadType=media', {
-        method: 'PATCH',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body,
-      });
-    }
-
-    const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-    saveSetStatus('saved', '✓ ' + time);
-    setTimeout(() => saveSetStatus('idle', 'Drive'), 3000);
-
-  } catch(err) {
-    saveSetStatus('error', 'Erro!');
-    console.error('Drive save error:', err);
-    setTimeout(() => saveSetStatus('idle', 'Drive'), 5000);
-  }
-}
-
-async function driveLoad() {
-  if (!gcalState.connected || !gcalState.token) return;
-  saveSetStatus('saving', 'Sincronizando…');
-  try {
-    // Find file
-    if (!driveFileId) {
-      const token = gcalState.token;
-      const resp = await fetch(
-        "https://www.googleapis.com/drive/v3/files?q=name='" + SAVE_FILE_NAME + "'+and+trashed=false&fields=files(id,name,modifiedTime)",
-        { headers: { 'Authorization': 'Bearer ' + token } }
-      );
-      const json = await resp.json();
-      if (json.files && json.files.length > 0) {
-        driveFileId = json.files[0].id;
-        localStorage.setItem('drive_file_id', driveFileId);
-      } else {
-        // No file yet — save current state to Drive
-        await driveSave();
-        showToast('☁️ Dados enviados para o Drive pela primeira vez');
-        return;
-      }
-    }
-
-    // Load file content
-    const token = gcalState.token;
-    const resp = await fetch(
-      'https://www.googleapis.com/drive/v3/files/' + driveFileId + '?alt=media',
-      { headers: { 'Authorization': 'Bearer ' + token } }
-    );
-    const d = await resp.json();
-
-    // Compare timestamps — only load if Drive is newer than local
-    const driveTime   = d.savedAt ? new Date(d.savedAt).getTime() : 0;
-    const localRaw    = localStorage.getItem('painel_dados_v1');
-    const localTime   = localRaw ? (JSON.parse(localRaw).savedAt ? new Date(JSON.parse(localRaw).savedAt).getTime() : 0) : 0;
-
-    if (driveTime <= localTime && localRaw) {
-      // Local is newer or same — push local to Drive to keep in sync
-      await driveSave();
-      saveSetStatus('saved', '✓ Sincronizado');
-      setTimeout(() => saveSetStatus('idle', 'Drive'), 2000);
-      return;
-    }
-
-    // Drive is newer — load from Drive
-    if (d.backlog)          { backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId; }
-    if (d.tasks)            { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
-    if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
-    if (d.finances)         { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
-    if (d.finCategories)    { finCategories = d.finCategories; }
-    if (d.lists)            { lists = d.lists; nextListId = d.nextListId || nextListId; nextListItemId = d.nextListItemId || nextListItemId; }
-    if (d.notes)            { notes = d.notes; nextNoteId = d.nextNoteId || nextNoteId; }
-    if (d.noteFolders)      { noteFolders = d.noteFolders; }
-    if (d.curTopicosStatus) { curTopicosStatus = d.curTopicosStatus; }
-    if (d.curTopicosData)   { curTopicosData = d.curTopicosData; }
-    if (d.atividades)       { atividades = d.atividades; nextAtivId = d.nextAtivId || nextAtivId; }
-    if (d.sessoes)          { sessoes = d.sessoes; nextSessaoId = d.nextSessaoId || nextSessaoId; }
-    if (d.questaoSessoes)   { questaoSessoes = d.questaoSessoes; nextQId = d.nextQId || nextQId; }
-    if (d.revisoesPendentes){ revisoesPendentes = d.revisoesPendentes; nextRevId = d.nextRevId || nextRevId; }
-
-    lsSave(); // sync Drive data to localStorage
-    renderBacklog();
-    renderCalendar();
-    const time = d.savedAt ? new Date(d.savedAt).toLocaleString('pt-BR') : '';
-    showToast('☁️ Drive sincronizado' + (time ? ' — ' + time : ''));
-    saveSetStatus('saved', '✓ Sincronizado');
-    setTimeout(() => saveSetStatus('idle', 'Drive'), 2000);
-
-  } catch(err) {
-    saveSetStatus('error', 'Erro!');
-    console.error('Drive load error:', err);
-    setTimeout(() => saveSetStatus('idle', 'Drive'), 3000);
-  }
-}
-
-
-// ══════════════════════════════════════════
-//  LOCAL STORAGE — PERSISTÊNCIA LOCAL
-// ══════════════════════════════════════════
-const LS_KEY = 'painel_dados_v1';
-
-function lsSave() {
-  try {
-    const payload = {
-      savedAt: new Date().toISOString(),
-      backlog, nextBacklogId,
-      tasks, nextTaskId,
-      kanbanCols, nextColId,
-      finances, nextFinId, finCategories,
-      lists, nextListId, nextListItemId,
-      notes, nextNoteId, noteFolders,
-      curTopicosStatus, curTopicosData,
-      atividades, nextAtivId,
-      sessoes, nextSessaoId,
-      questaoSessoes, nextQId,
-      revisoesPendentes, nextRevId,
-    };
-    localStorage.setItem('painel_dados_v1', JSON.stringify(payload));
-  } catch(e) { console.warn('lsSave error:', e); }
-}
-
-function lsLoad() {
-  try {
-    const raw = localStorage.getItem('painel_dados_v1');
-    if (!raw) return false;
-    const d = JSON.parse(raw);
-    if (d.backlog)          { backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId; }
-    if (d.tasks)            { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
-    if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
-    if (d.finances)         { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
-    if (d.finCategories)    { finCategories = d.finCategories; }
-    if (d.lists)            { lists = d.lists; nextListId = d.nextListId || nextListId; nextListItemId = d.nextListItemId || nextListItemId; }
-    if (d.notes)            { notes = d.notes; nextNoteId = d.nextNoteId || nextNoteId; }
-    if (d.noteFolders)      { noteFolders = d.noteFolders; }
-    if (d.curTopicosStatus) { curTopicosStatus = d.curTopicosStatus; }
-    if (d.curTopicosData)   { curTopicosData = d.curTopicosData; }
-    if (d.atividades)       { atividades = d.atividades; nextAtivId = d.nextAtivId || nextAtivId; }
-    if (d.sessoes)          { sessoes = d.sessoes; nextSessaoId = d.nextSessaoId || nextSessaoId; }
-    if (d.questaoSessoes)   { questaoSessoes = d.questaoSessoes; nextQId = d.nextQId || nextQId; }
-    if (d.revisoesPendentes){ revisoesPendentes = d.revisoesPendentes; nextRevId = d.nextRevId || nextRevId; }
-    return true;
-  } catch(e) { return false; }
-}
-
-function scheduleSave() {
-  lsSave();
-  if (!gcalState || !gcalState.connected) return;
-  if (typeof saveTimer !== 'undefined' && saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(driveSave, 2000);
-}
-
-
 
 // ══ CURRICULO CRUD — FUNÇÕES RESTAURADAS ══
 
@@ -5896,6 +5681,238 @@ function openTagsModal(listId) {
   document.getElementById('tags-modal-title').textContent = '🏷️ Tags — ' + list.name;
   renderTagsList();
   openModal('modal-tags');
+}
+
+
+
+// ══════════════════════════════════════════
+//  PERSISTÊNCIA — localStorage + JSONBin
+// ══════════════════════════════════════════
+let cloudKey    = localStorage.getItem('jsonbin_key') || '';
+let cloudBinId  = localStorage.getItem('jsonbin_bin_id') || '';
+let cloudTimer  = null;
+
+function lsSave() {
+  try {
+    localStorage.setItem('painel_dados_v1', JSON.stringify({
+      savedAt: new Date().toISOString(),
+      backlog, nextBacklogId,
+      tasks, nextTaskId,
+      kanbanCols, nextColId,
+      finances, nextFinId, finCategories,
+      lists, nextListId, nextListItemId,
+      notes, nextNoteId, noteFolders,
+      curTopicosStatus, curTopicosData,
+      atividades, nextAtivId,
+      sessoes, nextSessaoId,
+      questaoSessoes, nextQId,
+      revisoesPendentes, nextRevId,
+    }));
+  } catch(e) { console.warn('lsSave:', e); }
+}
+
+function lsLoad() {
+  try {
+    var raw = localStorage.getItem('painel_dados_v1');
+    if (!raw) return false;
+    var d = JSON.parse(raw);
+    if (d.backlog)          { backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId; }
+    if (d.tasks)            { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
+    if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
+    if (d.finances)         { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
+    if (d.finCategories)    { finCategories = d.finCategories; }
+    if (d.lists)            { lists = d.lists; nextListId = d.nextListId || nextListId; nextListItemId = d.nextListItemId || nextListItemId; }
+    if (d.notes)            { notes = d.notes; nextNoteId = d.nextNoteId || nextNoteId; }
+    if (d.noteFolders)      { noteFolders = d.noteFolders; }
+    if (d.curTopicosStatus) { curTopicosStatus = d.curTopicosStatus; }
+    if (d.curTopicosData)   { curTopicosData = d.curTopicosData; }
+    if (d.atividades)       { atividades = d.atividades; nextAtivId = d.nextAtivId || nextAtivId; }
+    if (d.sessoes)          { sessoes = d.sessoes; nextSessaoId = d.nextSessaoId || nextSessaoId; }
+    if (d.questaoSessoes)   { questaoSessoes = d.questaoSessoes; nextQId = d.nextQId || nextQId; }
+    if (d.revisoesPendentes){ revisoesPendentes = d.revisoesPendentes; nextRevId = d.nextRevId || nextRevId; }
+    return true;
+  } catch(e) { return false; }
+}
+
+function scheduleSave() {
+  lsSave();
+  if (!cloudKey || !cloudBinId) return;
+  if (cloudTimer) clearTimeout(cloudTimer);
+  cloudSetBtn('busy', 'Salvando…');
+  cloudTimer = setTimeout(cloudSave, 2000);
+}
+
+// ── JSONBin ──
+function cloudSetBtn(state, text) {
+  var btn = document.getElementById('cloud-btn');
+  var span = document.getElementById('cloud-text');
+  if (btn) btn.className = 'cloud-btn ' + state;
+  if (span) span.textContent = text;
+}
+
+function openCloudModal() {
+  if (cloudKey && cloudBinId) {
+    document.getElementById('cloud-connected').style.display = 'block';
+    document.getElementById('cloud-setup').style.display = 'none';
+    document.getElementById('cloud-footer').style.display = 'none';
+  } else {
+    document.getElementById('cloud-connected').style.display = 'none';
+    document.getElementById('cloud-setup').style.display = 'block';
+    document.getElementById('cloud-footer').style.display = 'flex';
+    var inp = document.getElementById('cloud-key');
+    if (inp && cloudKey) inp.value = cloudKey;
+  }
+  openModal('modal-cloud');
+}
+
+async function cloudConnect() {
+  var key = document.getElementById('cloud-key').value.trim();
+  if (!key) { showToast('⚠️ Cole a Master Key'); return; }
+  cloudKey = key;
+  localStorage.setItem('jsonbin_key', key);
+
+  try {
+    // Check if bin already exists
+    if (cloudBinId) {
+      cloudSetBtn('ok', '✓ Nuvem');
+      closeModal('modal-cloud');
+      cloudLoad();
+      return;
+    }
+
+    // Create new bin
+    var resp = await fetch('https://api.jsonbin.io/v3/b', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': key,
+        'X-Bin-Name': 'painel-gestao-dados',
+        'X-Bin-Private': 'true',
+      },
+      body: JSON.stringify({ init: true, savedAt: new Date().toISOString() }),
+    });
+    var json = await resp.json();
+
+    if (json.metadata && json.metadata.id) {
+      cloudBinId = json.metadata.id;
+      localStorage.setItem('jsonbin_bin_id', cloudBinId);
+      cloudSetBtn('ok', '✓ Nuvem');
+      closeModal('modal-cloud');
+      showToast('✅ Nuvem conectada! Salvando dados…');
+      cloudSave();
+    } else {
+      showToast('❌ Erro: ' + (json.message || JSON.stringify(json)));
+    }
+  } catch(err) {
+    showToast('❌ Erro: ' + err.message);
+  }
+}
+
+async function cloudSave() {
+  if (!cloudKey || !cloudBinId) return;
+  cloudSetBtn('busy', 'Salvando…');
+  try {
+    var payload = JSON.stringify({
+      savedAt: new Date().toISOString(),
+      backlog, nextBacklogId,
+      tasks, nextTaskId,
+      kanbanCols, nextColId,
+      finances, nextFinId, finCategories,
+      lists, nextListId, nextListItemId,
+      notes, nextNoteId, noteFolders,
+      curTopicosStatus, curTopicosData,
+      atividades, nextAtivId,
+      sessoes, nextSessaoId,
+      questaoSessoes, nextQId,
+      revisoesPendentes, nextRevId,
+    });
+
+    await fetch('https://api.jsonbin.io/v3/b/' + cloudBinId, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': cloudKey,
+      },
+      body: payload,
+    });
+
+    var time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+    cloudSetBtn('ok', '✓ ' + time);
+    var lbl = document.getElementById('cloud-last-sync');
+    if (lbl) lbl.textContent = 'Último sync: ' + time;
+  } catch(err) {
+    cloudSetBtn('off', '⚠️ Erro');
+    console.error('cloudSave:', err);
+  }
+}
+
+async function cloudLoad() {
+  if (!cloudKey || !cloudBinId) return;
+  cloudSetBtn('busy', 'Carregando…');
+  try {
+    var resp = await fetch('https://api.jsonbin.io/v3/b/' + cloudBinId + '/latest', {
+      headers: { 'X-Master-Key': cloudKey },
+    });
+    var json = await resp.json();
+    var d = json.record || json;
+
+    if (!d || d.init) {
+      // Empty bin — save current data
+      cloudSave();
+      showToast('☁️ Primeiro uso — dados salvos na nuvem');
+      return;
+    }
+
+    // Compare timestamps
+    var driveTime = d.savedAt ? new Date(d.savedAt).getTime() : 0;
+    var localRaw = localStorage.getItem('painel_dados_v1');
+    var localTime = 0;
+    if (localRaw) {
+      try { localTime = new Date(JSON.parse(localRaw).savedAt).getTime(); } catch(e) {}
+    }
+
+    if (driveTime <= localTime && localRaw) {
+      // Local is newer — push to cloud
+      cloudSave();
+      cloudSetBtn('ok', '✓ Nuvem');
+      return;
+    }
+
+    // Cloud is newer — load it
+    if (d.backlog)          { backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId; }
+    if (d.tasks)            { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
+    if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
+    if (d.finances)         { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
+    if (d.finCategories)    { finCategories = d.finCategories; }
+    if (d.lists)            { lists = d.lists; nextListId = d.nextListId || nextListId; nextListItemId = d.nextListItemId || nextListItemId; }
+    if (d.notes)            { notes = d.notes; nextNoteId = d.nextNoteId || nextNoteId; }
+    if (d.noteFolders)      { noteFolders = d.noteFolders; }
+    if (d.curTopicosStatus) { curTopicosStatus = d.curTopicosStatus; }
+    if (d.curTopicosData)   { curTopicosData = d.curTopicosData; }
+    if (d.atividades)       { atividades = d.atividades; nextAtivId = d.nextAtivId || nextAtivId; }
+    if (d.sessoes)          { sessoes = d.sessoes; nextSessaoId = d.nextSessaoId || nextSessaoId; }
+    if (d.questaoSessoes)   { questaoSessoes = d.questaoSessoes; nextQId = d.nextQId || nextQId; }
+    if (d.revisoesPendentes){ revisoesPendentes = d.revisoesPendentes; nextRevId = d.nextRevId || nextRevId; }
+
+    lsSave();
+    renderBacklog();
+    renderCalendar();
+    cloudSetBtn('ok', '✓ Nuvem');
+    showToast('☁️ Dados carregados da nuvem');
+  } catch(err) {
+    cloudSetBtn('off', '⚠️ Erro');
+    console.error('cloudLoad:', err);
+  }
+}
+
+function cloudDisconnect() {
+  cloudKey = '';
+  cloudBinId = '';
+  localStorage.removeItem('jsonbin_key');
+  localStorage.removeItem('jsonbin_bin_id');
+  cloudSetBtn('off', 'Nuvem');
+  closeModal('modal-cloud');
+  showToast('Nuvem desconectada');
 }
 
 
