@@ -2431,10 +2431,6 @@ function activeFiltersPillsHtml() {
 // ══════════════════════════════════════════
 //  GERENCIAR CATEGORIAS FINANCEIRAS
 // ══════════════════════════════════════════
-function openManageCats() {
-  renderManageCats();
-  openModal('modal-manage-cats');
-}
 
 function renderManageCats() {
   document.getElementById('cats-manage-list').innerHTML = finCategories.map((c,i) => `
@@ -2491,10 +2487,6 @@ function updateFinCategorySelects() {
 // ══════════════════════════════════════════
 //  GERENCIAR COLUNAS KANBAN
 // ══════════════════════════════════════════
-function openManageCols() {
-  renderManageCols();
-  openModal('modal-manage-cols');
-}
 
 function renderManageCols() {
   document.getElementById('cols-manage-list').innerHTML = kanbanCols.map((c,i) => `
@@ -2845,7 +2837,7 @@ function resetEventModal() {
 function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function escJs(s)  { return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 function pad(n)    { return String(n).padStart(2,'0'); }
-function fmtDate(d){ if(!d)return'—'; const [y,m,dd]=d.split('-'); return `${dd}/${m}`; }
+function fmtDate(d){ if(!d)return'—'; const str = (typeof d === 'object' && d.date) ? d.date : d; if(typeof str !== 'string') return '—'; const [y,m,dd]=str.split('-'); return `${dd}/${m}`; }
 function fmtMoney(v){ return 'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0}); }
 function addDays(dateStr,n){ const d=new Date(dateStr); d.setDate(d.getDate()+n); return d.toISOString().split('T')[0]; }
 
@@ -3800,6 +3792,9 @@ const META_DIARIA_H = 3;
 const REVISAO_DIAS = [1, 7, 15, 30];
 
 // ── State ──
+let studyBacklog = []; // items from Gurujá: {id, materia, topicos[], tempo_est, questoes_meta, status, atividadeId}
+let nextStudyBlogId = 1;
+
 let atividades = [
   {id:1, desc:'Direito Tributário — Competência Tributária', disciplina:'Direito Tributário', tipo:'leitura', dia:0, tempo:60, done:false},
   {id:2, desc:'30 questões — Direito Constitucional', disciplina:'Direito Constitucional', tipo:'questoes', dia:0, tempo:45, done:false},
@@ -3818,7 +3813,8 @@ let nextQId = 1;
 let revisoesPendentes = []; // {id, tema, disciplina, data (YYYY-MM-DD), etapa (1/7/15/30)}
 let nextRevId = 1;
 
-let selectedDia = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1; // 0=Seg..6=Dom
+let selectedDia = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1; // 0=
+let semanaWeekOffset = 0; // 0=current week, 1=next, -1=prevSeg..6=Dom
 let editAtivId = null;
 
 // Timer state
@@ -3902,31 +3898,55 @@ function updateSemanaProgress() {
 }
 
 // ── Semana dias ──
+function semanaNav(direction) {
+  if (direction === 0) {
+    semanaWeekOffset = 0;
+    selectedDia = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+  } else {
+    semanaWeekOffset += direction;
+  }
+  renderSemana();
+  renderAtividades();
+}
+
 function renderSemana() {
   const dias = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
   const todayDow = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
   const el = document.getElementById('semana-dias');
   if (!el) return;
+
+  // Build date for each day of selected week (with offset)
+  const weekStart = new Date();
+  weekStart.setDate(weekStart.getDate() - todayDow + (semanaWeekOffset * 7));
+  weekStart.setHours(0,0,0,0);
+
+  const weekDates = dias.map((d, i) => {
+    const dt = new Date(weekStart);
+    dt.setDate(dt.getDate() + i);
+    return dt.toISOString().split('T')[0]; // YYYY-MM-DD
+  });
+
   el.innerHTML = dias.map((d, i) => {
-    const count = atividades.filter(a => a.dia === i).length;
-    const doneCnt = atividades.filter(a => a.dia === i && a.done).length;
-    const cls = [
-      'dia-pill',
-      i === selectedDia ? 'active' : '',
-      i === todayDow ? 'today' : '',
-    ].filter(Boolean).join(' ');
-    return `<div class="${cls}" onclick="selectDia(${i})">
+    const dateStr = weekDates[i];
+    const dayNum = parseInt(dateStr.split('-')[2]);
+    // Count atividades for this date OR for this weekday (legacy)
+    const count = atividades.filter(a => (a.data === dateStr) || (!a.data && a.dia === i)).length;
+    const doneCnt = atividades.filter(a => ((a.data === dateStr) || (!a.data && a.dia === i)) && a.done).length;
+    const cls = ['dia-pill', i === selectedDia ? 'active' : '', (semanaWeekOffset === 0 && i === todayDow) ? 'today' : ''].filter(Boolean).join(' ');
+    return `<div class="${cls}" onclick="selectDia(${i})" data-date="${dateStr}">
       <div>${d}</div>
+      <div style="font-size:9px;opacity:0.6;margin-top:1px">${dayNum}</div>
       ${count ? `<div style="font-size:8px;margin-top:1px;color:inherit">${doneCnt}/${count}</div>` : ''}
     </div>`;
   }).join('');
 
   const lbl = document.getElementById('semana-label');
   if (lbl) {
-    const semStart = new Date(); semStart.setDate(semStart.getDate() - todayDow);
-    const semEnd = new Date(semStart); semEnd.setDate(semEnd.getDate() + 6);
-    lbl.textContent = fmtDate(semStart.toISOString().split('T')[0]) + ' – ' + fmtDate(semEnd.toISOString().split('T')[0]);
+    lbl.textContent = fmtDate(weekDates[0]) + ' – ' + fmtDate(weekDates[6]);
   }
+
+  // Store week dates globally for renderAtividades
+  window._semanaWeekDates = weekDates;
 }
 
 function selectDia(i) {
@@ -3937,7 +3957,13 @@ function selectDia(i) {
 
 // ── Atividades ──
 function renderAtividades() {
-  const list = atividades.filter(a => a.dia === selectedDia);
+  const weekDates = window._semanaWeekDates || [];
+  const selectedDate = weekDates[selectedDia] || '';
+  // Match by real date (new) OR by weekday (legacy)
+  const list = atividades.filter(a =>
+    (a.data && a.data === selectedDate) ||
+    (!a.data && a.dia === selectedDia)
+  );
   const el = document.getElementById('atividades-list');
   if (!el) return;
   if (!list.length) {
@@ -4110,15 +4136,20 @@ function renderSessoes() {
     el.innerHTML = '<p style="color:var(--text-dim);font-size:12px">Nenhuma sessão registrada ainda.</p>';
     return;
   }
-  el.innerHTML = sessoes.slice(0,10).map(s => `
-    <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border-soft)">
-      <div style="flex:1">
+  const sorted = sessoes.slice().sort((a,b) => (b.data||'').localeCompare(a.data||''));
+  el.innerHTML = sorted.slice(0,15).map(s => {
+    const mins = s.durMin != null ? s.durMin : (s.duracao ? Math.round(s.duracao/60) : (s.fim&&s.inicio ? Math.round((s.fim-s.inicio)/60000) : 0));
+    const dateStr = s.data || (s.inicio ? new Date(s.inicio).toISOString().split('T')[0] : '');
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border-soft)">
+      <div style="flex:1;min-width:0">
         <div style="font-size:12px;color:var(--text);font-weight:500">${escHtml(s.disciplina||'Geral')}</div>
-        <div style="font-size:10px;color:var(--text-dim)">${fmtDate(s.data)}</div>
+        <div style="font-size:10px;color:var(--text-dim)">${dateStr}</div>
       </div>
-      <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--cyan)">${s.durMin}min</div>
-    </div>
-  `).join('');
+      <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--cyan);flex-shrink:0">${mins}min</div>
+      <button onclick="editSessao(${s.id})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:12px;padding:2px 4px;flex-shrink:0" title="Editar">✏️</button>
+      <button onclick="deleteSessao(${s.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;padding:2px 4px;flex-shrink:0" title="Excluir">✕</button>
+    </div>`;
+  }).join('');
 }
 
 // ── Horas por disciplina ──
@@ -4130,7 +4161,7 @@ function renderHorasDisc() {
     return;
   }
   const map = {};
-  sessoes.forEach(s => { map[s.disciplina] = (map[s.disciplina]||0) + s.durMin; });
+  sessoes.forEach(s => { const min = s.durMin != null ? s.durMin : (s.duracao ? Math.round(s.duracao/60) : (s.fim && s.inicio ? Math.round((s.fim-s.inicio)/60000) : 0)); map[s.disciplina] = (map[s.disciplina]||0) + min; });
   const sorted = Object.entries(map).sort((a,b)=>b[1]-a[1]);
   const maxMin = sorted[0]?.[1] || 1;
   const colors = ['var(--violet)','var(--cyan)','var(--green)','var(--amber)','var(--blue)','var(--red)'];
@@ -4156,42 +4187,49 @@ function openQuestaoModal() {
 }
 
 function saveQuestao() {
-  scheduleSave();
-  const disc    = document.getElementById('q-disciplina').value;
-  const total   = parseInt(document.getElementById('q-total').value) || 0;
-  const acertos = parseInt(document.getElementById('q-acertos').value) || 0;
-  const fonte   = document.getElementById('q-fonte').value.trim();
-  const tema    = document.getElementById('q-tema').value.trim();
-  const addRev  = document.getElementById('q-revisao').value === '1';
-  if (!total) { showToast('⚠️ Informe o total de questões'); return; }
+  const editId = parseInt(document.getElementById('q-edit-id')?.value) || 0;
+  const disc   = document.getElementById('q-disciplina').value;
+  const total  = parseInt(document.getElementById('q-total').value) || 0;
+  const certas = parseInt(document.getElementById('q-acertos').value) || 0;
+  const fonte  = document.getElementById('q-fonte').value.trim();
+  const tema   = document.getElementById('q-tema').value.trim();
+  const revisao = document.getElementById('q-revisao').value === '1';
+  const acerto  = total > 0 ? Math.round((certas/total)*100) : 0;
+  const today   = new Date().toISOString().split('T')[0];
 
-  const today = new Date().toISOString().split('T')[0];
-  questaoSessoes.push({id: nextQId++, disciplina:disc, total, acertos, fonte, tema, data:today});
+  if (!disc || total < 1) { showToast('⚠️ Preencha disciplina e questões'); return; }
 
-  // Revisão espaçada
-  if (addRev && tema) {
-    REVISAO_DIAS.forEach((d, etapa) => {
-      const dt = new Date(today);
-      dt.setDate(dt.getDate() + d);
-      revisoesPendentes.push({
-        id: nextRevId++,
-        tema: tema || disc,
-        disciplina: disc,
-        data: dt.toISOString().split('T')[0],
-        etapa: d,
-      });
+  if (editId) {
+    // Edit existing
+    const q = questaoSessoes.find(x => x.id === editId);
+    if (q) { q.total = total; q.acertos = certas; q.acerto = acerto; q.fonte = fonte; q.tema = tema; }
+    document.getElementById('q-edit-id').value = '';
+    document.getElementById('q-delete-btn').style.display = 'none';
+    showToast('✏️ Sessão atualizada');
+  } else {
+    questaoSessoes.push({
+      id: nextQId++, disciplina: disc, total, acertos: certas, acerto,
+      fonte, tema, data: today,
     });
-    showToast('🔁 4 revisões agendadas: 1, 7, 15 e 30 dias');
+    if (revisao) {
+      const base = new Date(today+'T12:00:00');
+      [1,7,15,30].forEach(d => {
+        const dt = new Date(base); dt.setDate(dt.getDate()+d);
+        revisoesPendentes.push({ id:nextRevId++, data:dt.toISOString().split('T')[0], tema: disc+(tema?' — '+tema:''), etapa:d });
+      });
+      showToast('✅ Registrado + revisões agendadas');
+    } else {
+      showToast('✅ Sessão registrada');
+    }
   }
-
+  lsSave();
+  scheduleSave();
   closeModal('modal-questao');
   renderDesempenho();
   renderRevisoes();
-  const pct = total > 0 ? Math.round(acertos/total*100) : 0;
-  showToast('🎯 ' + acertos + '/' + total + ' (' + pct + '%) registrado em ' + disc);
 }
 
-// ── Desempenho ──
+
 function renderDesempenho() {
   const el = document.getElementById('desempenho-list');
   if (!el) return;
@@ -4202,22 +4240,40 @@ function renderDesempenho() {
   const map = {};
   questaoSessoes.forEach(s => {
     if (!map[s.disciplina]) map[s.disciplina] = {total:0, acertos:0};
-    map[s.disciplina].total   += s.total;
-    map[s.disciplina].acertos += s.acertos;
+    map[s.disciplina].total   += (s.total || 0);
+    // acertos can come from direct field or from acerto% calculation
+    const acerts = s.acertos != null ? s.acertos : (s.total && s.acerto != null ? Math.round(s.total * s.acerto / 100) : 0);
+    map[s.disciplina].acertos += acerts;
   });
   const sorted = Object.entries(map).map(([d,v]) => ({d, pct: v.total?Math.round(v.acertos/v.total*100):0, ...v}))
     .sort((a,b)=>a.pct-b.pct); // worst first
 
   el.innerHTML = sorted.map(({d, pct, total, acertos}) => {
     const color = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+    // Individual sessions for this discipline
+    const discSessoes = questaoSessoes.filter(q => q.disciplina === d);
+    const sessDetail = discSessoes.map((q,i) => `
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 8px;background:var(--surface);border-radius:4px;margin-top:3px">
+        <span style="flex:1;font-size:10px;color:var(--text-muted)">${q.data||''} ${q.tema?'· '+escHtml(q.tema.slice(0,30)):''}</span>
+        <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-dim)">${q.acertos||0}/${q.total||0}</span>
+        <span style="font-size:10px;color:${(q.acerto||0)>=70?'var(--green)':(q.acerto||0)>=50?'var(--amber)':'var(--red)'}">${q.acerto||0}%</span>
+        <button onclick="event.stopPropagation();deleteQuestaoById(${q.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;padding:0 3px" title="Excluir">✕</button>
+      </div>`).join('');
+
     return `
-    <div class="disc-row">
-      <div class="disc-name" title="${escHtml(d)}">${escHtml(d)}</div>
-      <div class="disc-bar-bg">
-        <div class="disc-bar-fill" style="width:${pct}%;background:${color}"></div>
+    <div style="margin-bottom:6px">
+      <div class="disc-row" style="cursor:pointer" onclick="toggleDesemp('${d.replace(/'/g,'')}')">
+        <div class="disc-name" title="${escHtml(d)}">${escHtml(d)}</div>
+        <div class="disc-bar-bg">
+          <div class="disc-bar-fill" style="width:${pct}%;background:${color}"></div>
+        </div>
+        <div class="disc-pct" style="color:${color}">${pct}%</div>
+        <div class="disc-q">${acertos}/${total}</div>
+        <span style="font-size:10px;color:var(--text-dim);margin-left:4px">${sessDetail?'▾':''}</span>
       </div>
-      <div class="disc-pct" style="color:${color}">${pct}%</div>
-      <div class="disc-q">${acertos}/${total}</div>
+      <div id="desemp-detail-${d.replace(/[^a-zA-Z0-9]/g,'_')}" style="display:none;padding:0 8px">
+        ${sessDetail}
+      </div>
     </div>`;
   }).join('');
 }
@@ -4234,24 +4290,33 @@ function renderRevisoes() {
   const in3 = new Date(); in3.setDate(in3.getDate()+3);
   const in3Str = in3.toISOString().split('T')[0];
 
-  const pending = revisoesPendentes.filter(r => r.data >= today).sort((a,b)=>a.data.localeCompare(b.data));
-  if (cnt) cnt.textContent = pending.filter(r=>r.data<=in3Str).length;
+  // Normalize: support both {data,tema,etapa} and {dataRev,nome,dias} formats
+  const allPending = revisoesPendentes.map(r => ({
+    id: r.id,
+    data: r.data || r.dataRev || '',
+    tema: r.tema || r.nome || '',
+    etapa: r.etapa || r.dias || 0,
+    concluida: r.concluida || false,
+  })).filter(r => r.data >= today && !r.concluida).sort((a,b)=>a.data.localeCompare(b.data));
 
-  if (!pending.length) {
+  const urgentPending = allPending.filter(r => r.data <= in3Str);
+  if (cnt) cnt.textContent = urgentPending.length || allPending.length;
+
+  if (!allPending.length) {
     el.innerHTML = '<p style="color:var(--text-dim);font-size:12px">Nenhuma revisão agendada.</p>';
     return;
   }
 
-  el.innerHTML = pending.slice(0,8).map(r => {
+  el.innerHTML = allPending.slice(0,10).map(r => {
     let badgeCls = 'proxima';
     let badgeLabel = fmtDate(r.data);
-    if (r.data === today)        { badgeCls='hoje';   badgeLabel='Hoje'; }
+    if (r.data === today)            { badgeCls='hoje';   badgeLabel='Hoje'; }
     else if (r.data === tomorrowStr) { badgeCls='amanha'; badgeLabel='Amanhã'; }
 
     return `<div class="rev-item">
       <span class="rev-badge ${badgeCls}">${badgeLabel}</span>
-      <span class="rev-tema" title="${escHtml(r.tema)}">${escHtml(r.tema)}</span>
-      <span class="rev-disc">${r.etapa}d</span>
+      <span class="rev-tema" title="${escHtml(r.tema)}" style="flex:1">${escHtml(r.tema)}</span>
+      ${r.etapa ? `<span class="rev-disc">${r.etapa}d</span>` : ''}
       <button onclick="marcarRevisaoConcluida(${r.id})"
         style="background:none;border:none;color:var(--green);cursor:pointer;font-size:14px;flex-shrink:0"
         title="Marcar como feita">✓</button>
@@ -4260,9 +4325,11 @@ function renderRevisoes() {
 }
 
 function marcarRevisaoConcluida(id) {
+  // Mark as concluida (keep for history)
+  const r = revisoesPendentes.find(x => x.id === id);
+  if (r) { r.concluida = true; r.data = r.data || r.dataRev; }
   lsSave();
   scheduleSave();
-  revisoesPendentes = revisoesPendentes.filter(r => r.id !== id);
   renderRevisoes();
   showToast('✅ Revisão concluída!');
 }
@@ -5153,18 +5220,20 @@ function curNextStatus(s) {
   return s==='pendente' ? 'andamento' : s==='andamento' ? 'estudado' : 'pendente';
 }
 function curToggle(mid, idx) {
+  // curToggle now only cycles pendente <-> andamento (NOT to estudado via click)
+  // Studied status is ONLY set via 📖 register or ✓ button
+  const cur = curGetStatus(mid, idx);
+  if (cur === 'pendente') {
+    curTopicosStatus[mid+'_'+idx] = 'andamento';
+  } else if (cur === 'andamento') {
+    curTopicosStatus[mid+'_'+idx] = 'pendente';
+  }
+  // 'estudado' → no change via toggle
   lsSave();
   scheduleSave();
-  const cur = curGetStatus(mid, idx);
-  curTopicosStatus[mid+'_'+idx] = curNextStatus(cur);
-  if (curTopicosStatus[mid+'_'+idx] === 'estudado') {
-    curTopicosData[mid+'_'+idx] = new Date().toISOString().split('T')[0];
-  }
-  // If search is active, re-run search to update status icons in results
   const searchInp = document.getElementById('cur-search');
   if (searchInp && searchInp.value && searchInp.value.length >= 2) {
     curDoSearch(searchInp.value);
-    // Still update sidebar/header progress
     renderCurriculoSidebar();
     renderCurriculoHeader();
     renderCurriculoGeral();
@@ -5172,9 +5241,20 @@ function curToggle(mid, idx) {
     renderCurriculo();
   }
 }
+
 function curSetStatus(mid, idx, status) {
   curTopicosStatus[mid+'_'+idx] = status;
-  if (status === 'estudado') curTopicosData[mid+'_'+idx] = new Date().toISOString().split('T')[0];
+  // Only set date if no historico exists (don't overwrite registered sessions)
+  if (status === 'estudado') {
+    var existing = curTopicosData[mid+'_'+idx];
+    if (!existing || typeof existing === 'string') {
+      curTopicosData[mid+'_'+idx] = new Date().toISOString().split('T')[0];
+    }
+    // If object with historico, keep it as is
+  }
+  // NEVER clear data when changing status — only deleteHistoricoSession can do that
+  lsSave();
+  scheduleSave();
   renderCurriculo();
 }
 function curMatStats(mat) {
@@ -5273,6 +5353,20 @@ function renderCurriculoTopicos() {
     const badge= status==='estudado' ? 'estudado' : status==='andamento' ? 'andamento' : 'pendente';
     const lbl  = status==='estudado' ? 'Estudado' : status==='andamento' ? 'Andamento' : 'Pendente';
     const dt   = curTopicosData[mat.id+'_'+i] ? fmtDate(curTopicosData[mat.id+'_'+i]) : '';
+    const d_obj = curTopicosData[mat.id+'_'+i];
+    // Accumulate total time from historico
+    const totalTempo = d_obj ? (
+      d_obj.historico && d_obj.historico.length
+        ? d_obj.historico.reduce((acc, h) => acc + (h.tempo||0), 0)
+        : (d_obj.tempo || 0)
+    ) : 0;
+    const acerto = d_obj ? (d_obj.acerto != null && d_obj.acerto !== '' ? parseInt(d_obj.acerto) : null) : null;
+    const acertoColor = acerto === null ? '' : acerto >= 70 ? 'var(--green)' : acerto >= 50 ? 'var(--amber)' : 'var(--red)';
+    const acertoBg = acerto === null ? '' : acerto >= 70 ? 'rgba(16,185,129,0.15)' : acerto >= 50 ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)';
+    const tempoLabel = totalTempo >= 60
+      ? Math.floor(totalTempo/60) + 'h' + (totalTempo%60 ? String(totalTempo%60).padStart(2,'0') : '')
+      : (totalTempo > 0 ? totalTempo + 'min' : '');
+
     return `<div class="top-card ${status}" onclick="curToggle(${mat.id},${i})" title="Clique para avançar status">
       <div class="top-check">${chk}</div>
       <div style="flex:1;min-width:0">
@@ -5280,9 +5374,34 @@ function renderCurriculoTopicos() {
         <div class="top-meta">
           <span class="top-badge ${badge}">${lbl}</span>
           ${dt ? '<span style="font-size:9px;font-family:JetBrains Mono,monospace;color:var(--text-dim)">'+dt+'</span>' : ''}
+          ${tempoLabel ? '<span style="font-size:10px;font-weight:600;color:var(--cyan);background:rgba(6,182,212,0.12);padding:1px 5px;border-radius:4px">⏱ '+tempoLabel+'</span>' : ''}
         </div>
+        ${acerto !== null ? `
+        <div style="margin-top:5px;display:flex;align-items:center;gap:6px">
+          <div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${acerto}%;background:${acertoColor};border-radius:2px;transition:width 0.4s ease"></div>
+          </div>
+          <span style="font-size:10px;font-weight:700;color:${acertoColor};min-width:30px;text-align:right">${acerto}%</span>
+        </div>` : ''}
+        ${d_obj && d_obj.historico && d_obj.historico.length > 1 ? `
+        <div class="top-historico" id="top-hist-${mat.id}_${i}" style="display:none;margin-top:8px">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);margin-bottom:4px">Histórico de estudos</div>
+          ${d_obj.historico.map((h,hi) => `
+            <div style="display:flex;align-items:center;gap:6px;padding:4px 6px;background:var(--surface);border-radius:4px;margin-bottom:3px">
+              <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);flex-shrink:0">${h.date||'—'}</span>
+              <span style="font-size:10px;color:var(--cyan);flex-shrink:0">${h.tempo?'⏱'+h.tempo+'min':''}</span>
+              ${h.acerto!=null?`<div style="flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:${h.acerto}%;background:${h.acerto>=70?'var(--green)':h.acerto>=50?'var(--amber)':'var(--red)'};border-radius:2px"></div></div><span style="font-size:10px;font-weight:600;color:${h.acerto>=70?'var(--green)':h.acerto>=50?'var(--amber)':'var(--red)'}">${h.acerto}%</span>`:'<span style="flex:1"></span>'}
+              <button onclick="event.stopPropagation();editHistoricoSession(${mat.id},${i},${hi})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:10px;padding:1px 3px" title="Editar">✏️</button>
+              <button onclick="event.stopPropagation();deleteHistoricoSession(${mat.id},${i},${hi})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:10px;padding:1px 3px" title="Excluir">✕</button>
+            </div>`).join('')}
+        </div>
+        <button onclick="event.stopPropagation();toggleHistorico('${mat.id}_${i}')"
+          style="font-size:9px;color:var(--text-dim);background:none;border:none;cursor:pointer;padding:2px 0;margin-top:3px">
+          ▾ ${d_obj.historico.length} registros
+        </button>` : ''}
       </div>
       <div class="top-hover-btns">
+        <button class="top-hbtn" title="📖 Registrar estudo" onclick="event.stopPropagation();openRegistrarEstudo(${mat.id},${i})" style="color:var(--violet-light)">📖</button>
         <button class="top-hbtn" title="Estudado" onclick="event.stopPropagation();curSetStatus(${mat.id},${i},'estudado')">✓</button>
         <button class="top-hbtn" title="Andamento" onclick="event.stopPropagation();curSetStatus(${mat.id},${i},'andamento')">⟳</button>
         <button class="top-hbtn" title="Pendente" onclick="event.stopPropagation();curSetStatus(${mat.id},${i},'pendente')">○</button>
@@ -5430,7 +5549,12 @@ function buildEstudosPainelHTML() {
       <div class="estudos-card">
         <div class="estudos-card-header">
           <span class="estudos-card-title">📋 Semana Gurujá</span>
-          <span style="font-size:10px;color:var(--text-dim)" id="semana-label"></span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <button class="btn btn-ghost btn-sm" style="padding:2px 8px" onclick="semanaNav(-1)" title="Semana anterior">‹</button>
+            <span style="font-size:11px;color:var(--text-dim);min-width:90px;text-align:center" id="semana-label"></span>
+            <button class="btn btn-ghost btn-sm" style="padding:2px 8px" onclick="semanaNav(1)" title="Próxima semana">›</button>
+            <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:10px;color:var(--text-dim)" onclick="semanaNav(0)" title="Hoje">Hoje</button>
+          </div>
           <button class="btn btn-ghost btn-sm" onclick="openAtividadeModal()">+ Add</button>
         </div>
         <div class="estudos-card-body">
@@ -5461,6 +5585,17 @@ function buildEstudosPainelHTML() {
       <div class="estudos-card">
         <div class="estudos-card-header"><span class="estudos-card-title">⏰ Horas por disciplina</span></div>
         <div class="estudos-card-body" id="horas-disc-list"><p style="color:var(--text-dim);font-size:12px">Inicie sessões de estudo.</p></div>
+      </div>
+    </div>
+    <div style="grid-column:1/-1;margin-top:8px">
+      <div class="estudos-card">
+        <div class="estudos-card-header">
+          <span class="estudos-card-title">📚 Backlog Gurujá</span>
+          <button class="btn btn-primary btn-sm" onclick="openAddEstudoBacklog()">+ Gurujá</button>
+        </div>
+        <div class="estudos-card-body" id="estudos-backlog-list">
+          <p style="color:var(--text-dim);font-size:12px">Nenhum item. Clique em "+ Gurujá" para adicionar.</p>
+        </div>
       </div>
     </div>
   </div>`;
@@ -5508,6 +5643,7 @@ function buildCurriculoHTML() {
       <div id="cur-search-results" style="display:none;padding:12px 18px;border-bottom:1px solid var(--border-soft)"></div>
       <div class="topicos-area">
         <div class="topicos-grid-cur" id="cur-topicos-grid"></div>
+        <div id="cur-desempenho" style="padding:0 18px 16px"></div>
       </div>
     </div>
   </div>`;
@@ -5516,6 +5652,7 @@ function buildCurriculoHTML() {
 function renderEstudosPainel() {
   populateEstudosSelects();
   renderSemana();
+  renderEstudosBacklog();
   renderAtividades();
   renderDesempenho();
   renderHorasDisc();
@@ -5717,6 +5854,7 @@ function lsSave() {
   try {
     localStorage.setItem('painel_dados_v1', JSON.stringify({
       savedAt: new Date().toISOString(),
+      studyBacklog, nextStudyBlogId,
       backlog, nextBacklogId,
       tasks, nextTaskId,
       kanbanCols, nextColId,
@@ -5737,6 +5875,16 @@ function lsLoad() {
     var raw = localStorage.getItem('painel_dados_v1');
     if (!raw) return false;
     var d = JSON.parse(raw);
+    if (d.studyBacklog) {
+      studyBacklog = d.studyBacklog.map(function(x) {
+        // Migrate old items that don't have ID arrays
+        if (!x.sessaoIds) x.sessaoIds = [];
+        if (!x.questaoIds) x.questaoIds = [];
+        if (!x.revisaoIds) x.revisaoIds = [];
+        return x;
+      });
+      nextStudyBlogId = d.nextStudyBlogId || nextStudyBlogId;
+    }
     if (d.backlog)          { backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId; }
     if (d.tasks)            { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
     if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
@@ -6179,6 +6327,732 @@ function finToBacklog(id) {
 }
 
 
+
+// ══ REGISTRAR ESTUDO ══
+let regMatId = null;
+let regTopicoIdx = null;
+
+function openRegistrarEstudo(mid, idx) {
+  regMatId = mid;
+  regTopicoIdx = idx;
+  const mat = curriculo.find(m => m.id === mid);
+  if (!mat) return;
+  const nome = mat.topicos[idx] || '';
+  document.getElementById('reg-topico-nome').textContent = mat.nome + ' › ' + nome;
+  document.getElementById('reg-mat-id').value = mid;
+  document.getElementById('reg-topico-idx').value = idx;
+  document.getElementById('reg-data').value = new Date().toISOString().split('T')[0];
+  document.getElementById('reg-tempo').value = '';
+  document.getElementById('reg-acerto').value = '';
+  document.getElementById('reg-revisao').checked = false;
+
+  // Pre-fill with existing data
+  var existing = curTopicosData[mid + '_' + idx];
+  if (existing && typeof existing === 'object') {
+    if (existing.date) document.getElementById('reg-data').value = existing.date;
+    if (existing.tempo) document.getElementById('reg-tempo').value = existing.tempo;
+    if (existing.acerto != null) document.getElementById('reg-acerto').value = existing.acerto;
+  }
+  openModal('modal-registrar-estudo');
+}
+
+function saveRegistroEstudo() {
+  const mid = parseInt(document.getElementById('reg-mat-id').value);
+  const idx = parseInt(document.getElementById('reg-topico-idx').value);
+  const data = document.getElementById('reg-data').value;
+  const tempo = parseInt(document.getElementById('reg-tempo').value) || 0;
+  const acertoVal = document.getElementById('reg-acerto').value;
+  const acerto = acertoVal !== '' ? parseInt(acertoVal) : null;
+  const revisao = document.getElementById('reg-revisao').checked;
+
+  if (!data) { showToast('⚠️ Informe a data'); return; }
+
+  // Get or init historico
+  var existing = curTopicosData[mid + '_' + idx];
+  var historico = (existing && existing.historico) ? existing.historico : [];
+
+  // Add this session to historico
+  historico.push({ date: data, tempo, acerto });
+
+  // Update curTopicosData
+  curTopicosData[mid + '_' + idx] = { date: data, tempo, acerto, historico };
+
+  // Mark as estudado
+  curTopicosStatus[mid + '_' + idx] = 'estudado';
+
+  // Schedule revisao espaçada
+  if (revisao) {
+    const baseDate = new Date(data + 'T12:00:00');
+    [1, 7, 15, 30].forEach(function(days) {
+      const revDate = new Date(baseDate);
+      revDate.setDate(revDate.getDate() + days);
+      const mat = curriculo.find(m => m.id === mid);
+      const topicoNome = mat ? mat.topicos[idx] : 'Tópico';
+      const matNome = mat ? mat.nome : '';
+      revisoesPendentes.push({
+        id: nextRevId++,
+        matId: mid,
+        topicoIdx: idx,
+        nome: matNome + ' › ' + topicoNome,
+        dataRev: revDate.toISOString().split('T')[0],
+        dias: days,
+        concluida: false,
+      });
+    });
+    showToast('📖 Estudo registrado + 4 revisões agendadas!');
+  } else {
+    showToast('📖 Estudo registrado!');
+  }
+
+  // Also register as sessão (for the painel estudos view)
+  const mat2 = curriculo.find(m => m.id === mid);
+  if (mat2 && tempo > 0) {
+    sessoes.push({
+      id: nextSessaoId++,
+      disciplina: mat2.nome,
+      data: data,
+      inicio: new Date(data + 'T08:00:00').getTime(),
+      fim: new Date(data + 'T08:00:00').getTime() + tempo * 60000,
+      duracao: tempo * 60,
+      durMin: tempo,
+    });
+  }
+
+  lsSave();
+  scheduleSave();
+  closeModal('modal-registrar-estudo');
+  renderCurriculo();
+}
+
+// ══ DESEMPENHO POR TÓPICO ══
+function renderDesempenhoCurriculo() {
+  const mat = curriculo.find(m => m.id === curSelectedMatId);
+  const el = document.getElementById('cur-desempenho');
+  if (!el || !mat) return;
+
+  var rows = mat.topicos.map((t, i) => {
+    var d = curTopicosData[mat.id + '_' + i];
+    var status = curTopicosStatus[mat.id + '_' + i] || 'pendente';
+    if (!d || typeof d !== 'object') return null;
+    return { nome: t, status, date: d.date, tempo: d.tempo, acerto: d.acerto, historico: d.historico || [] };
+  }).filter(Boolean);
+
+  if (!rows.length) {
+    el.innerHTML = '<p style="color:var(--text-dim);font-size:12px">Nenhum tópico estudado ainda.</p>';
+    return;
+  }
+
+  el.innerHTML = rows.map(r => `
+    <div style="padding:8px 0;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="flex:1;font-size:12px;color:var(--text)">${escHtml(r.nome)}</span>
+      ${r.date ? `<span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-dim)">${r.date}</span>` : ''}
+      ${r.tempo ? `<span style="font-size:10px;color:var(--cyan)">⏱ ${r.tempo}min</span>` : ''}
+      ${r.acerto != null ? `<span style="font-size:10px;color:${r.acerto >= 70 ? 'var(--green)' : r.acerto >= 50 ? 'var(--amber)' : 'var(--red)'}">🎯 ${r.acerto}%</span>` : ''}
+      <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:${r.status==='estudado'?'rgba(16,185,129,0.15)':'rgba(245,158,11,0.15)'};color:${r.status==='estudado'?'var(--green)':'var(--amber)'}">${r.status}</span>
+    </div>`).join('');
+}
+
+
+
+// ══ BACKLOG DE ESTUDOS (GURUJÁ) ══
+
+function openAddEstudoBacklog() {
+  // Populate materias
+  const sel = document.getElementById('sbl-materia');
+  if (sel) {
+    sel.innerHTML = '<option value="">Selecione a matéria…</option>' +
+      curriculo.map(m => `<option value="${m.id}">${escHtml(m.nome)}</option>`).join('');
+  }
+  document.getElementById('sbl-topicos-check').innerHTML = '';
+  document.getElementById('sbl-tempo').value = '60';
+  document.getElementById('sbl-questoes').value = '';
+  openModal('modal-estudo-backlog');
+}
+
+function sblLoadTopicos() {
+  const matId = parseInt(document.getElementById('sbl-materia').value);
+  const mat = curriculo.find(m => m.id === matId);
+  const el = document.getElementById('sbl-topicos-check');
+  if (!el) return;
+  if (!mat) { el.innerHTML = ''; return; }
+  el.innerHTML = mat.topicos.map((t, i) => {
+    const status = curTopicosStatus[mat.id + '_' + i] || 'pendente';
+    const statusColor = status === 'estudado' ? 'var(--green)' : status === 'andamento' ? 'var(--amber)' : 'var(--text-dim)';
+    return `<label style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;cursor:pointer;border-bottom:1px solid var(--border-soft)">
+      <input type="checkbox" value="${i}" style="accent-color:var(--violet);margin-top:2px;flex-shrink:0">
+      <span style="flex:1;font-size:12px;color:var(--text)">${escHtml(t)}</span>
+      <span style="font-size:9px;color:${statusColor}">${status}</span>
+    </label>`;
+  }).join('');
+}
+
+function saveEstudoBacklog() {
+  const matId = parseInt(document.getElementById('sbl-materia').value);
+  const mat = curriculo.find(m => m.id === matId);
+  if (!mat) { showToast('⚠️ Selecione a matéria'); return; }
+
+  const checks = document.querySelectorAll('#sbl-topicos-check input[type=checkbox]:checked');
+  const topicosIdx = Array.from(checks).map(c => parseInt(c.value));
+  const topicosNomes = topicosIdx.map(i => mat.topicos[i]);
+  if (!topicosNomes.length) { showToast('⚠️ Selecione pelo menos um tópico'); return; }
+
+  const tempo = parseInt(document.getElementById('sbl-tempo').value) || 60;
+  const questoes = parseInt(document.getElementById('sbl-questoes').value) || 0;
+
+  studyBacklog.push({
+    id: nextStudyBlogId++,
+    matId, materia: mat.nome,
+    topicosIdx, topicos: topicosNomes,
+    tempo, questoes,
+    status: 'backlog', // backlog | planejado | concluido
+    atividadeId: null,
+    criadoEm: new Date().toISOString(),
+  });
+
+  lsSave();
+  scheduleSave();
+  closeModal('modal-estudo-backlog');
+  renderEstudosBacklog();
+  showToast('✅ Adicionado ao backlog de estudos');
+}
+
+function planejarEstudo(id) {
+  const item = studyBacklog.find(x => x.id === id);
+  if (!item) return;
+  // Open planejar modal
+  document.getElementById('plan-study-id').value = id;
+  document.getElementById('plan-desc').value = item.materia + ' — ' + item.topicos.join(', ');
+  document.getElementById('plan-disciplina').value = item.materia;
+  document.getElementById('plan-tempo').value = item.tempo;
+  document.getElementById('plan-questoes').value = item.questoes || '';
+  // Default to next occurrence of the item's stored dia, or today
+  var today = new Date();
+  var nextDate = new Date(today);
+  document.getElementById('plan-data').value = nextDate.toISOString().split('T')[0];
+  openModal('modal-planejar-estudo');
+}
+
+function savePlanejamento() {
+  const id = parseInt(document.getElementById('plan-study-id').value);
+  const item = studyBacklog.find(x => x.id === id);
+  if (!item) return;
+
+  const dataPlano = document.getElementById('plan-data').value;
+  if (!dataPlano) { showToast('⚠️ Selecione a data'); return; }
+  const tempo = parseInt(document.getElementById('plan-tempo').value) || 60;
+  const questoes = parseInt(document.getElementById('plan-questoes').value) || 0;
+  const dow = new Date(dataPlano + 'T12:00:00').getDay();
+  const dia = dow === 0 ? 6 : dow - 1; // 0=Seg
+
+  // Create atividade in Semana Gurujá
+  const atividadeId = nextAtivId++;
+  atividades.push({
+    id: atividadeId,
+    desc: item.materia + ' — ' + item.topicos.join(', '),
+    disciplina: item.materia,
+    tipo: questoes > 0 ? 'questoes' : 'leitura',
+    dia, data: dataPlano, tempo,
+    questoesMeta: questoes,
+    done: false,
+    studyBacklogId: id,
+  });
+
+  // Update backlog item
+  item.status = 'planejado';
+  item.atividadeId = atividadeId;
+  item.dia = dia;
+  item.dataPlano = dataPlano;
+
+  lsSave();
+  scheduleSave();
+  closeModal('modal-planejar-estudo');
+  selectedDia = dia;
+  renderEstudosBacklog();
+  renderSemana();
+  renderAtividades();
+  const [y,m,d] = dataPlano.split('-');
+  showToast('📅 Planejado para ' + d + '/' + m + '/' + y);
+}
+
+function concluirEstudo(id) {
+  const item = studyBacklog.find(x => x.id === id);
+  if (!item) return;
+  document.getElementById('conc-study-id').value = id;
+  document.getElementById('conc-desc').value = item.materia + ' — ' + item.topicos.join(', ');
+  document.getElementById('conc-tempo').value = item.tempo || '';
+  document.getElementById('conc-questoes-feitas').value = '';
+  document.getElementById('conc-acerto').value = '';
+  document.getElementById('conc-revisao').checked = false;
+  document.getElementById('conc-data').value = new Date().toISOString().split('T')[0];
+  openModal('modal-concluir-estudo');
+}
+
+function saveConclusao() {
+  const id = parseInt(document.getElementById('conc-study-id').value);
+  const item = studyBacklog.find(x => x.id === id);
+  if (!item) return;
+
+  const tempo = parseInt(document.getElementById('conc-tempo').value) || 0;
+  const questFeitas = parseInt(document.getElementById('conc-questoes-feitas').value) || 0;
+  const questCertas = parseInt(document.getElementById('conc-questoes-certas')?.value) || 0;
+  const acerto = document.getElementById('conc-acerto').value;
+  const revisao = document.getElementById('conc-revisao').checked;
+  const data = document.getElementById('conc-data').value;
+
+  // Update backlog item
+  item.status = 'concluido';
+  item.tempoConcluido = tempo;
+  item.questoesConcluidas = questFeitas;
+  item.acerto = acerto !== '' ? parseInt(acerto) : null;
+  item.concluidoEm = data;
+
+  // Mark topicos as estudado + register study data
+  const mat = curriculo.find(m => m.id === item.matId);
+  if (mat) {
+    item.topicosIdx.forEach(function(idx) {
+      curTopicosStatus[item.matId + '_' + idx] = 'estudado';
+      var hist = curTopicosData[item.matId + '_' + idx];
+      var historico = (hist && hist.historico) ? hist.historico : [];
+      historico.push({ date: data, tempo: Math.round(tempo / (item.topicosIdx.length || 1)), acerto: item.acerto });
+      curTopicosData[item.matId + '_' + idx] = {
+        date: data,
+        tempo: Math.round(tempo / (item.topicosIdx.length || 1)),
+        acerto: item.acerto,
+        historico,
+      };
+    });
+  }
+
+  // Mark atividade as done
+  if (item.atividadeId) {
+    const atv = atividades.find(a => a.id === item.atividadeId);
+    if (atv) atv.done = true;
+  }
+
+  // Register sessão — store ID for undo
+  var sessaoId = null;
+  if (tempo > 0) {
+    sessaoId = nextSessaoId++;
+    sessoes.push({
+      id: sessaoId,
+      disciplina: item.materia,
+      data: data,
+      inicio: new Date(data + 'T08:00:00').getTime(),
+      fim: new Date(data + 'T08:00:00').getTime() + tempo * 60000,
+      duracao: tempo * 60,
+      durMin: tempo,
+    });
+  }
+
+  // Schedule revisao espaçada — store IDs for undo
+  var revisaoIds = [];
+  if (revisao) {
+    const baseDate = new Date(data + 'T12:00:00');
+    [1, 7, 15, 30].forEach(function(days) {
+      const revDate = new Date(baseDate);
+      revDate.setDate(revDate.getDate() + days);
+      var rid = nextRevId++;
+      revisaoIds.push(rid);
+      revisoesPendentes.push({
+        id: rid,
+        matId: item.matId,
+        nome: item.materia + ' — ' + item.topicos.join(', '),
+        dataRev: revDate.toISOString().split('T')[0],
+        dias: days,
+        concluida: false,
+      });
+    });
+  }
+
+  // Register questões — store ID for undo
+  var questaoId = null;
+  if (questFeitas > 0 && acerto !== '') {
+    questaoId = nextQId++;
+    questaoSessoes.push({
+      id: questaoId,
+      disciplina: item.materia,
+      total: questFeitas,
+      acertos: questCertas || Math.round(questFeitas * parseInt(acerto) / 100),
+      acerto: parseInt(acerto),
+      fonte: 'Gurujá',
+      tema: item.topicos.join(', '),
+      data,
+    });
+  }
+
+  // Store IDs for clean undo
+  item.sessaoIds = sessaoId ? [sessaoId] : [];
+  item.questaoIds = questaoId ? [questaoId] : [];
+  item.revisaoIds = revisaoIds;
+
+  lsSave();
+  scheduleSave();
+  closeModal('modal-concluir-estudo');
+  renderEstudosBacklog();
+  renderAtividades();
+  renderDesempenho();
+  renderRevisoes();
+  renderHorasDisc();
+  renderSessoes();
+  renderCurriculo();
+  showToast('✅ Estudo concluído!' + (revisao ? ' Revisões agendadas.' : ''));
+}
+
+function deleteEstudoBacklog(id) {
+  if (!confirm('Remover este item do backlog?')) return;
+  // Also remove linked atividade
+  const item = studyBacklog.find(x => x.id === id);
+  if (item && item.atividadeId) {
+    atividades = atividades.filter(a => a.id !== item.atividadeId);
+  }
+  studyBacklog = studyBacklog.filter(x => x.id !== id);
+  lsSave();
+  scheduleSave();
+  renderEstudosBacklog();
+  showToast('🗑️ Removido');
+}
+
+function renderEstudosBacklog() {
+  const el = document.getElementById('estudos-backlog-list');
+  if (!el) return;
+
+  const backlog = studyBacklog.filter(x => x.status === 'backlog');
+  const planejados = studyBacklog.filter(x => x.status === 'planejado');
+  const concluidos = studyBacklog.filter(x => x.status === 'concluido').slice(-5);
+
+  const diasNomes = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+
+  function renderItem(item) {
+    const statusColor = item.status === 'concluido' ? 'var(--green)' : item.status === 'planejado' ? 'var(--amber)' : 'var(--violet-light)';
+    const statusLabel = item.status === 'concluido'
+      ? ('✓ ' + (item.concluidoEm ? item.concluidoEm.split('-').reverse().slice(0,2).join('/') : 'Concluído'))
+      : item.status === 'planejado'
+        ? ('📅 ' + (item.dataPlano ? item.dataPlano.split('-').reverse().slice(0,2).join('/') : diasNomes[item.dia||0]))
+        : '● Backlog';
+    return `<div style="padding:10px 14px;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--border-soft);margin-bottom:8px">
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${escHtml(item.materia)}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${item.topicos.map(t => escHtml(t)).join(' · ')}</div>
+        </div>
+        <span style="font-size:10px;padding:2px 7px;border-radius:10px;background:rgba(0,0,0,0.2);color:${statusColor};white-space:nowrap;flex-shrink:0">${statusLabel}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--text-dim)">⏱ ${item.tempo}min</span>
+        ${item.questoes ? `<span style="font-size:10px;color:var(--text-dim)">📝 ${item.questoes} questões</span>` : ''}
+        ${item.acerto != null ? `<span style="font-size:10px;color:var(--green)">🎯 ${item.acerto}%</span>` : ''}
+        <div style="margin-left:auto;display:flex;gap:4px">
+          ${item.status === 'backlog' ? `<button class="btn btn-primary btn-sm" onclick="planejarEstudo(${item.id})">📅 Planejar</button>` : ''}
+          ${item.status === 'planejado' ? `<button class="btn btn-primary btn-sm" onclick="concluirEstudo(${item.id})">✓ Concluir</button>` : ''}
+          ${item.status === 'concluido' ? `
+            <button class="btn btn-ghost btn-sm" onclick="reabrirEstudo(${item.id})" title="Reabrir">↩ Reabrir</button>
+            <button class="btn btn-ghost btn-sm" onclick="editarConclusao(${item.id})" title="Editar">✏️</button>
+          ` : ''}
+          <button class="btn btn-ghost btn-sm" onclick="deleteEstudoBacklog(${item.id})" style="color:var(--red)">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  let html = '';
+  if (backlog.length) {
+    html += `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);margin-bottom:6px">● Backlog (${backlog.length})</div>`;
+    html += backlog.map(renderItem).join('');
+  }
+  if (planejados.length) {
+    html += `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);margin:10px 0 6px">📅 Planejados (${planejados.length})</div>`;
+    html += planejados.map(renderItem).join('');
+  }
+  if (concluidos.length) {
+    html += `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);margin:10px 0 6px">✓ Recentes</div>`;
+    html += concluidos.map(renderItem).join('');
+  }
+  if (!html) {
+    html = '<p style="color:var(--text-dim);font-size:12px">Nenhum item no backlog. Clique em "+ Gurujá" para adicionar.</p>';
+  }
+  el.innerHTML = html;
+}
+
+
+
+function calcAcerto() {
+  var resolvidas = parseInt(document.getElementById('conc-questoes-feitas').value) || 0;
+  var certas = parseInt(document.getElementById('conc-questoes-certas').value) || 0;
+  var acertoEl = document.getElementById('conc-acerto');
+  if (resolvidas > 0 && acertoEl) {
+    var pct = Math.round((certas / resolvidas) * 100);
+    acertoEl.value = Math.min(100, pct);
+  } else if (acertoEl) {
+    acertoEl.value = '';
+  }
+}
+
+
+function reabrirEstudo(id) {
+  var item = studyBacklog.find(x => x.id === id);
+  if (!item) return;
+  if (!confirm('Reabrir este estudo? O registro de conclusão, sessão e questões serão removidos.')) return;
+
+  // 1. Revert status
+  item.status = item.atividadeId ? 'planejado' : 'backlog';
+
+  // 2. Remove sessoes — by ID first, then fallback to date+disciplina
+  if (item.sessaoIds && item.sessaoIds.length) {
+    sessoes = sessoes.filter(function(s) { return item.sessaoIds.indexOf(s.id) === -1; });
+  }
+  // Also remove by date regardless (catches both old and new format)
+  if (item.concluidoEm) {
+    sessoes = sessoes.filter(function(s) {
+      return !(s.disciplina === item.materia && s.data === item.concluidoEm);
+    });
+  }
+
+  // 3. Remove questaoSessoes — by ID first, then fallback
+  if (item.questaoIds && item.questaoIds.length) {
+    questaoSessoes = questaoSessoes.filter(function(q) { return item.questaoIds.indexOf(q.id) === -1; });
+  }
+  // Also remove by date+disciplina+fonte regardless
+  if (item.concluidoEm) {
+    questaoSessoes = questaoSessoes.filter(function(q) {
+      return !(q.disciplina === item.materia && q.data === item.concluidoEm);
+    });
+  }
+
+  // 4. Remove revisoes pendentes from this study
+  revisoesPendentes = revisoesPendentes.filter(function(r) {
+    if (item.revisaoIds && item.revisaoIds.length) {
+      return item.revisaoIds.indexOf(r.id) === -1;
+    }
+    return !(!r.concluida && (r.matId === item.matId ||
+      (r.nome && r.nome.includes(item.materia))));
+  });
+
+  // 5. Undo topico status and data
+  var mat = curriculo.find(function(m) { return m.id === item.matId; });
+  if (mat) {
+    item.topicosIdx.forEach(function(ti) {
+      curTopicosStatus[item.matId + '_' + ti] = 'andamento';
+      delete curTopicosData[item.matId + '_' + ti];
+    });
+  }
+
+  // 6. Revert atividade done status
+  if (item.atividadeId) {
+    var atv = atividades.find(function(a) { return a.id === item.atividadeId; });
+    if (atv) atv.done = false;
+  }
+
+  // 7. Clear conclusion data
+  item.tempoConcluido = null;
+  item.questoesConcluidas = null;
+  item.acerto = null;
+  item.concluidoEm = null;
+  item.sessaoIds = [];
+  item.questaoIds = [];
+  item.revisaoIds = [];
+
+  lsSave();
+  scheduleSave();
+  renderEstudosBacklog();
+  renderAtividades();
+  renderDesempenho();
+  renderRevisoes();
+  renderHorasDisc();
+  renderSessoes();
+  renderCurriculo();
+  showToast('↩ Estudo reaberto');
+}
+
+function editarConclusao(id) {
+  var item = studyBacklog.find(x => x.id === id);
+  if (!item) return;
+  document.getElementById('conc-study-id').value = id;
+  document.getElementById('conc-desc').value = item.materia + ' — ' + item.topicos.join(', ');
+  document.getElementById('conc-tempo').value = item.tempoConcluido || '';
+  document.getElementById('conc-questoes-feitas').value = item.questoesConcluidas || '';
+  document.getElementById('conc-questoes-certas').value = '';
+  document.getElementById('conc-acerto').value = item.acerto != null ? item.acerto : '';
+  document.getElementById('conc-revisao').checked = false;
+  document.getElementById('conc-data').value = item.concluidoEm || new Date().toISOString().split('T')[0];
+  openModal('modal-concluir-estudo');
+}
+
+
+
+function calcAcertoReg() {
+  var total = parseInt(document.getElementById('reg-questoes-total')?.value) || 0;
+  var certas = parseInt(document.getElementById('reg-questoes-certas')?.value) || 0;
+  var el = document.getElementById('reg-acerto');
+  if (total > 0 && el) el.value = Math.min(100, Math.round((certas/total)*100));
+  else if (el) el.value = '';
+}
+
+
+function calcAcertoQ() {
+  var total = parseInt(document.getElementById('q-total')?.value) || 0;
+  var certas = parseInt(document.getElementById('q-acertos')?.value) || 0;
+  // Store percentage for display (saveQuestao will calculate)
+}
+
+function openEditQuestao(id) {
+  var q = questaoSessoes.find(x => x.id === id);
+  if (!q) return;
+  document.getElementById('q-edit-id').value = id;
+  document.getElementById('q-disciplina').value = q.disciplina;
+  document.getElementById('q-total').value = q.total;
+  document.getElementById('q-acertos').value = q.acertos;
+  document.getElementById('q-fonte').value = q.fonte || '';
+  document.getElementById('q-tema').value = q.tema || '';
+  document.getElementById('q-revisao').value = '0';
+  document.getElementById('q-delete-btn').style.display = 'inline-flex';
+  openModal('modal-questao');
+}
+
+function deleteQuestaoSessao() {
+  var id = parseInt(document.getElementById('q-edit-id').value);
+  if (!id || !confirm('Excluir este registro?')) return;
+  questaoSessoes = questaoSessoes.filter(q => q.id !== id);
+  lsSave();
+  scheduleSave();
+  closeModal('modal-questao');
+  renderDesempenho();
+  showToast('🗑️ Registro excluído');
+}
+
+
+
+// ══ SESSÕES — EDITAR / EXCLUIR ══
+function editSessao(id) {
+  const s = sessoes.find(x => x.id === id);
+  if (!s) return;
+  const mins = s.durMin != null ? s.durMin : (s.duracao ? Math.round(s.duracao/60) : 0);
+  const dateStr = s.data || (s.inicio ? new Date(s.inicio).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]);
+  document.getElementById('sess-edit-id').value = id;
+  const sessDiscEl = document.getElementById('sess-disc');
+  if (sessDiscEl) {
+    sessDiscEl.innerHTML = DISCIPLINAS.map(d => `<option value="${escHtml(d)}"${d===s.disciplina?' selected':''}>${escHtml(d)}</option>`).join('');
+  }
+  document.getElementById('sess-data').value = dateStr;
+  document.getElementById('sess-mins').value = mins;
+  openModal('modal-sessao-edit');
+}
+
+function saveSessaoEdit() {
+  const id = parseInt(document.getElementById('sess-edit-id').value);
+  const s = sessoes.find(x => x.id === id);
+  if (!s) return;
+  s.disciplina = document.getElementById('sess-disc').value;
+  s.data = document.getElementById('sess-data').value;
+  s.durMin = parseInt(document.getElementById('sess-mins').value) || 0;
+  s.duracao = s.durMin * 60;
+  lsSave();
+  scheduleSave();
+  closeModal('modal-sessao-edit');
+  renderSessoes();
+  renderHorasDisc();
+  showToast('✏️ Sessão atualizada');
+}
+
+function deleteSessao(id) {
+  if (!confirm('Excluir esta sessão?')) return;
+  sessoes = sessoes.filter(x => x.id !== id);
+  lsSave();
+  scheduleSave();
+  renderSessoes();
+  renderHorasDisc();
+  updateMetaRing();
+  showToast('🗑️ Sessão excluída');
+}
+
+
+
+function toggleDesemp(disc) {
+  var id = 'desemp-detail-' + disc.replace(/[^a-zA-Z0-9]/g, '_');
+  var el = document.getElementById(id);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function deleteQuestaoById(id) {
+  if (!confirm('Excluir este registro de questões?')) return;
+  questaoSessoes = questaoSessoes.filter(function(q) { return q.id !== id; });
+  lsSave();
+  scheduleSave();
+  renderDesempenho();
+  showToast('🗑️ Registro excluído');
+}
+
+
+
+// ══ HISTÓRICO DE ESTUDOS POR TÓPICO ══
+function toggleHistorico(key) {
+  var el = document.getElementById('top-hist-' + key);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function editHistoricoSession(mid, topicoIdx, histIdx) {
+  var d = curTopicosData[mid + '_' + topicoIdx];
+  if (!d || !d.historico || !d.historico[histIdx]) return;
+  var h = d.historico[histIdx];
+  document.getElementById('hist-mat-id').value = mid;
+  document.getElementById('hist-topico-idx').value = topicoIdx;
+  document.getElementById('hist-hist-idx').value = histIdx;
+  document.getElementById('hist-data').value = h.date || '';
+  document.getElementById('hist-tempo').value = h.tempo || '';
+  document.getElementById('hist-acerto-total').value = '';
+  document.getElementById('hist-acerto-certas').value = '';
+  document.getElementById('hist-acerto-pct').value = h.acerto != null ? h.acerto : '';
+  openModal('modal-hist-edit');
+}
+
+function calcAcertoHist() {
+  var total = parseInt(document.getElementById('hist-acerto-total').value) || 0;
+  var certas = parseInt(document.getElementById('hist-acerto-certas').value) || 0;
+  var el = document.getElementById('hist-acerto-pct');
+  if (total > 0 && el) el.value = Math.min(100, Math.round((certas/total)*100));
+}
+
+function saveHistoricoEdit() {
+  var mid = parseInt(document.getElementById('hist-mat-id').value);
+  var ti = parseInt(document.getElementById('hist-topico-idx').value);
+  var hi = parseInt(document.getElementById('hist-hist-idx').value);
+  var d = curTopicosData[mid + '_' + ti];
+  if (!d || !d.historico || !d.historico[hi]) return;
+  d.historico[hi].date = document.getElementById('hist-data').value;
+  d.historico[hi].tempo = parseInt(document.getElementById('hist-tempo').value) || 0;
+  var pct = document.getElementById('hist-acerto-pct').value;
+  d.historico[hi].acerto = pct !== '' ? parseInt(pct) : null;
+  // Update main record to last session data
+  d.date = d.historico[d.historico.length-1].date;
+  d.tempo = d.historico[d.historico.length-1].tempo;
+  d.acerto = d.historico[d.historico.length-1].acerto;
+  lsSave();
+  scheduleSave();
+  closeModal('modal-hist-edit');
+  renderCurriculo();
+  showToast('✏️ Registro atualizado');
+}
+
+function deleteHistoricoSession(mid, topicoIdx, histIdx) {
+  if (!confirm('Excluir este registro de estudo?')) return;
+  var d = curTopicosData[mid + '_' + topicoIdx];
+  if (!d || !d.historico) return;
+  d.historico.splice(histIdx, 1);
+  if (d.historico.length === 0) {
+    // No more sessions — revert to pending
+    delete curTopicosData[mid + '_' + topicoIdx];
+    curTopicosStatus[mid + '_' + topicoIdx] = 'pendente';
+  } else {
+    // Update main record to last session
+    var last = d.historico[d.historico.length-1];
+    d.date = last.date; d.tempo = last.tempo; d.acerto = last.acerto;
+  }
+  lsSave();
+  scheduleSave();
+  renderCurriculo();
+  showToast('🗑️ Registro excluído');
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
   lsLoad();
   pwaInit();
@@ -6365,8 +7239,8 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="modal-body">
       <div class="form-row"><label>Disciplina</label><select class="form-select" id="q-disciplina"></select></div>
       <div class="form-grid">
-        <div class="form-row"><label>Total</label><input class="form-input" id="q-total" type="number" min="1" value="10"></div>
-        <div class="form-row"><label>Acertos</label><input class="form-input" id="q-acertos" type="number" min="0" value="7"></div>
+        <div class="form-row"><label>Total</label><input class="form-input" id="q-total" type="number" min="1" value="10" oninput="calcAcertoQ()"></div>
+        <div class="form-row"><label>Questões certas</label><input class="form-input" id="q-acertos" type="number" min="0" value="7" oninput="calcAcertoQ()"></div>
       </div>
       <div class="form-row"><label>Fonte</label><input class="form-input" id="q-fonte" placeholder="TEC, prova 2023…"></div>
       <div class="form-row"><label>Revisão?</label><select class="form-select" id="q-revisao"><option value="1">Sim</option><option value="0">Não</option></select></div>
@@ -6374,6 +7248,8 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-questao')">Cancelar</button>
+      <input type="hidden" id="q-edit-id" value="">
+      <button class="btn btn-ghost btn-sm" id="q-delete-btn" style="margin-right:auto;display:none;color:var(--red)" onclick="deleteQuestaoSessao()">🗑️ Excluir</button>
       <button class="btn btn-primary" onclick="saveQuestao()">Registrar</button>
     </div>
   </div>
@@ -6530,6 +7406,216 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
     <div class="modal-footer">
       <button class="btn btn-primary" onclick="closeModal('modal-manage-lists');renderLists()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ MODAL — REGISTRAR ESTUDO ══ -->
+<div class="modal-overlay" id="modal-registrar-estudo">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <span class="modal-title">📖 Registrar Estudo</span>
+      <button class="modal-close" onclick="closeModal('modal-registrar-estudo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px" id="reg-topico-nome"></div>
+      <input type="hidden" id="reg-mat-id">
+      <input type="hidden" id="reg-topico-idx">
+      <div class="form-grid">
+        <div class="form-row">
+          <label>📅 Data</label>
+          <input class="form-input" id="reg-data" type="date">
+        </div>
+        <div class="form-row">
+          <label>⏱ Tempo estudado (min)</label>
+          <input class="form-input" id="reg-tempo" type="number" min="1" max="480" placeholder="60">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>📝 Questões resolvidas</label><input class="form-input" id="reg-questoes-total" type="number" min="0" placeholder="0" oninput="calcAcertoReg()"></div>
+        <div class="form-row"><label>✅ Questões certas</label><input class="form-input" id="reg-questoes-certas" type="number" min="0" placeholder="0" oninput="calcAcertoReg()"></div>
+      </div>
+      <div class="form-row">
+        <label>🎯 Acerto (%)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input class="form-input" id="reg-acerto" type="number" min="0" max="100" placeholder="—" style="flex:1;background:var(--card)" readonly>
+          <span style="font-size:11px;color:var(--text-dim)">calculado automaticamente</span>
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:0">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:400">
+          <input type="checkbox" id="reg-revisao" style="accent-color:var(--violet);width:16px;height:16px">
+          <div>
+            <span style="font-size:13px;color:var(--text)">Agendar revisão espaçada</span>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:1px">Revisões em 1, 7, 15 e 30 dias</div>
+          </div>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-registrar-estudo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveRegistroEstudo()">✓ Registrar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ MODAL — BACKLOG ESTUDO (GURUJÁ) ══ -->
+<div class="modal-overlay" id="modal-estudo-backlog">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <span class="modal-title">📚 Novo estudo — Gurujá</span>
+      <button class="modal-close" onclick="closeModal('modal-estudo-backlog')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label>Matéria</label>
+        <select class="form-select" id="sbl-materia" onchange="sblLoadTopicos()">
+          <option value="">Selecione…</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Tópicos a estudar</label>
+        <div id="sbl-topicos-check" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;background:var(--surface)">
+          <p style="color:var(--text-dim);font-size:12px">Selecione uma matéria primeiro</p>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>⏱ Tempo estimado (min)</label><input class="form-input" id="sbl-tempo" type="number" min="15" step="15" value="60"></div>
+        <div class="form-row"><label>📝 Meta de questões</label><input class="form-input" id="sbl-questoes" type="number" min="0" placeholder="0 = sem questões"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-estudo-backlog')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEstudoBacklog()">Adicionar ao Backlog</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL — PLANEJAR ESTUDO ══ -->
+<div class="modal-overlay" id="modal-planejar-estudo">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <span class="modal-title">📅 Planejar estudo</span>
+      <button class="modal-close" onclick="closeModal('modal-planejar-estudo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="plan-study-id">
+      <div style="font-size:12px;color:var(--text-muted);padding:8px 12px;background:var(--card);border-radius:var(--radius-sm);margin-bottom:14px" id="plan-desc"></div>
+      <div class="form-row"><label>Disciplina (edite se necessário)</label><input class="form-input" id="plan-disciplina"></div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>📅 Data</label>
+          <input class="form-input" id="plan-data" type="date">
+        </div>
+        <div class="form-row"><label>⏱ Tempo (min)</label><input class="form-input" id="plan-tempo" type="number" min="15" step="15"></div>
+      </div>
+      <div class="form-row" style="margin-bottom:0"><label>📝 Questões meta</label><input class="form-input" id="plan-questoes" type="number" min="0"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-planejar-estudo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePlanejamento()">📅 Planejar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL — CONCLUIR ESTUDO ══ -->
+<div class="modal-overlay" id="modal-concluir-estudo">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <span class="modal-title">✅ Concluir estudo</span>
+      <button class="modal-close" onclick="closeModal('modal-concluir-estudo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="conc-study-id">
+      <div style="font-size:12px;color:var(--text-muted);padding:8px 12px;background:var(--card);border-radius:var(--radius-sm);margin-bottom:14px" id="conc-desc"></div>
+      <div class="form-grid">
+        <div class="form-row"><label>📅 Data</label><input class="form-input" id="conc-data" type="date"></div>
+        <div class="form-row"><label>⏱ Tempo real (min)</label><input class="form-input" id="conc-tempo" type="number" min="1"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>📝 Questões resolvidas</label><input class="form-input" id="conc-questoes-feitas" type="number" min="0" placeholder="0" oninput="calcAcerto()"></div>
+        <div class="form-row"><label>✅ Questões certas</label><input class="form-input" id="conc-questoes-certas" type="number" min="0" placeholder="0" oninput="calcAcerto()"></div>
+      </div>
+      <div class="form-row">
+        <label>🎯 Acerto (%)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input class="form-input" id="conc-acerto" type="number" min="0" max="100" placeholder="—" style="flex:1;background:var(--card)" readonly>
+          <span style="font-size:11px;color:var(--text-dim)">calculado automaticamente</span>
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:0">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:400">
+          <input type="checkbox" id="conc-revisao" style="accent-color:var(--violet);width:16px;height:16px">
+          <div>
+            <span style="font-size:13px;color:var(--text)">Agendar revisão espaçada</span>
+            <div style="font-size:11px;color:var(--text-dim)">Revisões em 1, 7, 15 e 30 dias</div>
+          </div>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-concluir-estudo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveConclusao()">✅ Concluir</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ MODAL — EDITAR SESSÃO ══ -->
+<div class="modal-overlay" id="modal-sessao-edit">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header">
+      <span class="modal-title">✏️ Editar Sessão</span>
+      <button class="modal-close" onclick="closeModal('modal-sessao-edit')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="sess-edit-id">
+      <div class="form-row">
+        <label>Disciplina</label>
+        <select class="form-select" id="sess-disc"></select>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>📅 Data</label><input class="form-input" id="sess-data" type="date"></div>
+        <div class="form-row"><label>⏱ Tempo (min)</label><input class="form-input" id="sess-mins" type="number" min="1"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-sessao-edit')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveSessaoEdit()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ MODAL — EDITAR REGISTRO DE ESTUDO ══ -->
+<div class="modal-overlay" id="modal-hist-edit">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <span class="modal-title">✏️ Editar Registro de Estudo</span>
+      <button class="modal-close" onclick="closeModal('modal-hist-edit')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="hist-mat-id">
+      <input type="hidden" id="hist-topico-idx">
+      <input type="hidden" id="hist-hist-idx">
+      <div class="form-grid">
+        <div class="form-row"><label>📅 Data</label><input class="form-input" id="hist-data" type="date"></div>
+        <div class="form-row"><label>⏱ Tempo (min)</label><input class="form-input" id="hist-tempo" type="number" min="1"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>📝 Resolvidas</label><input class="form-input" id="hist-acerto-total" type="number" min="0" placeholder="0" oninput="calcAcertoHist()"></div>
+        <div class="form-row"><label>✅ Certas</label><input class="form-input" id="hist-acerto-certas" type="number" min="0" placeholder="0" oninput="calcAcertoHist()"></div>
+      </div>
+      <div class="form-row" style="margin-bottom:0">
+        <label>🎯 Acerto (%)</label>
+        <input class="form-input" id="hist-acerto-pct" type="number" min="0" max="100" style="background:var(--card)" placeholder="— calculado auto">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-hist-edit')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveHistoricoEdit()">Salvar</button>
     </div>
   </div>
 </div>
