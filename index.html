@@ -5916,6 +5916,7 @@ async function cloudSave() {
       sessoes, nextSessaoId,
       questaoSessoes, nextQId,
       revisoesPendentes, nextRevId,
+      studyBacklog, nextStudyBlogId,
     });
 
     await fetch('https://api.jsonbin.io/v3/b/' + cloudBinId, {
@@ -5978,10 +5979,12 @@ async function cloudLoad() {
     if (d.sessoes)          { sessoes = d.sessoes; nextSessaoId = d.nextSessaoId || nextSessaoId; }
     if (d.questaoSessoes)   { questaoSessoes = d.questaoSessoes; nextQId = d.nextQId || nextQId; }
     if (d.revisoesPendentes){ revisoesPendentes = d.revisoesPendentes; nextRevId = d.nextRevId || nextRevId; }
+    if (d.studyBacklog)    { studyBacklog = d.studyBacklog; nextStudyBlogId = d.nextStudyBlogId || nextStudyBlogId; }
 
     lsSave();
     renderBacklog();
     renderCalendar();
+    if (typeof renderEstudosPainel === 'function') renderEstudosPainel();
     cloudSetBtn('ok', '✓ Nuvem');
     showToast('☁️ Dados carregados da nuvem');
   } catch(err) {
