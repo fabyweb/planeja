@@ -407,7 +407,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .timer-running{animation:timerPulse 2s ease-in-out infinite}
 @keyframes timerPulse{0%,100%{opacity:1}50%{opacity:0.7}}
 
-/* Semana Gurujá */
+/* Semana de Estudos */
 .semana-dias{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px}
 .dia-pill{padding:4px;border-radius:var(--radius-xs);text-align:center;cursor:pointer;border:1px solid var(--border-soft);transition:all 0.12s;font-size:10px;font-weight:700;color:var(--text-muted)}
 .dia-pill:hover{border-color:var(--violet);color:var(--violet-light)}
@@ -3818,17 +3818,17 @@ let semanaWeekOffset = 0; // 0=current week, 1=next, -1=prevSeg..6=Dom
 let editAtivId = null;
 
 // Timer state
-let timerInterval = null;
-let timerSeconds = 0;
-let timerRunning = false;
-let timerDisciplina = '';
-let timerStartTime = null;
+
+
+
+
+
 
 // ── Populate selects ──
 function populateEstudosSelects() {
   // Merge DISCIPLINAS with curriculo matérias
   const allDisc = [...new Set([...DISCIPLINAS, ...curriculo.map(m=>m.nome)])];
-  ['ativ-disciplina','q-disciplina','timer-disciplina'].forEach(id => {
+  ['ativ-disciplina','q-disciplina','__removed__'].forEach(id => {
     const sel = document.getElementById(id);
     if (!sel) return;
     const cur = sel.value;
@@ -4059,74 +4059,15 @@ function deleteAtividade() {
 }
 
 // ── Timer ──
-function timerStart() {
-  const disc = document.getElementById('timer-disciplina')?.value || '';
-  timerDisciplina = disc;
-  timerRunning = true;
-  timerStartTime = Date.now() - timerSeconds * 1000;
-  timerInterval = setInterval(timerTick, 1000);
-  document.getElementById('timer-start-btn').style.display = 'none';
-  document.getElementById('timer-pause-btn').style.display = 'inline-block';
-  document.getElementById('timer-stop-btn').style.display = 'inline-block';
-  document.getElementById('timer-display').classList.add('timer-running');
-  document.getElementById('timer-subject').textContent = disc || 'Sessão em andamento';
-}
 
-function timerPause() {
-  if (!timerRunning) {
-    // Resume
-    timerRunning = true;
-    timerStartTime = Date.now() - timerSeconds * 1000;
-    timerInterval = setInterval(timerTick, 1000);
-    document.getElementById('timer-pause-btn').textContent = '⏸ Pausar';
-    document.getElementById('timer-display').classList.add('timer-running');
-  } else {
-    // Pause
-    timerRunning = false;
-    clearInterval(timerInterval);
-    document.getElementById('timer-pause-btn').textContent = '▶ Retomar';
-    document.getElementById('timer-display').classList.remove('timer-running');
-  }
-}
 
-function timerStop() {
-  lsSave();
-  scheduleSave();
-  clearInterval(timerInterval);
-  timerRunning = false;
-  const durMin = Math.round(timerSeconds / 60);
-  if (durMin >= 1) {
-    const today = new Date().toISOString().split('T')[0];
-    sessoes.unshift({id: nextSessaoId++, disciplina: timerDisciplina, durMin, tipo:'estudo', data: today});
-    updateMetaRing();
-    updateStreak();
-    renderSessoes();
-    renderHorasDisc();
-    showToast('⏱ Sessão registrada: ' + durMin + ' min de ' + (timerDisciplina||'estudo'));
-  }
-  timerSeconds = 0;
-  timerRunning = false;
-  document.getElementById('timer-display').textContent = '00:00:00';
-  document.getElementById('timer-display').classList.remove('timer-running');
-  document.getElementById('timer-start-btn').style.display = 'inline-block';
-  document.getElementById('timer-pause-btn').style.display = 'none';
-  document.getElementById('timer-stop-btn').style.display = 'none';
-  document.getElementById('timer-pause-btn').textContent = '⏸ Pausar';
-  document.getElementById('timer-subject').textContent = 'Selecione uma disciplina e inicie';
-}
 
-function timerTick() {
-  timerSeconds = Math.round((Date.now() - timerStartTime) / 1000);
-  const h = Math.floor(timerSeconds / 3600);
-  const m = Math.floor((timerSeconds % 3600) / 60);
-  const s = timerSeconds % 60;
-  document.getElementById('timer-display').textContent =
-    String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-}
 
-function renderTimer() {
-  populateEstudosSelects();
-}
+
+
+
+
+
 
 // ── Sessões ──
 function renderSessoes() {
@@ -4271,140 +4212,7 @@ function saveQuestao() {
   renderRevisoes();
 }
 
-function buildEstudosPainelHTML() {
-  return `
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
-    <div class="meta-ring-wrap" style="margin-bottom:0">
-      <div class="meta-ring">
-        <svg width="72" height="72" viewBox="0 0 72 72">
-          <circle cx="36" cy="36" r="30" fill="none" stroke="var(--border)" stroke-width="6"/>
-          <circle id="meta-ring-circle" cx="36" cy="36" r="30" fill="none" stroke="var(--green)" stroke-width="6"
-            stroke-dasharray="188.5" stroke-dashoffset="188.5" stroke-linecap="round" style="transition:stroke-dashoffset 0.5s ease"/>
-        </svg>
-        <div class="meta-ring-label">
-          <span class="meta-ring-val" id="meta-ring-val">0h</span>
-          <span class="meta-ring-sub">de 3h</span>
-        </div>
-      </div>
-      <div>
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Meta diária</div>
-        <div class="streak-badge">🔥 <span id="streak-val">0</span> dias seguidos</div>
-      </div>
-    </div>
-    <div style="flex:1;min-width:200px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-        <span style="font-size:11px;color:var(--text-muted)">Progresso semanal</span>
-        <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-muted)" id="semana-progress-label">0/0 atividades</span>
-      </div>
-      <div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden">
-        <div id="semana-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--violet),var(--cyan));border-radius:4px;width:0%;transition:width 0.5s ease"></div>
-      </div>
-    </div>
-    <button class="btn btn-primary btn-sm" onclick="openAtividadeModal()">+ Atividade</button>
-  </div>
 
-  <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start">
-
-    <!-- ── Coluna principal (esquerda) ── -->
-    <div style="display:flex;flex-direction:column;gap:14px">
-
-      <!-- Backlog de Metas -->
-      <div class="estudos-card">
-        <div class="estudos-card-header">
-          <span class="estudos-card-title">📚 Backlog de Metas</span>
-          <button class="btn btn-primary btn-sm" onclick="openAddEstudoBacklog()">+ Adicionar</button>
-        </div>
-        <div class="estudos-card-body" id="estudos-backlog-list">
-          <p style="color:var(--text-dim);font-size:12px">Nenhum item. Clique em "+ Adicionar" para incluir.</p>
-        </div>
-      </div>
-
-      <!-- Semana de Estudos -->
-      <div class="estudos-card">
-        <div class="estudos-card-header">
-          <span class="estudos-card-title">📋 Semana de Estudos</span>
-          <div style="display:flex;align-items:center;gap:4px">
-            <button class="btn btn-ghost btn-sm" style="padding:2px 8px" onclick="semanaNav(-1)">‹</button>
-            <span style="font-size:11px;color:var(--text-dim);min-width:90px;text-align:center" id="semana-label"></span>
-            <button class="btn btn-ghost btn-sm" style="padding:2px 8px" onclick="semanaNav(1)">›</button>
-            <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:10px;color:var(--text-dim)" onclick="semanaNav(0)">Hoje</button>
-          </div>
-          <button class="btn btn-ghost btn-sm" onclick="openAtividadeModal()">+ Add</button>
-        </div>
-        <div class="estudos-card-body">
-          <div class="semana-dias" id="semana-dias"></div>
-          <div id="atividades-list"></div>
-        </div>
-      </div>
-
-      <!-- Sessões Registradas -->
-      <div class="estudos-card">
-        <div class="estudos-card-header">
-          <span class="estudos-card-title">📊 Sessões registradas</span>
-        </div>
-        <div class="estudos-card-body" id="sessoes-list">
-          <p style="color:var(--text-dim);font-size:12px">Nenhuma sessão ainda.</p>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ── Coluna lateral (direita) ── -->
-    <div style="display:flex;flex-direction:column;gap:14px">
-
-      <!-- Cronômetro -->
-      <div class="estudos-card">
-        <div class="estudos-card-header">
-          <span class="estudos-card-title">⏱ Cronômetro</span>
-        </div>
-        <div class="estudos-card-body" style="text-align:center">
-          <select class="form-select" id="timer-disciplina" style="font-size:11px;padding:4px 8px;width:100%;margin-bottom:12px"></select>
-          <div class="timer-display" id="timer-display">00:00:00</div>
-          <div class="timer-subject" id="timer-subject" style="font-size:11px;color:var(--text-dim);margin:6px 0"></div>
-          <div class="timer-btns">
-            <button class="timer-btn start" id="timer-start-btn" onclick="timerStart()">▶ Iniciar</button>
-            <button class="timer-btn pause" id="timer-pause-btn" onclick="timerPause()" style="display:none">⏸ Pausar</button>
-            <button class="timer-btn stop" id="timer-stop-btn" onclick="timerStop()" style="display:none">⏹ Finalizar</button>
-          </div>
-          <div style="margin-top:10px;font-size:11px;color:var(--text-dim)" id="timer-hoje-label">Hoje: 0h 0min</div>
-        </div>
-      </div>
-
-      <!-- Revisões Pendentes -->
-      <div class="estudos-card">
-        <div class="estudos-card-header">
-          <span class="estudos-card-title">🔁 Revisões pendentes</span>
-          <span class="count-pill" id="revisoes-count">0</span>
-        </div>
-        <div class="estudos-card-body" id="revisoes-list">
-          <p style="color:var(--text-dim);font-size:12px">Nenhuma revisão agendada.</p>
-        </div>
-      </div>
-
-      <!-- Desempenho -->
-      <div class="estudos-card">
-        <div class="estudos-card-header">
-          <span class="estudos-card-title">🎯 Desempenho</span>
-          <button class="btn btn-ghost btn-sm" onclick="openQuestaoModal()">+ Questões</button>
-        </div>
-        <div class="estudos-card-body" id="desempenho-list">
-          <p style="color:var(--text-dim);font-size:12px">Registre questões.</p>
-        </div>
-      </div>
-
-      <!-- Horas -->
-      <div class="estudos-card">
-        <div class="estudos-card-header">
-          <span class="estudos-card-title">⏰ Horas por disciplina</span>
-        </div>
-        <div class="estudos-card-body" id="horas-disc-list">
-          <p style="color:var(--text-dim);font-size:12px">Inicie sessões.</p>
-        </div>
-      </div>
-
-    </div>
-  </div>`;
-}
 
 // ══ CURRÍCULO ══
 let curriculo = [
@@ -5592,60 +5400,29 @@ function buildEstudosPainelHTML() {
     <button class="btn btn-primary btn-sm" onclick="openAtividadeModal()">+ Atividade</button>
   </div>
 
-  <div class="estudos-grid">
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start">
 
-    <!-- Coluna esquerda: Cronômetro -->
+    <!-- COLUNA PRINCIPAL (esquerda) -->
     <div style="display:flex;flex-direction:column;gap:14px">
-      <div class="estudos-card">
-        <div class="estudos-card-header">
-          <span class="estudos-card-title">⏱ Cronômetro</span>
-          <select class="form-select" id="timer-disciplina" style="font-size:11px;padding:4px 8px;width:160px"></select>
-        </div>
-        <div class="estudos-card-body" style="text-align:center">
-          <div class="timer-display" id="timer-display">00:00:00</div>
-          <div class="timer-subject" id="timer-subject">Selecione uma disciplina e inicie</div>
-          <div class="timer-btns">
-            <button class="timer-btn start" id="timer-start-btn" onclick="timerStart()">▶ Iniciar</button>
-            <button class="timer-btn pause" id="timer-pause-btn" onclick="timerPause()" style="display:none">⏸ Pausar</button>
-            <button class="timer-btn stop" id="timer-stop-btn" onclick="timerStop()" style="display:none">⏹ Finalizar</button>
-          </div>
-          <div style="margin-top:12px;font-size:11px;color:var(--text-dim)" id="timer-hoje-label">Hoje: 0h 0min</div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Coluna direita: Revisões + Desempenho + Horas -->
-    <div style="display:flex;flex-direction:column;gap:14px">
       <div class="estudos-card">
         <div class="estudos-card-header">
-          <span class="estudos-card-title">🔁 Revisões pendentes</span>
-          <span class="count-pill" id="revisoes-count">0</span>
+          <span class="estudos-card-title">📚 Backlog de Metas</span>
+          <button class="btn btn-primary btn-sm" onclick="openAddEstudoBacklog()">+ Adicionar</button>
         </div>
-        <div class="estudos-card-body" id="revisoes-list"><p style="color:var(--text-dim);font-size:12px">Nenhuma revisão agendada.</p></div>
-      </div>
-      <div class="estudos-card">
-        <div class="estudos-card-header">
-          <span class="estudos-card-title">🎯 Desempenho por disciplina</span>
-          <button class="btn btn-ghost btn-sm" onclick="openQuestaoModal()">+ Questões</button>
+        <div class="estudos-card-body" id="estudos-backlog-list">
+          <p style="color:var(--text-dim);font-size:12px">Nenhum item. Clique em "+ Adicionar".</p>
         </div>
-        <div class="estudos-card-body" id="desempenho-list"><p style="color:var(--text-dim);font-size:12px">Registre sessões de questões.</p></div>
       </div>
-      <div class="estudos-card">
-        <div class="estudos-card-header"><span class="estudos-card-title">⏰ Horas por disciplina</span></div>
-        <div class="estudos-card-body" id="horas-disc-list"><p style="color:var(--text-dim);font-size:12px">Inicie sessões de estudo.</p></div>
-      </div>
-    </div>
 
-    <!-- Linha 2 full: Semana Gurujá -->
-    <div style="grid-column:1/-1">
       <div class="estudos-card">
         <div class="estudos-card-header">
-          <span class="estudos-card-title">📋 Semana Gurujá</span>
-          <div style="display:flex;align-items:center;gap:6px">
-            <button class="btn btn-ghost btn-sm" style="padding:2px 8px" onclick="semanaNav(-1)" title="Semana anterior">‹</button>
+          <span class="estudos-card-title">📋 Semana de Estudos</span>
+          <div style="display:flex;align-items:center;gap:4px">
+            <button class="btn btn-ghost btn-sm" style="padding:2px 8px" onclick="semanaNav(-1)">‹</button>
             <span style="font-size:11px;color:var(--text-dim);min-width:90px;text-align:center" id="semana-label"></span>
-            <button class="btn btn-ghost btn-sm" style="padding:2px 8px" onclick="semanaNav(1)" title="Próxima semana">›</button>
-            <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:10px;color:var(--text-dim)" onclick="semanaNav(0)" title="Hoje">Hoje</button>
+            <button class="btn btn-ghost btn-sm" style="padding:2px 8px" onclick="semanaNav(1)">›</button>
+            <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:10px;color:var(--text-dim)" onclick="semanaNav(0)">Hoje</button>
           </div>
           <button class="btn btn-ghost btn-sm" onclick="openAtividadeModal()">+ Add</button>
         </div>
@@ -5654,26 +5431,74 @@ function buildEstudosPainelHTML() {
           <div id="atividades-list"></div>
         </div>
       </div>
+
+      <div class="estudos-card">
+        <div class="estudos-card-header">
+          <span class="estudos-card-title">📊 Sessões registradas</span>
+        </div>
+        <div class="estudos-card-body" id="sessoes-list">
+          <p style="color:var(--text-dim);font-size:12px">Nenhuma sessão ainda.</p>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Linha 3 (2 cols): Sessões | Backlog -->
-    <div class="estudos-card">
-      <div class="estudos-card-header">
-        <span class="estudos-card-title">📊 Sessões registradas</span>
-      </div>
-      <div class="estudos-card-body" id="sessoes-list"><p style="color:var(--text-dim);font-size:12px">Nenhuma sessão registrada ainda.</p></div>
-    </div>
+    <!-- COLUNA LATERAL (direita, 300px) -->
+    <div style="display:flex;flex-direction:column;gap:14px">
 
-    <div class="estudos-card">
-      <div class="estudos-card-header">
-        <span class="estudos-card-title">📚 Backlog Gurujá</span>
-        <button class="btn btn-primary btn-sm" onclick="openAddEstudoBacklog()">+ Gurujá</button>
+      <div class="estudos-card">
+        <div class="estudos-card-header">
+          <span class="estudos-card-title">⏱ Cronômetro</span>
+        </div>
+        <div class="estudos-card-body" style="text-align:center;padding:14px 12px">
+          <div style="display:flex;justify-content:center;gap:4px;margin-bottom:12px">
+            <button class="btn btn-ghost btn-sm" id="timer-mode-livre" onclick="timerSetMode('livre')" style="font-size:11px;padding:3px 10px;border-radius:12px">Livre</button>
+            <button class="btn btn-ghost btn-sm" id="timer-mode-pomodoro" onclick="timerSetMode('pomodoro')" style="font-size:11px;padding:3px 10px;border-radius:12px">Pomodoro</button>
+          </div>
+          <div class="timer-display" id="timer-display" style="font-size:36px">00:00</div>
+          <div id="timer-phase-label" style="font-size:11px;color:var(--text-dim);margin:4px 0 10px"></div>
+          <div id="timer-pomodoro-info" style="display:none;margin-bottom:8px">
+            <div style="display:flex;justify-content:center;gap:6px" id="timer-pomo-dots"></div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:4px" id="timer-pomo-count"></div>
+          </div>
+          <div class="timer-btns">
+            <button class="timer-btn start" id="timer-start-btn" onclick="timerStart()">▶ Iniciar</button>
+            <button class="timer-btn pause" id="timer-pause-btn" onclick="timerPause()" style="display:none">⏸ Pausar</button>
+            <button class="timer-btn stop" id="timer-stop-btn" onclick="timerStop()" style="display:none">⏹ Parar</button>
+          </div>
+        </div>
       </div>
-      <div class="estudos-card-body" id="estudos-backlog-list">
-        <p style="color:var(--text-dim);font-size:12px">Nenhum item. Clique em "+ Gurujá" para adicionar.</p>
-      </div>
-    </div>
 
+      <div class="estudos-card">
+        <div class="estudos-card-header">
+          <span class="estudos-card-title">🔁 Revisões pendentes</span>
+          <span class="count-pill" id="revisoes-count">0</span>
+        </div>
+        <div class="estudos-card-body" id="revisoes-list">
+          <p style="color:var(--text-dim);font-size:12px">Nenhuma revisão.</p>
+        </div>
+      </div>
+
+      <div class="estudos-card">
+        <div class="estudos-card-header">
+          <span class="estudos-card-title">🎯 Desempenho</span>
+          <button class="btn btn-ghost btn-sm" onclick="openQuestaoModal()">+ Questões</button>
+        </div>
+        <div class="estudos-card-body" id="desempenho-list">
+          <p style="color:var(--text-dim);font-size:12px">Registre questões.</p>
+        </div>
+      </div>
+
+      <div class="estudos-card">
+        <div class="estudos-card-header">
+          <span class="estudos-card-title">⏰ Horas por disciplina</span>
+        </div>
+        <div class="estudos-card-body" id="horas-disc-list">
+          <p style="color:var(--text-dim);font-size:12px">Inicie sessões.</p>
+        </div>
+      </div>
+
+    </div>
   </div>`;
 }
 
@@ -6621,7 +6446,7 @@ function savePlanejamento() {
   const dow = new Date(dataPlano + 'T12:00:00').getDay();
   const dia = dow === 0 ? 6 : dow - 1; // 0=Seg
 
-  // Create atividade in Semana Gurujá
+  // Create atividade in Semana de Estudos
   const atividadeId = nextAtivId++;
   atividades.push({
     id: atividadeId,
@@ -6845,7 +6670,7 @@ function renderEstudosBacklog() {
     html += concluidos.map(renderItem).join('');
   }
   if (!html) {
-    html = '<p style="color:var(--text-dim);font-size:12px">Nenhum item no backlog. Clique em "+ Gurujá" para adicionar.</p>';
+    html = '<p style="color:var(--text-dim);font-size:12px">Nenhum item no backlog. Clique em "+ Adicionar" para adicionar.</p>';
   }
   el.innerHTML = html;
 }
@@ -7207,6 +7032,160 @@ function renderRevisoes() {
 }
 
 
+
+// ══ CRONÔMETRO SIMPLES + POMODORO ══
+let timerInterval = null;
+let timerSeconds = 0;
+let timerRunning = false;
+let timerStartTime = null;
+let timerMode = 'livre'; // 'livre' | 'pomodoro'
+let pomodoroPhase = 'foco'; // 'foco' | 'descanso'
+let pomodoroCount = 0; // completed focus sessions
+const POMO_FOCO = 50 * 60;     // 50 min
+const POMO_DESCANSO = 10 * 60; // 10 min
+
+function timerSetMode(mode) {
+  if (timerRunning) return; // can't switch while running
+  timerMode = mode;
+  timerSeconds = 0;
+  pomodoroPhase = 'foco';
+  pomodoroCount = 0;
+  var btnL = document.getElementById('timer-mode-livre');
+  var btnP = document.getElementById('timer-mode-pomodoro');
+  var info = document.getElementById('timer-pomodoro-info');
+  var label = document.getElementById('timer-phase-label');
+  if (btnL) btnL.style.background = mode === 'livre' ? 'var(--violet)' : '';
+  if (btnL) btnL.style.color = mode === 'livre' ? '#fff' : '';
+  if (btnP) btnP.style.background = mode === 'pomodoro' ? 'var(--violet)' : '';
+  if (btnP) btnP.style.color = mode === 'pomodoro' ? '#fff' : '';
+  if (info) info.style.display = mode === 'pomodoro' ? 'block' : 'none';
+  if (label) label.textContent = mode === 'pomodoro' ? '🎯 Foco — 50min' : '';
+  timerUpdateDisplay();
+  timerUpdatePomoDots();
+}
+
+function timerStart() {
+  timerRunning = true;
+  if (timerMode === 'pomodoro' && timerSeconds === 0) {
+    // Starting a new phase
+    timerSeconds = pomodoroPhase === 'foco' ? POMO_FOCO : POMO_DESCANSO;
+  }
+  timerStartTime = Date.now() - (timerMode === 'livre' ? timerSeconds * 1000 : 0);
+  timerInterval = setInterval(timerTick, 1000);
+  document.getElementById('timer-start-btn').style.display = 'none';
+  document.getElementById('timer-pause-btn').style.display = 'inline-block';
+  document.getElementById('timer-stop-btn').style.display = 'inline-block';
+  var disp = document.getElementById('timer-display');
+  if (disp) disp.classList.add('timer-running');
+  var label = document.getElementById('timer-phase-label');
+  if (label && timerMode === 'pomodoro') {
+    label.textContent = pomodoroPhase === 'foco' ? '🎯 Foco' : '☕ Descanso';
+    label.style.color = pomodoroPhase === 'foco' ? 'var(--violet-light)' : 'var(--green)';
+  }
+}
+
+function timerPause() {
+  if (timerRunning) {
+    timerRunning = false;
+    clearInterval(timerInterval);
+    document.getElementById('timer-pause-btn').textContent = '▶ Retomar';
+    document.getElementById('timer-display').classList.remove('timer-running');
+  } else {
+    timerRunning = true;
+    if (timerMode === 'livre') timerStartTime = Date.now() - timerSeconds * 1000;
+    timerInterval = setInterval(timerTick, 1000);
+    document.getElementById('timer-pause-btn').textContent = '⏸ Pausar';
+    document.getElementById('timer-display').classList.add('timer-running');
+  }
+}
+
+function timerStop() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSeconds = 0;
+  pomodoroPhase = 'foco';
+  timerUpdateDisplay();
+  document.getElementById('timer-display').classList.remove('timer-running');
+  document.getElementById('timer-start-btn').style.display = 'inline-block';
+  document.getElementById('timer-pause-btn').style.display = 'none';
+  document.getElementById('timer-stop-btn').style.display = 'none';
+  document.getElementById('timer-pause-btn').textContent = '⏸ Pausar';
+  var label = document.getElementById('timer-phase-label');
+  if (label) label.textContent = timerMode === 'pomodoro' ? '🎯 Foco — 50min' : '';
+  if (label) label.style.color = '';
+}
+
+function timerTick() {
+  if (timerMode === 'livre') {
+    // Count UP
+    timerSeconds = Math.round((Date.now() - timerStartTime) / 1000);
+  } else {
+    // Pomodoro: count DOWN
+    timerSeconds--;
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      // Phase complete
+      if (pomodoroPhase === 'foco') {
+        pomodoroCount++;
+        pomodoroPhase = 'descanso';
+        timerSeconds = 0;
+        timerUpdatePomoDots();
+        showToast('☕ Foco concluído! Descanse 10 minutos.');
+        // Auto-start break
+        var label = document.getElementById('timer-phase-label');
+        if (label) { label.textContent = '☕ Descanso — 10min'; label.style.color = 'var(--green)'; }
+        timerSeconds = POMO_DESCANSO;
+        timerRunning = true;
+        timerInterval = setInterval(timerTick, 1000);
+      } else {
+        pomodoroPhase = 'foco';
+        timerSeconds = 0;
+        showToast('🎯 Descanso concluído! Pronta para mais?');
+        var label = document.getElementById('timer-phase-label');
+        if (label) { label.textContent = '🎯 Foco — 50min'; label.style.color = ''; }
+        document.getElementById('timer-display').classList.remove('timer-running');
+        document.getElementById('timer-start-btn').style.display = 'inline-block';
+        document.getElementById('timer-pause-btn').style.display = 'none';
+        document.getElementById('timer-stop-btn').style.display = 'none';
+        document.getElementById('timer-pause-btn').textContent = '⏸ Pausar';
+      }
+    }
+  }
+  timerUpdateDisplay();
+}
+
+function timerUpdateDisplay() {
+  var secs = timerSeconds;
+  var h = Math.floor(secs / 3600);
+  var m = Math.floor((secs % 3600) / 60);
+  var sec = secs % 60;
+  var disp = document.getElementById('timer-display');
+  if (disp) {
+    if (h > 0) disp.textContent = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+    else disp.textContent = String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+  }
+}
+
+function timerUpdatePomoDots() {
+  var dots = document.getElementById('timer-pomo-dots');
+  var cnt = document.getElementById('timer-pomo-count');
+  if (dots) {
+    var html = '';
+    for (var i = 0; i < Math.max(4, pomodoroCount + 1); i++) {
+      var filled = i < pomodoroCount;
+      html += '<div style="width:8px;height:8px;border-radius:50%;background:' + (filled ? 'var(--green)' : 'var(--border)') + '"></div>';
+    }
+    dots.innerHTML = html;
+  }
+  if (cnt) cnt.textContent = pomodoroCount + ' sessões completas';
+}
+
+function renderTimer() {
+  timerSetMode(timerMode);
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
   lsLoad();
   pwaInit();
@@ -7231,6 +7210,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(gcalAutoConnect, 800);
   }
 });
+
 </script>
 
 <!-- ══ MODAL — NUVEM ══ -->
