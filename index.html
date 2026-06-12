@@ -599,6 +599,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   .fin-summary{grid-template-columns:1fr}
   .inbox-input{font-size:16px}
 }
+
+/* ── LOCK SCREEN ── */
+#lock-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0}
+#lock-screen.hidden{display:none}
+.lock-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:16px;padding:36px 32px;width:320px;max-width:90vw;display:flex;flex-direction:column;align-items:center;gap:18px}
+.lock-logo{font-size:32px;margin-bottom:4px}
+.lock-title{font-size:15px;font-weight:700;color:var(--text);letter-spacing:.02em}
+.lock-sub{font-size:12px;color:var(--text-dim);text-align:center;margin-top:-10px}
+.lock-input{width:100%;padding:11px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;letter-spacing:.15em;text-align:center;outline:none;box-sizing:border-box;transition:border-color .15s}
+.lock-input:focus{border-color:var(--violet)}
+.lock-input.error{border-color:var(--red);animation:shake .3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.lock-btn{width:100%;padding:11px;background:var(--violet);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.lock-btn:hover{opacity:.85}
+.lock-err{font-size:11px;color:var(--red);min-height:16px}
+.lock-hint{font-size:10px;color:var(--text-dim);text-align:center;margin-top:-8px}
 </style>
 
   <!-- PWA -->
@@ -610,8 +626,61 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   <meta name="theme-color" content="#0A0A0F">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
+<!-- ── LOCK SCREEN ── -->
+<div id="lock-screen">
+  <div class="lock-card">
+    <div class="lock-logo" id="lock-logo">🔒</div>
+    <div class="lock-title" id="lock-title">Painel Pessoal</div>
+    <div class="lock-sub" id="lock-sub">Digite sua senha para acessar</div>
+
+    <!-- Passo 1: email (só na criação) -->
+    <div id="lock-email-wrap" style="width:100%;display:none">
+      <input class="lock-input" id="lock-email" type="email" placeholder="seu@email.com"
+        style="letter-spacing:normal;margin-bottom:8px"
+        oninput="document.getElementById('lock-email').classList.remove('error')">
+    </div>
+    <!-- Passo 1b: EmailJS config (só na criação) -->
+    <div id="lock-ejs-wrap" style="width:100%;display:none">
+      <div style="font-size:10px;color:var(--text-dim);margin-bottom:6px;text-align:left">
+        EmailJS — <a href="https://emailjs.com" target="_blank" style="color:var(--violet-light)">emailjs.com</a> (gratuito)
+      </div>
+      <input class="lock-input" id="lock-ejs-service" type="text" placeholder="Service ID"
+        style="letter-spacing:normal;margin-bottom:6px;font-size:13px">
+      <input class="lock-input" id="lock-ejs-template" type="text" placeholder="Template ID"
+        style="letter-spacing:normal;margin-bottom:6px;font-size:13px">
+      <input class="lock-input" id="lock-ejs-pubkey" type="text" placeholder="Public Key"
+        style="letter-spacing:normal;margin-bottom:6px;font-size:13px">
+      <div style="font-size:10px;color:var(--text-dim);text-align:left;line-height:1.5">
+        No template use as variáveis: <code style="background:var(--border);padding:1px 4px;border-radius:3px">{{to_email}}</code> e <code style="background:var(--border);padding:1px 4px;border-radius:3px">{{recovery_code}}</code>
+      </div>
+    </div>
+
+    <!-- Campo senha -->
+    <input class="lock-input" id="lock-input" type="password" placeholder="••••••••"
+      onkeydown="if(event.key==='Enter')lockSubmit()"
+      oninput="document.getElementById('lock-input').classList.remove('error')" autocomplete="current-password">
+
+    <!-- Campo código de recuperação -->
+    <div id="lock-recovery-wrap" style="width:100%;display:none">
+      <input class="lock-input" id="lock-recovery-input" type="text" placeholder="Código de 6 dígitos"
+        style="text-align:center;letter-spacing:.3em;font-size:18px"
+        onkeydown="if(event.key==='Enter')lockVerifyCode()"
+        oninput="this.classList.remove('error')">
+    </div>
+
+    <div class="lock-err" id="lock-err"></div>
+    <button class="lock-btn" id="lock-btn" onclick="lockSubmit()">Entrar</button>
+    <div style="display:flex;gap:8px;width:100%;justify-content:center;margin-top:-4px" id="lock-extra-btns">
+      <button id="lock-forgot-btn" style="background:none;border:none;color:var(--violet-light);font-size:11px;cursor:pointer;padding:4px" onclick="lockForgot()">Esqueci a senha</button>
+    </div>
+    <div class="lock-hint" id="lock-hint"></div>
+  </div>
+</div>
+
+
 
 <div class="app-shell">
 <!-- ── SIDEBAR (desktop) ── -->
@@ -5867,6 +5936,9 @@ function lsSave() {
     localStorage.setItem('painel_dados_v1', JSON.stringify({
       savedAt: new Date().toISOString(),
       events, nextEventId,
+      lockHash: lockGetHash(),
+      lockEmail: lockGetEmail(),
+      lockEjs: lockGetEjs(),
       studyBacklog, nextStudyBlogId,
       backlog, nextBacklogId,
       tasks, nextTaskId,
@@ -5898,6 +5970,12 @@ function lsLoad() {
       });
       nextStudyBlogId = d.nextStudyBlogId || nextStudyBlogId;
     }
+    if (d.lockHash) {
+      var localHash = lockGetHash();
+      if (!localHash) { lockSetHash(d.lockHash); }
+    }
+    if (d.lockEmail && !lockGetEmail()) { lockSetEmail(d.lockEmail); }
+    if (d.lockEjs && !lockGetEjs()) { lockSetEjs(d.lockEjs); }
     if (d.events)           { events = d.events; nextEventId = d.nextEventId || nextEventId; }
     if (d.backlog)          { backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId; }
     if (d.tasks)            { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
@@ -7303,9 +7381,246 @@ function renderTimer() {
 }
 
 
+
+// ══ LOCK / SENHA ══
+const LOCK_KEY      = 'painel_lock_hash';
+const LOCK_EMAIL_KEY= 'painel_lock_email';
+const LOCK_EJS_KEY  = 'painel_lock_ejs';   // {serviceId, templateId, publicKey}
+const LOCK_TIMEOUT  = 10 * 60 * 1000;      // 10 min
+
+let lockTimer  = null;
+let lockActive = false;
+let lockRecoveryCode = null;
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function lockGetHash()  { return localStorage.getItem(LOCK_KEY) || null; }
+function lockSetHash(h) { localStorage.setItem(LOCK_KEY, h); }
+function lockGetEmail() { return localStorage.getItem(LOCK_EMAIL_KEY) || null; }
+function lockSetEmail(e){ localStorage.setItem(LOCK_EMAIL_KEY, e); }
+function lockGetEjs()   { try { return JSON.parse(localStorage.getItem(LOCK_EJS_KEY)) || null; } catch(e){ return null; } }
+function lockSetEjs(o)  { localStorage.setItem(LOCK_EJS_KEY, JSON.stringify(o)); }
+
+function lockShow(isFirst) {
+  lockActive = true;
+  var el    = document.getElementById('lock-screen');
+  var sub   = document.getElementById('lock-sub');
+  var btn   = document.getElementById('lock-btn');
+  var hint  = document.getElementById('lock-hint');
+  var inp   = document.getElementById('lock-input');
+  var emailW= document.getElementById('lock-email-wrap');
+  var ejsW  = document.getElementById('lock-ejs-wrap');
+  var recW  = document.getElementById('lock-recovery-wrap');
+  var extBtns = document.getElementById('lock-extra-btns');
+  if (!el) return;
+  el.classList.remove('hidden');
+  recW.style.display = 'none';
+  if (isFirst) {
+    sub.textContent      = 'Crie uma senha para proteger o painel';
+    btn.textContent      = 'Criar senha';
+    hint.textContent     = 'Mínimo 4 caracteres.';
+    btn.dataset.mode     = 'create';
+    emailW.style.display = 'block';
+    ejsW.style.display   = 'block';
+    if (extBtns) extBtns.style.display = 'none';
+  } else {
+    sub.textContent      = 'Digite sua senha para acessar';
+    btn.textContent      = 'Entrar';
+    hint.textContent     = '';
+    btn.dataset.mode     = 'verify';
+    emailW.style.display = 'none';
+    ejsW.style.display   = 'none';
+    if (extBtns) extBtns.style.display = lockGetEmail() ? 'flex' : 'none';
+  }
+  document.getElementById('lock-err').textContent = '';
+  inp.value = '';
+  setTimeout(function(){ inp.focus(); }, 100);
+}
+
+function lockHide() {
+  lockActive = false;
+  var el = document.getElementById('lock-screen');
+  if (el) el.classList.add('hidden');
+  lockResetTimer();
+}
+
+function lockResetTimer() {
+  clearTimeout(lockTimer);
+  lockTimer = setTimeout(function() {
+    if (lockGetHash()) { lockRecoveryCode = null; lockShow(false); }
+  }, LOCK_TIMEOUT);
+}
+
+function lockActivityReset() {
+  if (!lockActive) lockResetTimer();
+}
+
+async function lockSubmit() {
+  var inp   = document.getElementById('lock-input');
+  var errEl = document.getElementById('lock-err');
+  var btn   = document.getElementById('lock-btn');
+  var val   = inp.value.trim();
+
+  if (btn.dataset.mode === 'verify-code') {
+    lockVerifyCode(); return;
+  }
+
+  if (!val || val.length < 4) {
+    errEl.textContent = 'Mínimo 4 caracteres';
+    inp.classList.add('error'); return;
+  }
+  var hash = await sha256(val);
+
+  if (btn.dataset.mode === 'create') {
+    // Collect email
+    var emailEl = document.getElementById('lock-email');
+    var email = emailEl ? emailEl.value.trim() : '';
+    if (email) lockSetEmail(email);
+    // Collect EmailJS config
+    var svcEl  = document.getElementById('lock-ejs-service');
+    var tplEl  = document.getElementById('lock-ejs-template');
+    var pubEl  = document.getElementById('lock-ejs-pubkey');
+    if (svcEl && svcEl.value.trim()) {
+      lockSetEjs({ serviceId: svcEl.value.trim(), templateId: tplEl.value.trim(), publicKey: pubEl.value.trim() });
+    }
+    lockSetHash(hash);
+    if (typeof cloudSave === 'function' && cloudKey && cloudBinId) setTimeout(cloudSave, 500);
+    lockHide();
+    showToast('🔒 Senha criada' + (email ? ' — recuperação via email configurada' : ''));
+
+  } else {
+    var stored = lockGetHash();
+    if (hash === stored) {
+      lockHide();
+    } else {
+      errEl.textContent = 'Senha incorreta';
+      inp.classList.add('error');
+      inp.value = '';
+      setTimeout(function(){ inp.focus(); }, 50);
+    }
+  }
+}
+
+function lockForgot() {
+  var email = lockGetEmail();
+  var ejs   = lockGetEjs();
+  var errEl = document.getElementById('lock-err');
+  if (!email || !ejs || !ejs.serviceId || !ejs.publicKey) {
+    errEl.textContent = 'Email não configurado. Use o código de emergência ou recrie o painel.';
+    return;
+  }
+  // Generate 6-digit code, store hash of it
+  lockRecoveryCode = Math.floor(100000 + Math.random() * 900000).toString();
+  // Send via EmailJS
+  emailjs.init({ publicKey: ejs.publicKey });
+  emailjs.send(ejs.serviceId, ejs.templateId, {
+    to_email: email,
+    recovery_code: lockRecoveryCode
+  }).then(function() {
+    // Show code input
+    var recW = document.getElementById('lock-recovery-wrap');
+    var btn  = document.getElementById('lock-btn');
+    var sub  = document.getElementById('lock-sub');
+    var hint = document.getElementById('lock-hint');
+    var extBtns = document.getElementById('lock-extra-btns');
+    recW.style.display = 'block';
+    document.getElementById('lock-input').style.display = 'none';
+    btn.textContent = 'Verificar código';
+    btn.dataset.mode = 'verify-code';
+    sub.textContent = 'Código enviado para ' + email.replace(/(.{2}).+(@.+)/, '$1…$2');
+    hint.textContent = 'Verifique seu email e digite o código de 6 dígitos.';
+    if (extBtns) extBtns.style.display = 'none';
+    errEl.textContent = '';
+    showToast('📧 Código enviado para ' + email.replace(/(.{2}).+(@.+)/, '$1…$2'));
+  }).catch(function(err) {
+    errEl.textContent = 'Erro ao enviar email. Verifique as configurações do EmailJS.';
+    console.error('EmailJS error:', err);
+  });
+}
+
+function lockVerifyCode() {
+  var inp   = document.getElementById('lock-recovery-input');
+  var errEl = document.getElementById('lock-err');
+  var code  = inp ? inp.value.trim() : '';
+  if (!lockRecoveryCode) { errEl.textContent = 'Solicite um novo código.'; return; }
+  if (code === lockRecoveryCode) {
+    // Code OK — enter "change password" mode
+    lockRecoveryCode = null;
+    var recW = document.getElementById('lock-recovery-wrap');
+    var btn  = document.getElementById('lock-btn');
+    var sub  = document.getElementById('lock-sub');
+    var hint = document.getElementById('lock-hint');
+    var pwInp = document.getElementById('lock-input');
+    recW.style.display = 'none';
+    pwInp.style.display = 'block';
+    pwInp.value = '';
+    btn.textContent = 'Salvar nova senha';
+    btn.dataset.mode = 'create';
+    sub.textContent = 'Crie uma nova senha';
+    hint.textContent = 'Mínimo 4 caracteres.';
+    document.getElementById('lock-email-wrap').style.display = 'none';
+    document.getElementById('lock-ejs-wrap').style.display = 'none';
+    errEl.textContent = '';
+    setTimeout(function(){ pwInp.focus(); }, 100);
+  } else {
+    errEl.textContent = 'Código incorreto. Tente novamente.';
+    inp.classList.add('error');
+  }
+}
+
+function lockInit() {
+  var hash = lockGetHash();
+  lockShow(!hash);
+  ['click','keydown','mousemove','touchstart','scroll'].forEach(function(ev) {
+    document.addEventListener(ev, lockActivityReset, { passive: true });
+  });
+}
+
+function lockChangePassword() {
+  var el    = document.getElementById('lock-screen');
+  var sub   = document.getElementById('lock-sub');
+  var btn   = document.getElementById('lock-btn');
+  var hint  = document.getElementById('lock-hint');
+  var emailW= document.getElementById('lock-email-wrap');
+  var ejsW  = document.getElementById('lock-ejs-wrap');
+  var recW  = document.getElementById('lock-recovery-wrap');
+  var extBtns = document.getElementById('lock-extra-btns');
+  var pwInp = document.getElementById('lock-input');
+  if (!el) return;
+  el.classList.remove('hidden');
+  lockActive = true;
+  recW.style.display   = 'none';
+  pwInp.style.display  = 'block';
+  emailW.style.display = 'block';
+  ejsW.style.display   = 'block';
+  sub.textContent  = 'Redefina sua senha e email de recuperação';
+  btn.textContent  = 'Salvar';
+  hint.textContent = 'Mínimo 4 caracteres.';
+  btn.dataset.mode = 'create';
+  if (extBtns) extBtns.style.display = 'none';
+  // Pre-fill email
+  var emailEl = document.getElementById('lock-email');
+  if (emailEl) emailEl.value = lockGetEmail() || '';
+  var ejs = lockGetEjs() || {};
+  var svcEl = document.getElementById('lock-ejs-service');
+  var tplEl = document.getElementById('lock-ejs-template');
+  var pubEl = document.getElementById('lock-ejs-pubkey');
+  if (svcEl) svcEl.value = ejs.serviceId || '';
+  if (tplEl) tplEl.value = ejs.templateId || '';
+  if (pubEl) pubEl.value = ejs.publicKey || '';
+  document.getElementById('lock-err').textContent = '';
+  document.getElementById('lock-input').value = '';
+  setTimeout(function(){ document.getElementById('lock-input').focus(); }, 100);
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
   lsLoad();
   pwaInit();
+  lockInit();
   renderBacklog();
   renderCalendar();
   requestAnimationFrame(function() {
@@ -7607,6 +7922,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div style="padding:14px 18px">
         <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">🗄️ Dados locais</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-settings');lockChangePassword()">🔑 Alterar senha</button>
           <button class="btn btn-ghost btn-sm" onclick="exportData()">📤 Exportar JSON</button>
           <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()">📥 Importar JSON</button>
           <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
