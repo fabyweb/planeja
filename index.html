@@ -5760,6 +5760,7 @@ function lsSave() {
   try {
     localStorage.setItem('painel_dados_v1', JSON.stringify({
       savedAt: new Date().toISOString(),
+      events, nextEventId,
       studyBacklog, nextStudyBlogId,
       backlog, nextBacklogId,
       tasks, nextTaskId,
@@ -5791,6 +5792,7 @@ function lsLoad() {
       });
       nextStudyBlogId = d.nextStudyBlogId || nextStudyBlogId;
     }
+    if (d.events)           { events = d.events; nextEventId = d.nextEventId || nextEventId; }
     if (d.backlog)          { backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId; }
     if (d.tasks)            { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
     if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
@@ -5909,6 +5911,7 @@ async function cloudSave() {
   try {
     var payload = JSON.stringify({
       savedAt: new Date().toISOString(),
+      events, nextEventId,
       backlog, nextBacklogId,
       tasks, nextTaskId,
       kanbanCols, nextColId,
@@ -5969,6 +5972,7 @@ async function cloudLoad() {
       return;
     }
 
+    if (d.events)           { events = d.events; nextEventId = d.nextEventId || nextEventId; }
     if (d.backlog)          { backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId; }
     if (d.tasks)            { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
     if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
