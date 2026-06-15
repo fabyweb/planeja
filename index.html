@@ -6466,19 +6466,98 @@ function openManageCats() {
   openModal('modal-fin-cats');
 }
 
+function openManageCats() {
+  renderFinCatsModal();
+  openModal('modal-fin-cats');
+}
+
 function renderFinCatsModal() {
   var el = document.getElementById('fin-cats-list');
   if (!el) return;
-  el.innerHTML = finCategories.map((c, i) => `
-    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border-soft)">
-      <span style="flex:1;font-size:13px">${escHtml(c)}</span>
-      <span style="font-size:10px;color:var(--text-dim)">${finances.filter(f=>f.category===c).length} lançamentos</span>
-      <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:11px"
-        onclick="renameCat(${i})">✏️</button>
-      <button class="btn btn-danger btn-sm" style="padding:2px 6px;font-size:11px"
-        onclick="deleteFinCategory(${i});renderFinCatsModal()">✕</button>
-    </div>`).join('');
+  if (!finCategories.length) {
+    el.innerHTML = '<p style="color:var(--text-dim);font-size:12px;padding:8px 0">Nenhuma categoria.</p>';
+    return;
+  }
+  el.innerHTML = finCategories.map(function(c, i) {
+    var label = typeof c === 'string' ? c : (c.label || c.id || String(c));
+    var type  = (typeof c === 'object' && c.type) ? c.type : 'saida';
+    var typeColor = type === 'saida' ? 'var(--red)' : type === 'entrada' ? 'var(--green)' : 'var(--text-dim)';
+    var typeLabel = type === 'saida' ? 'Despesa' : type === 'entrada' ? 'Receita' : 'Ambos';
+    var txCount = finances.filter(function(f) { return f.category === label || f.category === (c.id || label); }).length;
+    return [
+      '<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border-soft)">',
+      '  <div style="display:flex;flex-direction:column;gap:1px">',
+      '    <button onclick="moveCat('+i+',-1)" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:10px;padding:1px 5px;line-height:1" title="Subir">▲</button>',
+      '    <button onclick="moveCat('+i+',1)"  style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:10px;padding:1px 5px;line-height:1" title="Descer">▼</button>',
+      '  </div>',
+      '  <span style="flex:1;font-size:13px;color:var(--text);font-weight:500">' + escHtml(label) + '</span>',
+      '  <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--bg);border:1px solid var(--border-soft);color:' + typeColor + '">' + typeLabel + '</span>',
+      '  <span style="font-size:10px;color:var(--text-dim);min-width:80px;text-align:right">' + txCount + ' lançamento' + (txCount !== 1 ? 's' : '') + '</span>',
+      '  <button class="btn btn-ghost btn-sm" onclick="editCat('+i+')" style="padding:3px 8px;font-size:11px">✏️</button>',
+      '  <button class="btn btn-danger btn-sm" onclick="deleteCat('+i+')" style="padding:3px 8px;font-size:11px">✕</button>',
+      '</div>'
+    ].join('');
+  }).join('');
 }
+
+function moveCat(idx, dir) {
+  var newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= finCategories.length) return;
+  var tmp = finCategories[idx];
+  finCategories[idx] = finCategories[newIdx];
+  finCategories[newIdx] = tmp;
+  lsSave(); scheduleSave();
+  renderFinCatsModal(); updateFinCategorySelects();
+}
+
+function editCat(idx) {
+  var c = finCategories[idx];
+  var label = typeof c === 'string' ? c : (c.label || '');
+  var type  = (typeof c === 'object' && c.type) ? c.type : 'saida';
+  var newLabel = prompt('Nome da categoria:', label);
+  if (!newLabel || !newLabel.trim()) return;
+  newLabel = newLabel.trim();
+  var types = ['saida', 'entrada', 'ambos'];
+  var typeMap = {saida:'1', entrada:'2', ambos:'3'};
+  var pick = prompt('Tipo:\n1 = Despesa\n2 = Receita\n3 = Ambos', typeMap[type] || '1');
+  var typeIdx = parseInt(pick) - 1;
+  if (isNaN(typeIdx) || typeIdx < 0 || typeIdx > 2) typeIdx = 0;
+  var oldLabel = label;
+  finCategories[idx] = { id: newLabel, label: newLabel, type: types[typeIdx] };
+  finances.forEach(function(f) { if (f.category === oldLabel) f.category = newLabel; });
+  lsSave(); scheduleSave();
+  renderFinCatsModal(); updateFinCategorySelects();
+  showToast('✏️ Categoria atualizada');
+}
+
+function deleteCat(idx) {
+  var c = finCategories[idx];
+  var label = typeof c === 'string' ? c : (c.label || String(c));
+  var count = finances.filter(function(f) { return f.category === label; }).length;
+  var msg = 'Remover "'+ label +'"?';
+  if (count > 0) msg += '\n\n⚠️ ' + count + ' lançamento(s) usam esta categoria.';
+  if (!confirm(msg)) return;
+  finCategories.splice(idx, 1);
+  lsSave(); scheduleSave();
+  renderFinCatsModal(); updateFinCategorySelects();
+  showToast('🗑️ Categoria removida');
+}
+
+function addFinCategory() {
+  var label = document.getElementById('new-cat-label').value.trim();
+  var type  = document.getElementById('new-cat-type').value;
+  if (!label) { showToast('⚠️ Informe o nome'); return; }
+  var dup = finCategories.find(function(c) {
+    return (typeof c === 'string' ? c : (c.label || c.id || '')) === label;
+  });
+  if (dup) { showToast('⚠️ Categoria já existe'); return; }
+  finCategories.push({ id: label, label: label, type: type });
+  document.getElementById('new-cat-label').value = '';
+  renderFinCatsModal(); updateFinCategorySelects();
+  lsSave(); scheduleSave();
+  showToast('✅ Categoria "' + label + '" criada');
+}
+
 
 function renameCat(idx) {
   var name = prompt('Novo nome:', finCategories[idx]);
@@ -7721,6 +7800,19 @@ function lockChangePassword() {
 document.addEventListener('DOMContentLoaded', function() {
   lsLoad();
   pwaInit();
+  
+// Normaliza finCategories para garantir que sejam sempre objetos
+(function() {
+  if (typeof finCategories !== "undefined") {
+    finCategories = finCategories.map(function(c) {
+      if (typeof c === "string") return { id: c, label: c, type: "saida" };
+      if (!c.label) c.label = c.id || String(c);
+      if (!c.type) c.type = "saida";
+      return c;
+    });
+  }
+})();
+
   lockInit();
   renderBacklog();
   renderCalendar();
