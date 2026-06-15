@@ -601,20 +601,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 }
 
 /* ── LOCK SCREEN ── */
-#lock-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:0}
+#lock-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:0;padding:16px}
 #lock-screen.hidden{display:none}
-.lock-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:16px;padding:36px 32px;width:320px;max-width:90vw;display:flex;flex-direction:column;align-items:center;gap:18px}
-.lock-logo{font-size:32px;margin-bottom:4px}
-.lock-title{font-size:15px;font-weight:700;color:var(--text);letter-spacing:.02em}
-.lock-sub{font-size:12px;color:var(--text-dim);text-align:center;margin-top:-10px}
-.lock-input{width:100%;padding:11px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;letter-spacing:.15em;text-align:center;outline:none;box-sizing:border-box;transition:border-color .15s}
-.lock-input:focus{border-color:var(--violet)}
+.lock-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:20px;padding:clamp(24px,5vw,40px) clamp(20px,5vw,36px);width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:16px;box-shadow:0 24px 64px rgba(0,0,0,.5)}
+.lock-logo{width:56px;height:56px;background:linear-gradient(135deg,var(--violet),#9F67FF);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:2px;flex-shrink:0}
+.lock-title{font-size:18px;font-weight:700;color:var(--text);letter-spacing:.01em;text-align:center}
+.lock-sub{font-size:13px;color:var(--text-dim);text-align:center;margin-top:-8px;line-height:1.5;padding:0 4px}
+.lock-input{width:100%;padding:12px 16px;background:var(--card);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;letter-spacing:.15em;text-align:center;outline:none;box-sizing:border-box;transition:border-color .15s;-webkit-appearance:none}
+.lock-input:focus{border-color:var(--violet);background:var(--card-hover)}
 .lock-input.error{border-color:var(--red);animation:shake .3s}
+@media(max-width:400px){.lock-card{border-radius:16px;padding:22px 18px;gap:12px}.lock-title{font-size:16px}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-.lock-btn{width:100%;padding:11px;background:var(--violet);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s}
-.lock-btn:hover{opacity:.85}
-.lock-err{font-size:11px;color:var(--red);min-height:16px}
-.lock-hint{font-size:10px;color:var(--text-dim);text-align:center;margin-top:-8px}
+.lock-btn{width:100%;padding:13px;background:var(--violet);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;letter-spacing:.02em}
+.lock-btn:hover{background:#6D28D9;transform:translateY(-1px)}
+.lock-btn:active{transform:translateY(0)}
+.lock-err{font-size:12px;color:var(--red);min-height:18px;text-align:center;font-weight:500}
+.lock-hint{font-size:11px;color:var(--text-dim);text-align:center;margin-top:-8px;line-height:1.5}
 </style>
 
   <!-- PWA -->
@@ -635,7 +637,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 <!-- ── LOCK SCREEN ── -->
 <div id="lock-screen">
   <div class="lock-card">
-    <div class="lock-logo" id="lock-logo">🔒</div>
+    <div class="lock-logo" id="lock-logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
     <div class="lock-title" id="lock-title">Painel Pessoal</div>
     <div class="lock-sub" id="lock-sub">Digite sua senha para acessar</div>
 
