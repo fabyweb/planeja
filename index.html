@@ -6112,7 +6112,14 @@ function lsLoad() {
     if (d.lockEmail && !lockGetEmail()) { lockSetEmail(d.lockEmail); }
     if (d.lockEjs && !lockGetEjs()) { lockSetEjs(d.lockEjs); }
     if (d.events)           { events = d.events; nextEventId = d.nextEventId || nextEventId; }
-    if (d.backlog)          { backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId; }
+    if (d.backlog) {
+      backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId;
+      // Restaura fotos do backlog (salvas em chave separada)
+      try {
+        var bp = JSON.parse(localStorage.getItem('painel_backlog_photos') || '{}');
+        backlog.forEach(function(i){ if (i.photo === '__local__' && bp[i.id]) i.photo = bp[i.id]; });
+      } catch(_) {}
+    }
     if (d.tasks)            { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
     if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
     if (d.finances)         { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
@@ -6346,7 +6353,15 @@ async function fbCloudLoad(forceLoad) {
       await fbCloudSave(); cloudSetBtn("ok", "Nuvem"); return;
     }
     if (d.events)            { events = d.events; nextEventId = d.nextEventId || nextEventId; }
-    if (d.backlog)           { backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId; }
+    if (d.backlog) {
+      backlog = d.backlog;
+      nextBacklogId = d.nextBacklogId || nextBacklogId;
+      // Restaura fotos que ficam só no localStorage
+      try {
+        var bphotos = JSON.parse(localStorage.getItem('painel_backlog_photos') || '{}');
+        backlog.forEach(function(i){ if (i.photo === '__local__' && bphotos[i.id]) i.photo = bphotos[i.id]; });
+      } catch(_) {}
+    }
     if (d.tasks)             { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
     if (d.kanbanCols)        { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
     if (d.finances)          { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
@@ -7915,7 +7930,6 @@ function lockChangePassword() {
 
 document.addEventListener('DOMContentLoaded', function() {
   lsLoad();
-  loadBacklogPhotos();
   pwaInit();
   
 // Normaliza finCategories para garantir que sejam sempre objetos
