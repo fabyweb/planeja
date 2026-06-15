@@ -753,9 +753,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
           </div>
           <button class="tool-btn" id="priority-btn" onclick="cyclePriority()" title="Prioridade"><span class="ico" style="width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></span></button>
           <span class="inbox-hint" id="inbox-priority-label"></span>
+          <button class="tool-btn" id="inbox-photo-btn" onclick="document.getElementById('inbox-photo-input').click()" title="Adicionar foto">
+            <span class="ico" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+          </button>
+          <input type="file" id="inbox-photo-input" accept="image/*" capture="environment" style="display:none" onchange="inboxLoadPhoto(this)">
           <span class="inbox-hint">↵ Enter</span>
           <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="addToBacklogFull()">Salvar →</button>
         </div>
+        <div id="inbox-photo-preview" style="display:none;margin-top:10px;position:relative;display:inline-block"></div>
       </div>
       <!-- Gmail integration bar -->
       <div id="gmail-bar" style="background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -1343,6 +1348,7 @@ function renderBacklog() {
         <div class="backlog-item-top">
           <span class="item-text" id="bit-${item.id}">${escHtml(item.text)}</span>
           <span class="item-meta">${item.time}</span>
+          ${item.photo ? '<img src="'+item.photo+'" style="max-height:100px;max-width:100%;border-radius:6px;margin-top:6px;border:1px solid var(--border);display:block">' : ''}
           ${item.fromGmail && item.meta ? '<div style="font-size:10px;color:var(--text-dim);margin-top:3px">De: '+escHtml(item.meta.from)+'</div>' : ''}
           ${(item.tags||[]).length ? '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">'+
             (item.tags||[]).map(tg=>`<span onclick="setFilter('tag','${tg}');closeSearch()" style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700;background:var(--violet-glow);border:1px solid var(--violet);color:var(--violet-light);cursor:pointer">#${escHtml(tg)}</span>`).join('')+'</div>' : ''}
@@ -2315,21 +2321,64 @@ function cyclePriority() {
 }
 
 // ── Override addToBacklog to include tags/priority ──
+let inboxPendingPhoto = null;
+
+function inboxLoadPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    inboxPendingPhoto = e.target.result;
+    const preview = document.getElementById('inbox-photo-preview');
+    if (preview) {
+      preview.style.display = 'block';
+      preview.innerHTML = '<img src="' + inboxPendingPhoto + '" style="max-height:120px;max-width:100%;border-radius:8px;border:1px solid var(--border);display:block">' +
+        '<button onclick="inboxClearPhoto()" style="position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,0.7);border:none;color:#fff;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>';
+    }
+    const photoBtn = document.getElementById('inbox-photo-btn');
+    if (photoBtn) photoBtn.style.color = 'var(--violet-light)';
+    showToast('📷 Foto anexada');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function inboxClearPhoto() {
+  inboxPendingPhoto = null;
+  const preview = document.getElementById('inbox-photo-preview');
+  if (preview) preview.style.display = 'none';
+  const photoBtn = document.getElementById('inbox-photo-btn');
+  if (photoBtn) photoBtn.style.color = '';
+}
+
 function addToBacklogFull() {
   const inp = document.getElementById('inbox-input');
   const text = inp.value.trim();
-  if (!text) return;
-  const item = {id: nextBacklogId++, text, time:'agora', tags:[...inboxPendingTags], priority: inboxPriority};
+  if (!text && !inboxPendingPhoto) return;
+  const item = {
+    id: nextBacklogId++,
+    text: text || '📷 Foto',
+    time: 'agora',
+    tags: [...inboxPendingTags],
+    priority: inboxPriority,
+    photo: inboxPendingPhoto || null,
+  };
   backlog.unshift(item);
   inp.value = '';
   inboxPendingTags = [];
   inboxPriority = 'normal';
+  inboxPendingPhoto = null;
+  const preview = document.getElementById('inbox-photo-preview');
+  if (preview) preview.style.display = 'none';
   const btn = document.getElementById('priority-btn');
   const lbl = document.getElementById('inbox-priority-label');
+  const photoBtn = document.getElementById('inbox-photo-btn');
   if (btn) btn.style.color = '';
   if (lbl) lbl.textContent = '';
+  if (photoBtn) photoBtn.style.color = '';
   closeTagAC();
   lsSave();
+  scheduleSave();
   renderBacklog();
 }
 
