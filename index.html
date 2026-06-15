@@ -244,11 +244,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 @media(max-width:640px){.fin-cal-cell{min-height:40px;padding:3px}.fin-cal-val{font-size:8px}.fin-cal-day{font-size:9px}.fin-cal-stat-val{font-size:12px}}
 .fin-transactions{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden}
 .table-header{display:grid;grid-template-columns:1fr 80px 80px 70px;padding:9px 14px;background:var(--bg);border-bottom:1px solid var(--border-soft)}
-@media(max-width:640px){.table-header{display:none!important}.tx-row{display:flex!important;flex-direction:column!important;gap:4px!important;padding:12px 14px!important;grid-template-columns:unset!important}.tx-date-mobile{display:block!important;font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;text-align:left!important;padding-left:0!important}.tx-row-main{display:flex!important;align-items:center!important;gap:8px!important;width:100%}.tx-row-actions{display:flex;align-items:center;gap:5px;flex-shrink:0}.tx-date{display:none!important}.tx-method{display:none!important}}
+@media(max-width:640px){
+.table-header{display:none!important}
+.tx-row{display:grid!important;grid-template-columns:1fr auto!important;grid-template-areas:"meta meta" "info acts"!important;padding:11px 14px!important;gap:3px 8px!important;align-items:unset!important}
+.tx-meta-m{grid-area:meta!important;font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;display:block!important}
+.tx-row>div:nth-child(2){grid-area:info!important;align-self:center}
+.tx-date{display:none!important}
+.tx-method{display:none!important}
+.tx-acts{grid-area:acts!important;align-self:center;display:flex!important;align-items:center;gap:5px}
+}
 .th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim)}
 .th.right{text-align:right}
 .tx-row{display:grid;grid-template-columns:1fr 80px 80px auto;padding:10px 14px;border-bottom:1px solid var(--border-soft);cursor:pointer;transition:background 0.12s;align-items:center;text-align:left}
-.tx-date-mobile{display:none}
+.tx-meta-m{display:none}.tx-acts{display:flex;align-items:center;justify-content:flex-end;gap:6px}
 .tx-row:hover{background:var(--card)}
 .tx-row:last-child{border-bottom:none}
 .tx-name{font-size:12px;color:var(--text);font-weight:500}
@@ -2098,19 +2106,17 @@ function renderFinance() {
   document.getElementById('fin-tx-list').innerHTML = activeFiltersPillsHtml() + (filtFin.length
     ? filtFin.map(f=>`
       <div class="tx-row" onclick="editFinance(${f.id})">
-        <div class="tx-date-mobile" style="display:none;text-align:left">${f.date?fmtDate(f.date):'—'}${f.method?' · '+escHtml(f.method):''}${f.category?' · '+escHtml(f.category):''}</div>
-        <div class="tx-row-main">
-          <div style="flex:1;min-width:0;overflow:hidden">
-            <div class="tx-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(f.desc)}</div>
-            <div class="tx-cat">${escHtml(f.category)}${f.source?' · '+escHtml(f.source):''}</div>
-          </div>
-          <span class="tx-date">${f.date?fmtDate(f.date):'—'}</span>
-          <span class="tx-method">${f.method}</span>
-          <div class="tx-row-actions">
-            <span class="tx-amount ${f.type==='entrada'?'pos':'neg'}">${f.type==='entrada'?'+':'-'}${fmtMoney(f.value)}</span>
-            <button class="btn btn-ghost btn-sm" style="padding:3px 6px;font-size:11px;flex-shrink:0" onclick="event.stopPropagation();finToBacklog(${f.id})" title="↩ Backlog">↩</button>
-            <button class="btn btn-danger btn-sm" style="padding:3px 6px;font-size:11px;flex-shrink:0" onclick="event.stopPropagation();deleteFinance(${f.id})">✕</button>
-          </div>
+        <div class="tx-meta-m">${f.date?fmtDate(f.date):'—'}${f.method?' · '+escHtml(f.method):''}${f.category?' · '+escHtml(f.category):''}</div>
+        <div>
+          <div class="tx-name">${escHtml(f.desc)}</div>
+          <div class="tx-cat">${escHtml(f.category)}${f.source?' · '+escHtml(f.source):''}</div>
+        </div>
+        <span class="tx-date">${f.date?fmtDate(f.date):'—'}</span>
+        <span class="tx-method">${f.method}</span>
+        <div class="tx-acts">
+          <span class="tx-amount ${f.type==='entrada'?'pos':'neg'}">${f.type==='entrada'?'+':'-'}${fmtMoney(f.value)}</span>
+          <button class="btn btn-ghost btn-sm" style="padding:3px 6px;font-size:11px" onclick="event.stopPropagation();finToBacklog(${f.id})" title="↩ Backlog">↩</button>
+          <button class="btn btn-danger btn-sm" style="padding:3px 6px;font-size:11px" onclick="event.stopPropagation();deleteFinance(${f.id})">✕</button>
         </div>
       </div>`).join('')
     : '<p style="color:var(--text-dim);font-size:13px;padding:16px">Nenhum lançamento ainda.</p>');
