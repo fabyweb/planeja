@@ -627,6 +627,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="manifest" href="manifest.json">
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <!-- ── LOCK SCREEN ── -->
@@ -5927,9 +5930,30 @@ function openTagsModal(listId) {
 // ══════════════════════════════════════════
 //  PERSISTÊNCIA — localStorage + JSONBin
 // ══════════════════════════════════════════
-let cloudKey    = localStorage.getItem('jsonbin_key') || '';
-let cloudBinId  = localStorage.getItem('jsonbin_bin_id') || '';
 let cloudTimer  = null;
+
+// ── Firebase state ──
+let _fbApp = null;
+let _fbDb  = null;
+
+function fbLoadConfig() {
+  try { return JSON.parse(localStorage.getItem('fb_config') || 'null'); } catch(e) { return null; }
+}
+function fbSaveConfig(cfg) { localStorage.setItem('fb_config', JSON.stringify(cfg)); }
+function fbIsConfigured() { const c = fbLoadConfig(); return !!(c && c.projectId); }
+
+async function fbInit() {
+  if (_fbDb) return true;
+  const cfg = fbLoadConfig();
+  if (!cfg || !cfg.projectId) return false;
+  try {
+    try { _fbApp = firebase.app('flow'); } catch(e) { _fbApp = firebase.initializeApp(cfg, 'flow'); }
+    _fbDb = firebase.firestore(_fbApp);
+    return true;
+  } catch(e) { console.error('fbInit:', e); return false; }
+}
+
+function fbDocRef() { return _fbDb.collection('flow_painel').doc('dados'); }
 
 function lsSave() {
   try {
@@ -5994,10 +6018,10 @@ function lsLoad() {
 
 function scheduleSave() {
   lsSave();
-  if (!cloudKey || !cloudBinId) return;
+  if (!fbIsConfigured()) return;
   if (cloudTimer) clearTimeout(cloudTimer);
   cloudSetBtn('busy', 'Salvando…');
-  cloudTimer = setTimeout(cloudSave, 2000);
+  cloudTimer = setTimeout(fbCloudSave, 2000);
 }
 
 // ── JSONBin ──
@@ -6009,122 +6033,80 @@ function cloudSetBtn(state, text) {
 }
 
 function openCloudModal() {
-  if (cloudKey && cloudBinId) {
+  const cfg = fbLoadConfig();
+  if (cfg && cfg.projectId) {
     document.getElementById('cloud-connected').style.display = 'block';
     document.getElementById('cloud-setup').style.display = 'none';
     document.getElementById('cloud-footer').style.display = 'none';
+    var pidEl = document.getElementById('cloud-project-id');
+    if (pidEl) pidEl.textContent = cfg.projectId;
   } else {
     document.getElementById('cloud-connected').style.display = 'none';
     document.getElementById('cloud-setup').style.display = 'block';
     document.getElementById('cloud-footer').style.display = 'flex';
-    var inp = document.getElementById('cloud-key');
-    if (inp && cloudKey) inp.value = cloudKey;
   }
   openModal('modal-cloud');
 }
 
 async function cloudConnect() {
-  var key = document.getElementById('cloud-key').value.trim();
-  if (!key) { showToast('⚠️ Cole a Master Key'); return; }
-  cloudKey = key;
-  localStorage.setItem('jsonbin_key', key);
-
+  var raw = document.getElementById('cloud-key-json') ? document.getElementById('cloud-key-json').value.trim() : '';
+  if (!raw) { showToast('⚠️ Cole a configuração do Firebase'); return; }
   try {
-    // If we already have a bin ID, just reconnect
-    if (cloudBinId) {
-      cloudSetBtn('ok', '✓ Nuvem');
-      closeModal('modal-cloud');
-      cloudLoad();
-      return;
-    }
-
-    // Search for existing bin by name
-    showToast('🔍 Procurando dados na nuvem…');
-    var searchResp = await fetch('https://api.jsonbin.io/v3/c/uncategorized/bins', {
-      headers: { 'X-Master-Key': key },
-    });
-    var bins = await searchResp.json();
-
-    if (Array.isArray(bins)) {
-      var existing = bins.find(function(b) { return b.snippetMeta && b.snippetMeta.name === 'painel-gestao-dados'; });
-      if (existing) {
-        cloudBinId = existing.record;
-        localStorage.setItem('jsonbin_bin_id', cloudBinId);
-        cloudSetBtn('ok', '✓ Nuvem');
-        closeModal('modal-cloud');
-        showToast('✅ Dados encontrados na nuvem! Sincronizando…');
-        cloudLoad();
-        return;
-      }
-    }
-
-    // No existing bin found — create new one
-    var resp = await fetch('https://api.jsonbin.io/v3/b', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': key,
-        'X-Bin-Name': 'painel-gestao-dados',
-        'X-Bin-Private': 'true',
-      },
-      body: JSON.stringify({ init: true, savedAt: new Date().toISOString() }),
-    });
-    var json = await resp.json();
-
-    if (json.metadata && json.metadata.id) {
-      cloudBinId = json.metadata.id;
-      localStorage.setItem('jsonbin_bin_id', cloudBinId);
-      cloudSetBtn('ok', '✓ Nuvem');
-      closeModal('modal-cloud');
-      showToast('✅ Nuvem configurada! Salvando dados…');
-      cloudSave();
-    } else {
-      showToast('❌ Erro: ' + (json.message || JSON.stringify(json)));
-    }
-  } catch(err) {
-    showToast('❌ Erro: ' + err.message);
-  }
+    var cfg = JSON.parse(raw);
+    if (!cfg.projectId || !cfg.apiKey) { showToast('⚠️ JSON inválido — verifique os campos'); return; }
+    fbSaveConfig(cfg);
+    _fbApp = null; _fbDb = null;
+    const ok = await fbInit();
+    if (!ok) { showToast('❌ Falha ao conectar ao Firebase'); return; }
+    cloudSetBtn('ok', '✓ Firebase');
+    closeModal('modal-cloud');
+    showToast('✅ Firebase conectado!');
+    fbCloudSave();
+  } catch(e) { showToast('❌ JSON inválido: ' + e.message); }
 }
 
-async function cloudSave() {
-  if (!cloudKey || !cloudBinId) return;
+async function fbCloudSave() {
+  if (!fbIsConfigured()) return;
   cloudSetBtn('busy', 'Salvando…');
   try {
-    var payload = JSON.stringify({
+    const ok = await fbInit();
+    if (!ok) throw new Error('Firebase não inicializado');
+    const notesClean = (typeof notes !== 'undefined' ? notes : []).map(function(n) {
+      return n.image ? Object.assign({}, n, {image: '__local__'}) : n;
+    });
+    const payload = {
       savedAt: new Date().toISOString(),
-      events, nextEventId,
-      backlog, nextBacklogId,
-      tasks, nextTaskId,
-      kanbanCols, nextColId,
-      finances, nextFinId, finCategories,
-      lists, nextListId, nextListItemId,
-      notes, nextNoteId, noteFolders,
-      curTopicosStatus, curTopicosData,
-      atividades, nextAtivId,
-      sessoes, nextSessaoId,
-      questaoSessoes, nextQId,
-      revisoesPendentes, nextRevId,
-      studyBacklog, nextStudyBlogId,
-    });
-
-    await fetch('https://api.jsonbin.io/v3/b/' + cloudBinId, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': cloudKey,
-      },
-      body: payload,
-    });
-
-    var time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+      events: typeof events!=='undefined'?events:[], nextEventId: typeof nextEventId!=='undefined'?nextEventId:300,
+      backlog: typeof backlog!=='undefined'?backlog:[], nextBacklogId: typeof nextBacklogId!=='undefined'?nextBacklogId:8,
+      tasks: typeof tasks!=='undefined'?tasks:[], nextTaskId: typeof nextTaskId!=='undefined'?nextTaskId:200,
+      kanbanCols: typeof kanbanCols!=='undefined'?kanbanCols:[], nextColId: typeof nextColId!=='undefined'?nextColId:10,
+      finances: typeof finances!=='undefined'?finances:[], nextFinId: typeof nextFinId!=='undefined'?nextFinId:400,
+      finCategories: typeof finCategories!=='undefined'?finCategories:[],
+      lists: typeof lists!=='undefined'?lists:[], nextListId: typeof nextListId!=='undefined'?nextListId:10,
+      nextListItemId: typeof nextListItemId!=='undefined'?nextListItemId:100,
+      notes: notesClean, nextNoteId: typeof nextNoteId!=='undefined'?nextNoteId:10,
+      noteFolders: typeof noteFolders!=='undefined'?noteFolders:[],
+      curTopicosStatus: typeof curTopicosStatus!=='undefined'?curTopicosStatus:{},
+      curTopicosData: typeof curTopicosData!=='undefined'?curTopicosData:{},
+      atividades: typeof atividades!=='undefined'?atividades:[], nextAtivId: typeof nextAtivId!=='undefined'?nextAtivId:10,
+      sessoes: typeof sessoes!=='undefined'?sessoes:[], nextSessaoId: typeof nextSessaoId!=='undefined'?nextSessaoId:1,
+      questaoSessoes: typeof questaoSessoes!=='undefined'?questaoSessoes:[], nextQId: typeof nextQId!=='undefined'?nextQId:1,
+      revisoesPendentes: typeof revisoesPendentes!=='undefined'?revisoesPendentes:[], nextRevId: typeof nextRevId!=='undefined'?nextRevId:1,
+      studyBacklog: typeof studyBacklog!=='undefined'?studyBacklog:[], nextStudyBlogId: typeof nextStudyBlogId!=='undefined'?nextStudyBlogId:1,
+    };
+    await fbDocRef().set(payload);
+    const time = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     cloudSetBtn('ok', '✓ ' + time);
     var lbl = document.getElementById('cloud-last-sync');
     if (lbl) lbl.textContent = 'Último sync: ' + time;
-  } catch(err) {
+  } catch(e) {
     cloudSetBtn('off', '⚠️ Erro');
-    console.error('cloudSave:', err);
+    console.error('fbCloudSave:', e);
+    showToast('❌ Erro ao salvar: ' + e.message);
   }
 }
+
+function cloudSave() { return fbCloudSave(); }
 
 
 function cloudDiag(msg) {
@@ -6205,9 +6187,13 @@ async function cloudLoad(forceLoad) {
 
     lsSave();
     renderBacklog();
+    renderKanban();
     renderCalendar();
-    if (typeof renderFinance === 'function') renderFinance();
+    renderFinance();
+    renderLists();
+    renderNotes();
     if (typeof renderEstudosPainel === 'function') renderEstudosPainel();
+    if (typeof renderEstudos === 'function') renderEstudos();
     cloudSetBtn('ok', '✓ Nuvem');
     var count = (d.backlog||[]).length + (d.tasks||[]).length + (d.finances||[]).length + (d.studyBacklog||[]).length;
     cloudDiag('✅ Carregado! ' + count + ' itens no total. Nuvem: ' + (d.savedAt ? new Date(d.savedAt).toLocaleString('pt-BR') : '?'));
@@ -6219,14 +6205,84 @@ async function cloudLoad(forceLoad) {
   }
 }
 
+async function fbCloudLoad(forceLoad) {
+  if (!fbIsConfigured()) { cloudDiag("Firebase nao configurado"); return; }
+  cloudSetBtn("busy", "Carregando...");
+  cloudDiag("Conectando ao Firebase...");
+  try {
+    var ok = await fbInit();
+    if (!ok) throw new Error("Firebase nao inicializado");
+    var snap = await fbDocRef().get();
+    cloudDiag("Documento existe: " + snap.exists);
+    if (!snap.exists) {
+      cloudDiag("Sem dados na nuvem - salvando locais");
+      await fbCloudSave();
+      showToast("Primeiro uso - dados salvos no Firebase!");
+      cloudSetBtn("ok", "Firebase");
+      return;
+    }
+    var d = snap.data();
+    cloudDiag("Dados recebidos. savedAt: " + (d.savedAt || "sem data"));
+    var cloudTime = d.savedAt ? new Date(d.savedAt).getTime() : 0;
+    var localRaw = localStorage.getItem("painel_dados_v1");
+    var localTime = 0;
+    if (localRaw) { try { localTime = new Date(JSON.parse(localRaw).savedAt).getTime(); } catch(_){} }
+    if (!forceLoad && cloudTime > 0 && cloudTime <= localTime && localRaw) {
+      cloudDiag("Local mais recente - Firebase atualizado");
+      await fbCloudSave(); cloudSetBtn("ok", "Nuvem"); return;
+    }
+    if (d.events)            { events = d.events; nextEventId = d.nextEventId || nextEventId; }
+    if (d.backlog)           { backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId; }
+    if (d.tasks)             { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
+    if (d.kanbanCols)        { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
+    if (d.finances)          { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
+    if (d.finCategories)     { finCategories = d.finCategories; }
+    if (d.lists)             { lists = d.lists; nextListId = d.nextListId||nextListId; nextListItemId = d.nextListItemId||nextListItemId; }
+    if (d.notes) {
+      var localNotes = [];
+      try { localNotes = JSON.parse(localStorage.getItem("painel_dados_v1")||"{}").notes||[]; } catch(_){}
+      notes = d.notes.map(function(n){
+        if (n.image === "__local__") {
+          var ln = localNotes.find(function(x){ return x.id === n.id; });
+          return ln ? Object.assign({},n,{image:ln.image}) : Object.assign({},n,{image:null});
+        }
+        return n;
+      });
+      nextNoteId = d.nextNoteId || nextNoteId;
+    }
+    if (d.noteFolders)       { noteFolders = d.noteFolders; }
+    if (d.curTopicosStatus)  { curTopicosStatus = d.curTopicosStatus; }
+    if (d.curTopicosData)    { curTopicosData = d.curTopicosData; }
+    if (d.atividades)        { atividades = d.atividades; nextAtivId = d.nextAtivId||nextAtivId; }
+    if (d.sessoes)           { sessoes = d.sessoes; nextSessaoId = d.nextSessaoId||nextSessaoId; }
+    if (d.questaoSessoes)    { questaoSessoes = d.questaoSessoes; nextQId = d.nextQId||nextQId; }
+    if (d.revisoesPendentes) { revisoesPendentes = d.revisoesPendentes; nextRevId = d.nextRevId||nextRevId; }
+    if (d.studyBacklog)      { studyBacklog = d.studyBacklog; nextStudyBlogId = d.nextStudyBlogId||nextStudyBlogId; }
+    lsSave();
+    if (typeof renderBacklog==="function") renderBacklog();
+    if (typeof renderCalendar==="function") renderCalendar();
+    if (typeof renderFinance==="function") renderFinance();
+    if (typeof renderNotes==="function" && currentView==="notes") renderNotes();
+    if (typeof renderEstudosPainel==="function" && currentView==="estudos") renderEstudosPainel();
+    cloudSetBtn("ok", "Nuvem");
+    var cnt = (d.backlog||[]).length+(d.tasks||[]).length+(d.finances||[]).length+(d.notes||[]).length+(d.atividades||[]).length;
+    cloudDiag("OK! " + cnt + " itens carregados do Firebase!");
+    showToast("Todos os modulos carregados do Firebase (" + cnt + " itens)");
+  } catch(e) {
+    cloudSetBtn("off", "Erro");
+    cloudDiag("Erro: " + e.message);
+    showToast("Erro ao carregar: " + e.message);
+  }
+}
+
+function cloudLoad(force) { return fbCloudLoad(force); }
+
 function cloudDisconnect() {
-  cloudKey = '';
-  cloudBinId = '';
-  localStorage.removeItem('jsonbin_key');
-  localStorage.removeItem('jsonbin_bin_id');
+  localStorage.removeItem('fb_config');
+  _fbApp = null; _fbDb = null;
   cloudSetBtn('off', 'Nuvem');
   closeModal('modal-cloud');
-  showToast('Nuvem desconectada');
+  showToast('Firebase desconectado');
 }
 
 // ══════════════════════════════════════════
@@ -7529,7 +7585,7 @@ async function lockSubmit() {
       lockSetEjs({ serviceId: svcEl.value.trim(), templateId: tplEl.value.trim(), publicKey: pubEl.value.trim() });
     }
     lockSetHash(hash);
-    if (typeof cloudSave === 'function' && cloudKey && cloudBinId) setTimeout(cloudSave, 500);
+    if (fbIsConfigured()) setTimeout(fbCloudSave, 500);
     lockHide();
     showToast('🔒 Senha criada' + (email ? ' — recuperação via email configurada' : ''));
 
@@ -7676,10 +7732,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Auto-sync from cloud if connected
-  if (cloudKey && cloudBinId) {
-    cloudSetBtn('ok', '✓ Nuvem');
-    setTimeout(cloudLoad, 1000);
+  // Auto-sync do Firebase se configurado
+  if (fbIsConfigured()) {
+    cloudSetBtn('ok', '✓ Firebase');
+    setTimeout(function() { fbCloudLoad(false); }, 1200);
   }
 
   // Auto-reconnect Google Calendar
@@ -7691,44 +7747,46 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- ══ MODAL — NUVEM ══ -->
+
+<!-- Modal Firebase -->
 <div class="modal-overlay" id="modal-cloud">
-  <div class="modal" style="max-width:440px">
+  <div class="modal" style="max-width:500px">
     <div class="modal-header">
-      <span class="modal-title">☁️ Sincronização na nuvem</span>
-      <button class="modal-close" onclick="closeModal('modal-cloud')">✕</button>
+      <span class="modal-title">Firebase Firestore</span>
+      <button class="modal-close" onclick="closeModal('modal-cloud')">X</button>
     </div>
     <div class="modal-body">
       <div id="cloud-connected" style="display:none">
-        <div style="padding:10px;background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:var(--radius-sm);margin-bottom:14px">
-          <div style="font-size:13px;font-weight:600;color:var(--green)">✅ Conectado ao JSONBin</div>
+        <div style="padding:12px;background:rgba(16,185,129,0.1);border:1px solid var(--green);border-radius:var(--radius-sm);margin-bottom:14px">
+          <div style="font-size:13px;font-weight:600;color:var(--green)">Firebase conectado</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:3px">Projeto: <span id="cloud-project-id" style="font-family:monospace"></span></div>
           <div style="font-size:11px;color:var(--text-dim);margin-top:2px" id="cloud-last-sync"></div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-primary btn-sm" onclick="cloudSave()">💾 Salvar agora</button>
-          <button class="btn btn-ghost btn-sm" onclick="cloudLoad()">↻ Carregar da nuvem</button>
+          <button class="btn btn-primary btn-sm" onclick="fbCloudSave()">Salvar agora</button>
+          <button class="btn btn-ghost btn-sm" onclick="fbCloudLoad(false)">Carregar</button>
+          <button class="btn btn-ghost btn-sm" onclick="fbCloudLoad(true)">Forcar carga</button>
           <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="cloudDisconnect()">Desconectar</button>
         </div>
       </div>
       <div id="cloud-setup">
-        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Salve seus dados na nuvem gratuitamente com o JSONBin.io.</p>
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.6">
-          <strong>Como configurar:</strong><br>
-          1. Acesse <a href="https://jsonbin.io" target="_blank" style="color:var(--violet-light)">jsonbin.io</a> e crie conta<br>
-          2. Vá em API Keys e copie a Master Key<br>
-          3. Cole abaixo e clique Conectar
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Cole o objeto firebaseConfig do seu projeto.</p>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.6;background:var(--card);border-radius:6px;padding:10px">
+          Console Firebase > Configuracoes do projeto > Seus apps > Web > copie o firebaseConfig
         </div>
         <div class="form-row">
-          <label>Master Key</label>
-          <input class="form-input" id="cloud-key" placeholder="$2a$10$..." style="font-family:'JetBrains Mono',monospace;font-size:11px">
+          <label>firebaseConfig (JSON)</label>
+          <textarea class="form-textarea" id="cloud-key-json" style="min-height:120px;font-family:monospace;font-size:11px" placeholder='{"apiKey":"AIza...","projectId":"meu-projeto"}'></textarea>
         </div>
       </div>
     </div>
     <div class="modal-footer" id="cloud-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-cloud')">Cancelar</button>
-      <button class="btn btn-primary" id="cloud-connect-btn" onclick="cloudConnect()">Conectar</button>
+      <button class="btn btn-primary" onclick="cloudConnect()">Conectar Firebase</button>
     </div>
   </div>
 </div>
+
 
 
 <!-- ══ MODAL — NOTA ══ -->
@@ -7932,8 +7990,8 @@ document.addEventListener('DOMContentLoaded', function() {
           <span style="font-size:13px;font-weight:600;color:var(--text)">☁️ Sincronização na nuvem</span>
           <span id="settings-cloud-status" style="font-size:11px;color:var(--text-dim)">Não configurado</span>
         </div>
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Salva e sincroniza seus dados entre dispositivos via JSONBin.io</div>
-        <button class="btn btn-primary btn-sm" onclick="closeModal('modal-settings');openCloudModal()">Configurar JSONBin</button>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Sincroniza TODOS os módulos (Financeiro, Notas, Estudos, etc.) via Firebase Firestore</div>
+        <button class="btn btn-primary btn-sm" onclick="closeModal('modal-settings');openCloudModal()">🔥 Configurar Firebase</button>
         <div id="cloud-diag-wrap" style="display:none;margin-top:12px;background:var(--bg);border:1px solid var(--border-soft);border-radius:8px;padding:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
             <span style="font-size:11px;font-weight:600;color:var(--text-dim)">Diagnóstico de sincronização</span>
