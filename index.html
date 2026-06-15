@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual">
 <title>Flow — Gestão Pessoal</title>
 <meta name="version" content="1781100010">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -20,7 +20,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;overscroll-behavior:none}
 
 /* ── LAYOUT ── */
 .app-shell{display:flex;flex:1;overflow:hidden}
@@ -581,11 +581,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 @media(max-width:900px){
   .kanban-board{grid-template-columns:repeat(2,1fr)}
   .fin-layout{grid-template-columns:1fr}
-  .calendar-layout{flex-direction:column;height:auto}
-  .event-list{width:100%!important;height:auto!important;max-height:50vh}
-  .cal-main{height:auto!important;min-height:300px}
-  .event-list{height:auto;max-height:60vh}
-  .cal-main{max-height:none;overflow:visible}
+  .event-list{width:280px!important}
   .fin-summary{grid-template-columns:repeat(3,1fr)}
 }
 @media(max-width:640px){
@@ -598,22 +594,40 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   .topbar-actions .btn-ghost:not(#search-toggle-btn):not(#filter-toggle-btn){display:none}
   #search-toggle-btn,#filter-toggle-btn{padding:7px 9px}
   #filter-toggle-btn .filter-label{display:none}
-  .content{padding:14px}
+  .content{padding:10px}
   .kanban-board{grid-template-columns:1fr}
   .fin-summary{grid-template-columns:1fr;gap:8px}
   .fin-layout{grid-template-columns:1fr}
-  .calendar-layout{flex-direction:column;height:auto}
-  .event-list{width:100%!important;height:auto!important;max-height:50vh}
-  .cal-main{height:auto!important;min-height:300px}
-  .event-list{height:auto;max-height:60vh}
-  .cal-main{max-height:none;overflow:visible}
+  /* Calendário responsivo */
+  .calendar-layout{flex-direction:column!important;height:auto!important;gap:10px}
+  .cal-main{height:auto!important;max-height:none!important;overflow:visible!important;flex:none!important}
+  .event-list{width:100%!important;height:auto!important;max-height:60vh!important;flex-shrink:unset!important}
+  .cal-cell{min-height:40px;padding:3px 4px 2px}
+  .cal-ev-chip{font-size:8px;padding:1px 3px}
+  .cal-ev-dot-text{font-size:8px}
+  .cal-ev-dot{width:5px;height:5px}
+  .cal-ev-more{font-size:8px}
+  .cal-day-num{font-size:10px}
+  #gcal-filters{padding:6px 10px!important}
+  #gcal-filters button{font-size:9px!important;padding:2px 7px!important}
+  .gcal-bar{padding:8px 10px;flex-wrap:wrap;gap:6px}
+  /* Transações */
   .tx-row .tx-method{display:none}
+  /* Listas */
   .lists-grid{grid-template-columns:1fr}
+  /* Modais */
   .modal{max-width:100%;margin:0}
   .modal-overlay{align-items:flex-end;padding:0}
   .modal{border-radius:var(--radius) var(--radius) 0 0;max-height:85vh}
   .gantt-row-name{min-width:90px;font-size:10px}
   .form-grid{grid-template-columns:1fr}
+}
+/* Tablet landscape — previne barra preta do teclado virtual */
+@media(max-width:1024px) and (min-width:641px){
+  .calendar-layout{gap:10px}
+  .event-list{width:300px!important}
+  .cal-cell{min-height:48px}
+  .cal-ev-chip{font-size:9px}
 }
 @media(max-width:400px){
   .fin-summary{grid-template-columns:1fr}
