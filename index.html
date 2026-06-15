@@ -2331,7 +2331,7 @@ function inboxLoadPhoto(input) {
     // Comprime a imagem via canvas antes de armazenar
     const img = new Image();
     img.onload = function() {
-      const MAX = 600; // px máximo em qualquer dimensão
+      const MAX = 400; // px máximo — mantém tamanho pequeno para caber no Firebase
       let w = img.width, h = img.height;
       if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
       else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX; }
@@ -2339,7 +2339,7 @@ function inboxLoadPhoto(input) {
       canvas.width = w; canvas.height = h;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
-      inboxPendingPhoto = canvas.toDataURL('image/jpeg', 0.7); // JPEG 70% qualidade
+      inboxPendingPhoto = canvas.toDataURL('image/jpeg', 0.6); // JPEG 60% qualidade
       const preview = document.getElementById('inbox-photo-preview');
       if (preview) {
         preview.style.display = 'block';
@@ -2393,6 +2393,7 @@ function addToBacklogFull() {
   if (photoBtn) photoBtn.style.color = '';
   closeTagAC();
   lsSave();
+  saveBacklogPhotos();
   scheduleSave();
   renderBacklog();
 }
@@ -6052,11 +6053,13 @@ function fbDocRef() { return _fbDb.collection('flow_painel').doc('dados'); }
 
 function lsSave() {
   try {
+    // Remove fotos do backlog antes de salvar no localStorage (evita quota exceeded)
+    const backlogSemFoto = backlog.map(function(i){ return i.photo ? Object.assign({},i,{photo:'__local__'}) : i; });
     localStorage.setItem('painel_dados_v1', JSON.stringify({
       savedAt: new Date().toISOString(),
       events, nextEventId,
       studyBacklog, nextStudyBlogId,
-      backlog, nextBacklogId,
+      backlog: backlogSemFoto, nextBacklogId,
       tasks, nextTaskId,
       kanbanCols, nextColId,
       finances, nextFinId, finCategories,
@@ -6069,6 +6072,22 @@ function lsSave() {
       revisoesPendentes, nextRevId,
     }));
   } catch(e) { console.warn('lsSave:', e); }
+}
+
+// Salva fotos do backlog separadamente (fora do JSON principal)
+function saveBacklogPhotos() {
+  try {
+    const photos = {};
+    backlog.forEach(function(i){ if (i.photo && i.photo !== '__local__') photos[i.id] = i.photo; });
+    localStorage.setItem('painel_backlog_photos', JSON.stringify(photos));
+  } catch(e) { console.warn('saveBacklogPhotos:', e); }
+}
+
+function loadBacklogPhotos() {
+  try {
+    const photos = JSON.parse(localStorage.getItem('painel_backlog_photos') || '{}');
+    backlog.forEach(function(i){ if (i.photo === '__local__' && photos[i.id]) i.photo = photos[i.id]; });
+  } catch(e) {}
 }
 
 function lsLoad() {
@@ -7896,6 +7915,7 @@ function lockChangePassword() {
 
 document.addEventListener('DOMContentLoaded', function() {
   lsLoad();
+  loadBacklogPhotos();
   pwaInit();
   
 // Normaliza finCategories para garantir que sejam sempre objetos
