@@ -248,10 +248,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .fin-cal-stat{flex:1}
 .fin-cal-stat-label{font-size:10px;color:var(--text-dim);margin-bottom:2px}
 .fin-cal-stat-val{font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace}
-@media(max-width:640px){.fin-cal-cell{min-height:40px;padding:3px}.fin-cal-val{font-size:8px}.fin-cal-day{font-size:9px}.fin-cal-stat-val{font-size:12px}}
+@media(max-width:1024px){.fin-cal-cell{min-height:40px;padding:3px}.fin-cal-val{font-size:8px}.fin-cal-day{font-size:9px}.fin-cal-stat-val{font-size:12px}}
 .fin-transactions{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden}
 .table-header{display:grid;grid-template-columns:1fr 80px 80px 70px;padding:9px 14px;background:var(--bg);border-bottom:1px solid var(--border-soft)}
-@media(max-width:640px){
+@media(max-width:1024px){
 .table-header{display:none!important}
 .tx-row{display:grid!important;grid-template-columns:1fr auto!important;grid-template-areas:"meta meta" "info acts"!important;padding:11px 14px!important;gap:3px 8px!important;align-items:unset!important}
 .tx-meta-m{grid-area:meta!important;font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;display:block!important}
@@ -416,8 +416,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 
 /* ══ ESTUDOS ══ */
 .estudos-painel-grid{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
-@media(max-width:900px){.estudos-painel-grid{grid-template-columns:1fr 260px}}
-@media(max-width:640px){.estudos-painel-grid{grid-template-columns:1fr;gap:12px}}
+
+@media(max-width:1024px){.estudos-painel-grid{grid-template-columns:1fr;gap:12px}}
 .estudos-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden}
 .estudos-card-header{padding:14px 16px 12px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:10px}
 .estudos-card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);flex:1}
@@ -434,7 +434,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 
 /* Timer */
 .timer-display{font-size:40px;font-weight:300;font-family:'JetBrains Mono',monospace;color:var(--text);text-align:center;letter-spacing:2px;margin:10px 0}
-@media(max-width:640px){.timer-display{font-size:32px;margin:6px 0}}
+@media(max-width:1024px){.timer-display{font-size:32px;margin:6px 0}}
 .timer-subject{font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:12px;min-height:18px}
 .timer-btns{display:flex;gap:8px;justify-content:center}
 .timer-btn{padding:8px 20px;border-radius:var(--radius-sm);border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:'Inter',sans-serif}
@@ -490,7 +490,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 /* Horas por disciplina */
 .horas-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 
-@media(max-width:900px){.estudos-grid{grid-template-columns:1fr}}
+
 
 /* ══ CURRÍCULO ══ */
 .curriculo-layout{display:grid;grid-template-columns:220px 1fr;gap:12px;margin-top:8px}
@@ -545,11 +545,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .top-hbtn:hover{background:var(--card-hover);color:var(--text)}
 /* Estudos tabs */
 .estudos-tabs{display:flex;gap:0;border-bottom:1px solid var(--border-soft);margin-bottom:16px;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
-@media(max-width:640px){.estudos-tabs{margin-bottom:12px;gap:0}.estudos-tab{padding:8px 12px;font-size:11px;white-space:nowrap}}
+@media(max-width:1024px){.estudos-tabs{margin-bottom:12px;gap:0}.estudos-tab{padding:8px 12px;font-size:11px;white-space:nowrap}}
 .estudos-tab{padding:10px 18px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;transition:all 0.15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'Inter',sans-serif}
 .estudos-tab:hover{color:var(--text)}
 .estudos-tab.active{color:var(--violet-light);border-bottom-color:var(--violet)}
-@media(max-width:700px){.curriculo-layout{grid-template-columns:1fr;height:auto}.curriculo-sidebar{max-height:200px}}
+@media(max-width:1024px){.curriculo-layout{grid-template-columns:1fr;height:auto}.curriculo-sidebar{max-height:200px}}
 
 /* ── FIREBASE ── */
 .fb-status{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);color:var(--text-muted);background:transparent;font-family:'Inter',sans-serif;transition:all 0.15s}
@@ -582,13 +582,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 /* ══════════════════════
    RESPONSIVE
 ══════════════════════ */
-@media(max-width:900px){
-  .kanban-board{grid-template-columns:repeat(2,1fr)}
-  .fin-layout{grid-template-columns:1fr}
-  .event-list{width:280px!important}
-  .fin-summary{grid-template-columns:repeat(3,1fr)}
-}
-@media(max-width:640px){
+
+@media(max-width:1024px){
   .sidebar{display:none}
   .bottom-nav{display:flex}
   body{flex-direction:column}
@@ -626,13 +621,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   .gantt-row-name{min-width:90px;font-size:10px}
   .form-grid{grid-template-columns:1fr}
 }
-/* Tablet landscape — previne barra preta do teclado virtual */
-@media(max-width:1024px) and (min-width:641px){
-  .calendar-layout{gap:10px}
-  .event-list{width:300px!important}
-  .cal-cell{min-height:48px}
-  .cal-ev-chip{font-size:9px}
-}
+
 @media(max-width:400px){
   .fin-summary{grid-template-columns:1fr}
   .inbox-input{font-size:16px}
