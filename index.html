@@ -2601,6 +2601,8 @@ function filteredListItems(list) {
   let items = [...list.items];
   if (activeFilters.listTag)  items = items.filter(i=>i.tag===activeFilters.listTag);
   if (activeFilters.listDone !== undefined) items = items.filter(i=>String(i.done)===activeFilters.listDone);
+  // Concluidos sempre no final, mantendo ordem relativa dentro de cada grupo
+  items.sort((a, b) => (a.done === b.done) ? 0 : a.done ? 1 : -1);
   return items;
 }
 
