@@ -831,13 +831,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
     <!-- ═══ CALENDÁRIO ═══ -->
     <div class="view" id="view-calendar">
       <div class="calendar-layout">
-        <div>
-          <div class="event-list" id="event-list"></div>
-        </div>
-      </div>
-    
         <div class="cal-main">
-          <!-- Google Calendar bar -->
           <div class="gcal-bar" id="gcal-bar">
             <div class="gcal-status disconnected" id="gcal-status">
               <span class="gcal-dot"></span>Google Calendar
@@ -859,7 +853,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
           </div>
           <div class="cal-grid-head" id="cal-day-names"></div>
           <div class="cal-grid" id="cal-grid"></div>
-        </div></div>
+        </div>
+        <div>
+          <div class="event-list" id="event-list"></div>
+        </div>
+      </div>
+    </div>
 
     <!-- ═══ FINANCEIRO ═══ -->
     <div class="view" id="view-finance">
