@@ -846,6 +846,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
               <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="gcalDisconnect()">Desconectar</button>
             </div>
           </div>
+          <div id="gcal-filters" style="display:none;flex-wrap:wrap;gap:5px;padding:8px 14px;border-bottom:1px solid var(--border-soft)"></div>
           <div class="cal-nav">
             <button class="cal-arrow" onclick="changeMonth(-1)">‹</button>
             <span class="cal-month" id="cal-month-label"></span>
@@ -3189,11 +3190,22 @@ let gcalState = {
   connected: false,
   clientId: localStorage.getItem('gcal_client_id') || '',
   token: null,
-  googleEvents: [],  // events fetched from Google
+  googleEvents: [],
+  calendars: [],
   tokenClient: null,
   gapiReady: false,
   gisReady: false,
 };
+let gcalHidden = JSON.parse(localStorage.getItem('gcal_hidden') || '[]');
+function gcalIsHidden(calId) { return gcalHidden.includes(calId); }
+function gcalToggleCal(calId) {
+  if (gcalHidden.includes(calId)) gcalHidden = gcalHidden.filter(function(id){return id!==calId;});
+  else gcalHidden.push(calId);
+  localStorage.setItem('gcal_hidden', JSON.stringify(gcalHidden));
+  renderGcalFilters();
+  if (gcalState.connected) gcalFetchEvents();
+  else renderCalendar();
+}
 
 // Auto-restore saved client ID
 (function() {
@@ -3278,6 +3290,26 @@ function gcalLoadScripts(clientId, callback) {
   }
 }
 
+function renderGcalFilters() {
+  var el = document.getElementById('gcal-filters');
+  if (!el || !gcalState.calendars.length) { if(el) el.style.display='none'; return; }
+  el.style.display = 'flex';
+  el.innerHTML = gcalState.calendars.map(function(cal) {
+    var hidden = gcalIsHidden(cal.id);
+    var name = cal.name.length > 20 ? cal.name.slice(0,18)+'...' : cal.name;
+    return '<button onclick="gcalToggleCal(\'' + cal.id.replace(/'/g,"\\'") + '\')" '
+      + 'style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;'
+      + 'font-size:10px;font-weight:600;border:1px solid ' + (hidden?'var(--border)':cal.color) + ';'
+      + 'background:' + (hidden?'transparent':cal.color+'20') + ';'
+      + 'color:' + (hidden?'var(--text-dim)':cal.color) + ';'
+      + 'cursor:pointer;font-family:inherit;transition:all .12s;opacity:' + (hidden?'0.5':'1') + '" '
+      + 'title="' + (hidden?'Mostrar':'Ocultar') + ' ' + cal.name.replace(/"/g,'&quot;') + '">'
+      + '<span style="width:8px;height:8px;border-radius:50%;background:' + cal.color + ';flex-shrink:0;opacity:' + (hidden?'0.3':'1') + '"></span>'
+      + name
+      + '</button>';
+  }).join('');
+}
+
 function gcalConnect() {
   const clientId = document.getElementById('gcal-client-id')?.value.trim() || gcalState.clientId;
   if (!clientId) { showToast('⚠️ Cole o Client ID primeiro'); return; }
@@ -3352,7 +3384,10 @@ async function gcalFetchEvents() {
     const tMax = new Date(calYear, calMonth + 2, 1).toISOString();
     const allEvents = [];
 
+    gcalState.calendars = calendars.map(function(cal){return {id:cal.id, name:cal.summary||'', color:cal.backgroundColor||'var(--blue)'};});
+
     for (const cal of calendars) {
+      if (gcalIsHidden(cal.id)) continue; // pula calendários ocultos
       try {
         const resp = await gapi.client.calendar.events.list({
           calendarId: cal.id,
@@ -3377,6 +3412,7 @@ async function gcalFetchEvents() {
           allEvents.push({
             id: 'g_' + ev.id,
             googleId: ev.id,
+            calendarId: cal.id,
             title: ev.summary || '(sem título)',
             date,
             time,
@@ -3395,6 +3431,7 @@ async function gcalFetchEvents() {
     }
 
     gcalState.googleEvents = allEvents;
+    renderGcalFilters();
     gcalSetStatus('connected', 'Google Calendar conectado (' + allEvents.length + ' eventos)');
     renderCalendar();
     showToast('↻ ' + allEvents.length + ' eventos de ' + calendars.length + ' calendários');
