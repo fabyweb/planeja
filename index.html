@@ -6492,7 +6492,7 @@ function renderFinCatsModal() {
       '  </div>',
       '  <span style="flex:1;font-size:13px;color:var(--text);font-weight:500">' + escHtml(label) + '</span>',
       '  <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--bg);border:1px solid var(--border-soft);color:' + typeColor + '">' + typeLabel + '</span>',
-      '  <span style="font-size:10px;color:var(--text-dim);min-width:80px;text-align:right">' + txCount + ' lançamento' + (txCount !== 1 ? 's' : '') + '</span>',
+      '  <span style="font-size:10px;color:var(--text-dim);min-width:40px;text-align:right">' + txCount + ' lanç.</span>',
       '  <button class="btn btn-ghost btn-sm" onclick="editCat('+i+')" style="padding:3px 8px;font-size:11px">✏️</button>',
       '  <button class="btn btn-danger btn-sm" onclick="deleteCat('+i+')" style="padding:3px 8px;font-size:11px">✕</button>',
       '</div>'
@@ -8143,7 +8143,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- ══ MODAL — CATEGORIAS FINANCEIRO ══ -->
 <div class="modal-overlay" id="modal-fin-cats">
-  <div class="modal" style="max-width:420px">
+  <div class="modal" style="max-width:600px">
     <div class="modal-header">
       <span class="modal-title">💰 Categorias</span>
       <button class="modal-close" onclick="closeModal('modal-fin-cats')">✕</button>
@@ -8152,7 +8152,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div id="fin-cats-list" style="margin-bottom:14px"></div>
       <div class="form-grid" style="gap:8px;margin-bottom:10px">
         <div class="form-row" style="margin-bottom:0"><label>Nome</label><input class="form-input" id="new-cat-label" placeholder="Ex: Moradia"></div>
-        <div class="form-row" style="margin-bottom:0"><label>Tipo</label><select class="form-select" id="new-cat-type"><option value="expense">Despesa</option><option value="income">Receita</option><option value="both">Ambos</option></select></div>
+        <div class="form-row" style="margin-bottom:0"><label>Tipo</label><select class="form-select" id="new-cat-type"><option value="saida">Despesa</option><option value="entrada">Receita</option><option value="ambos">Ambos</option></select></div>
       </div>
       <button class="btn btn-primary btn-sm" onclick="addFinCategory();renderFinCatsModal()">+ Criar categoria</button>
     </div>
