@@ -276,7 +276,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .list-name{font-size:13px;font-weight:600;color:var(--text);flex:1}
 .list-count{font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
 .list-items{padding:6px 0}
-.list-item{display:flex;align-items:flex-start;gap:6px;padding:7px 10px;transition:background 0.12s;user-select:none}
+.list-item{display:flex;align-items:center;gap:5px;padding:6px 10px;transition:background 0.12s;user-select:none}
 .list-item:hover{background:var(--card)}
 .check-box{width:15px;height:15px;border:1.5px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;flex-shrink:0;margin-top:2px;justify-content:center;transition:all 0.12s;font-size:9px}
 .list-item.done .check-box{background:var(--green);border-color:var(--green);color:#fff}
@@ -2147,12 +2147,16 @@ function renderLists() {
       <div class="list-items">
         ${filteredListItems(list).map(item=>`
           <div class="list-item${item.done?' done':''}">
+            <div style="display:flex;flex-direction:column;gap:1px;flex-shrink:0;margin-right:2px;opacity:0.4">
+              <button onclick="event.stopPropagation();moveListItem('${list.id}',${item.id},-1)" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:8px;padding:0 3px;line-height:1.2" title="Subir">▲</button>
+              <button onclick="event.stopPropagation();moveListItem('${list.id}',${item.id},1)"  style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:8px;padding:0 3px;line-height:1.2" title="Descer">▼</button>
+            </div>
             <div class="check-box" onclick="toggleListItem('${list.id}',${item.id})">${item.done?'✓':''}</div>
             <span class="list-item-text" onclick="toggleListItem('${list.id}',${item.id})">${escHtml(item.text)}</span>
             ${item.tag?`<span class="list-item-tag" onclick="editListItem('${list.id}',${item.id})" style="cursor:pointer" title="Clique para editar">${escHtml(item.tag)}</span>`:`<span style="font-size:9px;color:var(--text-dim);cursor:pointer" onclick="editListItem('${list.id}',${item.id})" title="Adicionar tag">+tag</span>`}
-            <button class="btn btn-ghost btn-sm" style="padding:2px 4px;font-size:10px;flex-shrink:0;color:var(--text-dim);margin-top:1px" onclick="sendToBacklog('list-item',{listId:'${list.id}',itemId:${item.id}})" title="↩ Backlog">↩</button>
-            <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:10px;opacity:0.5;flex-shrink:0" onclick="editListItem('${list.id}',${item.id})">✏️</button>
-            <button class="btn btn-danger btn-sm" style="padding:2px 6px;font-size:10px;flex-shrink:0" onclick="deleteListItem('${list.id}',${item.id})">✕</button>
+            <button class="btn btn-ghost btn-sm" style="padding:2px 4px;font-size:10px;flex-shrink:0;color:var(--text-dim)" onclick="event.stopPropagation();sendToBacklog('list-item',{listId:'${list.id}',itemId:${item.id}})" title="↩ Backlog">↩</button>
+            <button class="btn btn-ghost btn-sm" style="padding:2px 5px;font-size:10px;opacity:0.5;flex-shrink:0" onclick="event.stopPropagation();editListItem('${list.id}',${item.id})">✏️</button>
+            <button class="btn btn-danger btn-sm" style="padding:2px 5px;font-size:10px;flex-shrink:0" onclick="event.stopPropagation();deleteListItem('${list.id}',${item.id})">✕</button>
           </div>`).join('')}
       </div>
       <div class="list-footer">
@@ -2970,6 +2974,19 @@ function deleteListItem(listId, itemId) {
   list.items = list.items.filter(i=>i.id!==itemId);
   renderLists();
 }
+function moveListItem(listId, itemId, dir) {
+  const list = lists.find(l => l.id === listId);
+  if (!list) return;
+  const idx = list.items.findIndex(i => i.id === itemId);
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= list.items.length) return;
+  const tmp = list.items[idx];
+  list.items[idx] = list.items[newIdx];
+  list.items[newIdx] = tmp;
+  lsSave(); scheduleSave();
+  renderLists();
+}
+
 
 // ══════════════════════════════════════════
 //  EDIÇÃO — EVENTOS
