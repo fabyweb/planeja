@@ -670,6 +670,21 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .cal-cell.selected .cal-day-num{color:var(--violet-light)}
 
 .cal-ev-chip,.cal-ev-dot-row{max-width:100%;box-sizing:border-box}
+
+#lock-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:0;padding:16px}
+#lock-screen.visible{display:flex!important}
+.lock-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:20px;padding:clamp(24px,5vw,40px) clamp(20px,5vw,36px);width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:16px;box-shadow:0 24px 64px rgba(0,0,0,.5)}
+.lock-logo{width:56px;height:56px;background:linear-gradient(135deg,var(--violet),#9F67FF);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:2px;flex-shrink:0}
+.lock-title{font-size:18px;font-weight:700;color:var(--text);letter-spacing:.01em;text-align:center}
+.lock-sub{font-size:13px;color:var(--text-dim);text-align:center;margin-top:-8px;line-height:1.5;padding:0 4px}
+.lock-input{width:100%;padding:12px 16px;background:var(--card);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;letter-spacing:.15em;text-align:center;outline:none;box-sizing:border-box;transition:border-color .15s;-webkit-appearance:none;font-family:'Inter',sans-serif}
+.lock-input:focus{border-color:var(--violet);background:var(--card-hover)}
+.lock-input.error{border-color:var(--red);animation:shake .3s}
+.lock-btn{width:100%;padding:13px;background:var(--violet);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;letter-spacing:.02em}
+.lock-btn:hover{background:#6D28D9}
+.lock-err{font-size:12px;color:var(--red);min-height:18px;text-align:center;font-weight:500}
+.lock-hint{font-size:11px;color:var(--text-dim);text-align:center;margin-top:-8px;line-height:1.5}
+@media(max-width:400px){.lock-card{border-radius:16px;padding:22px 18px;gap:12px}.lock-title{font-size:16px}}
 </style>
 
   <!-- PWA -->
@@ -687,6 +702,34 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
+<!-- ── LOCK SCREEN ── -->
+<div id="lock-screen">
+  <div class="lock-card">
+    <div class="lock-logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+    <div class="lock-title">Painel Pessoal</div>
+    <div class="lock-sub" id="lock-sub">Digite sua senha para continuar</div>
+    <input class="lock-input" id="lock-input" type="password" placeholder="••••••••" autocomplete="current-password"
+      oninput="this.classList.remove('error')"
+      onkeydown="if(event.key==='Enter') lockSubmit()">
+    <div id="lock-email-wrap" style="width:100%;display:none">
+      <input class="lock-input" id="lock-email" type="email" placeholder="seu@email.com" style="letter-spacing:normal">
+    </div>
+    <div id="lock-ejs-wrap" style="width:100%;display:none;flex-direction:column;gap:8px">
+      <input class="lock-input" id="lock-ejs-sid" type="text" placeholder="Service ID" style="letter-spacing:normal">
+      <input class="lock-input" id="lock-ejs-tid" type="text" placeholder="Template ID" style="letter-spacing:normal">
+      <input class="lock-input" id="lock-ejs-key" type="text" placeholder="Public Key" style="letter-spacing:normal">
+    </div>
+    <button class="lock-btn" id="lock-btn" onclick="lockSubmit()">Entrar</button>
+    <div class="lock-err" id="lock-err"></div>
+    <div style="display:flex;gap:8px;width:100%;justify-content:center;margin-top:-4px" id="lock-extra-btns">
+      <button class="lock-hint" style="background:none;border:none;cursor:pointer;color:var(--text-dim)" onclick="lockForgotPassword()">Esqueci a senha</button>
+    </div>
+    <div id="lock-recovery-wrap" style="width:100%;display:none">
+      <input class="lock-input" id="lock-recovery" type="text" placeholder="Código de recuperação" style="letter-spacing:normal">
+    </div>
+  </div>
+</div>
+
 
 
     <!-- Passo 1: email (só na criação) -->
@@ -7949,6 +7992,106 @@ function lockChangePassword() {
 // === DIAGNÓSTICO TEMPORÁRIO — barra preta ===
 
 
+// ══ LOCK SCREEN ══
+const LOCK_TIMEOUT = 10 * 60 * 1000;
+let lockTimer = null;
+let lockActive = false;
+let lockRecoveryCode = null;
+
+function lockGetHash() { return localStorage.getItem('painel_lock_hash'); }
+function lockGetEmail() { return localStorage.getItem('painel_lock_email') || ''; }
+function lockSaveHash(h) { localStorage.setItem('painel_lock_hash', h); }
+
+async function sha256(msg) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function lockShow(isFirst) {
+  lockActive = true;
+  var el    = document.getElementById('lock-screen');
+  var sub   = document.getElementById('lock-sub');
+  var btn   = document.getElementById('lock-btn');
+  var hint  = document.getElementById('lock-hint');
+  var inp   = document.getElementById('lock-input');
+  var emailW= document.getElementById('lock-email-wrap');
+  var ejsW  = document.getElementById('lock-ejs-wrap');
+  var recW  = document.getElementById('lock-recovery-wrap');
+  var extBtns = document.getElementById('lock-extra-btns');
+  if (!el) return;
+  el.classList.add('visible');
+  if (recW) recW.style.display = 'none';
+  if (emailW) emailW.style.display = 'none';
+  if (ejsW) ejsW.style.display = 'none';
+  if (isFirst) {
+    if (sub) sub.textContent = 'Crie uma senha para proteger o painel';
+    if (btn) { btn.textContent = 'Criar senha'; btn.dataset.mode = 'create'; }
+    if (emailW) emailW.style.display = 'block';
+    if (ejsW) ejsW.style.display = 'flex';
+    if (extBtns) extBtns.style.display = 'none';
+  } else {
+    if (sub) sub.textContent = 'Digite sua senha para continuar';
+    if (btn) { btn.textContent = 'Entrar'; btn.dataset.mode = 'unlock'; }
+    if (extBtns) extBtns.style.display = lockGetEmail() ? 'flex' : 'none';
+  }
+  if (inp) { inp.value = ''; setTimeout(function(){ inp.focus(); }, 300); }
+  var err = document.getElementById('lock-err');
+  if (err) err.textContent = '';
+}
+
+function lockHide() {
+  lockActive = false;
+  var el = document.getElementById('lock-screen');
+  if (el) { el.classList.remove('visible'); }
+  lockResetTimer();
+}
+
+async function lockSubmit() {
+  var inp   = document.getElementById('lock-input');
+  var errEl = document.getElementById('lock-err');
+  var btn   = document.getElementById('lock-btn');
+  var val   = inp ? inp.value.trim() : '';
+  if (!val) return;
+  if (btn && btn.dataset.mode === 'create') {
+    if (val.length < 4) { if(errEl) errEl.textContent = 'Mínimo 4 caracteres'; inp.classList.add('error'); return; }
+    var h = await sha256(val);
+    lockSaveHash(h);
+    var emailInp = document.getElementById('lock-email');
+    if (emailInp && emailInp.value.trim()) localStorage.setItem('painel_lock_email', emailInp.value.trim());
+    lockHide();
+    showToast('🔒 Senha criada');
+  } else {
+    var h2 = await sha256(val);
+    if (h2 === lockGetHash()) {
+      lockHide();
+    } else {
+      if(errEl) errEl.textContent = 'Senha incorreta';
+      if(inp) inp.classList.add('error');
+    }
+  }
+}
+
+function lockResetTimer() {
+  clearTimeout(lockTimer);
+  lockTimer = setTimeout(function() {
+    if (lockGetHash()) { lockRecoveryCode = null; lockShow(false); }
+  }, LOCK_TIMEOUT);
+}
+
+function lockActivityReset() { if (!lockActive) lockResetTimer(); }
+
+function lockForgotPassword() {
+  var recW = document.getElementById('lock-recovery-wrap');
+  var sub  = document.getElementById('lock-sub');
+  var btn  = document.getElementById('lock-btn');
+  if (recW) recW.style.display = 'block';
+  if (sub) sub.textContent = 'Digite o código de recuperação enviado por email';
+  if (btn) { btn.textContent = 'Recuperar'; btn.dataset.mode = 'recover'; }
+}
+['mousemove','keydown','touchstart','scroll','click'].forEach(function(ev) {
+  document.addEventListener(ev, lockActivityReset, { passive: true });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
 
 // Calcula altura real da viewport (exclui barra do navegador em tablets)
@@ -7956,6 +8099,10 @@ document.addEventListener('DOMContentLoaded', function() {
 function setAppHeight() {}
 
   lsLoad();
+  // Lock screen
+  var hash = lockGetHash();
+  lockShow(!hash);
+  lockResetTimer();
   pwaInit();
   
 // Normaliza finCategories para garantir que sejam sempre objetos
