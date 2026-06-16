@@ -672,18 +672,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .cal-ev-chip,.cal-ev-dot-row{max-width:100%;box-sizing:border-box}
 
 #lock-screen{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  z-index:9999;
+  background:var(--bg);
   display:none;
-  align-items:center;justify-content:center;flex-direction:column;
-  gap:0;padding:16px;
-  width:100%;flex:1;
-  background:var(--bg)
+  align-items:center;justify-content:center;
+  flex-direction:column;gap:0;padding:16px
 }
 #lock-screen.visible{display:flex!important}
-#lock-screen.visible ~ .app-shell,
-#lock-screen.visible ~ .bottom-nav-wrap,
-#lock-screen.visible ~ nav.bottom-nav{display:none!important}
-body.locked .app-shell,
-body.locked nav.bottom-nav{display:none!important}
 .lock-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:20px;padding:clamp(24px,5vw,40px) clamp(20px,5vw,36px);width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:16px;box-shadow:0 24px 64px rgba(0,0,0,.5)}
 .lock-logo{width:56px;height:56px;background:linear-gradient(135deg,var(--violet),#9F67FF);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:2px;flex-shrink:0}
 .lock-title{font-size:18px;font-weight:700;color:var(--text);letter-spacing:.01em;text-align:center}
@@ -7831,11 +7827,7 @@ function lockHide() {
   var el = document.getElementById('lock-screen');
   if (el) { el.classList.remove('visible'); }
   document.body.classList.remove('locked');
-  var shell = document.querySelector('.app-shell');
-  var bnav = document.querySelector('.bottom-nav');
-  if (shell) shell.style.display = '';
-  if (bnav) bnav.style.display = '';
-
+  lockResetTimer();
 }
 
 
@@ -7993,11 +7985,7 @@ function lockShow(isFirst) {
   var extBtns = document.getElementById('lock-extra-btns');
   if (!el) return;
   el.classList.add('visible');
-  // Esconde app enquanto lock está ativo
-  var _shell = document.querySelector('.app-shell');
-  var _bnav = document.querySelector('.bottom-nav');
-  if (_shell) _shell.style.display = 'none';
-  if (_bnav) _bnav.style.display = 'none';
+
   if (recW) recW.style.display = 'none';
   if (emailW) emailW.style.display = 'none';
   if (ejsW) ejsW.style.display = 'none';
@@ -8077,9 +8065,11 @@ document.addEventListener('DOMContentLoaded', function() {
 function setAppHeight() {}
 
   lsLoad();
+  // Configura a view inicial ANTES do lock (para que fique pronta quando desbloquear)
+  if (typeof switchView === 'function') switchView('inbox', null);
   // Lock screen
   var hash = lockGetHash();
-  lockShow(!hash);
+  if (hash) lockShow(false);
   lockResetTimer();
   pwaInit();
   
