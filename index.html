@@ -1957,7 +1957,7 @@ function renderCalendar() {
     const dots = allDots.slice(0,5).join('');
     // Eventos inline estilo Google Calendar
     // Dia todo → chip colorido | Com horário → ponto + hora + nome
-    const MAX_SHOW = window.innerWidth <= 1024 ? 2 : 3;
+    const MAX_SHOW = 3;
     let evChips = [];
     // All-day events primeiro
     dayEvts.filter(e=>!e.time||e.duration===0).slice(0,MAX_SHOW).forEach(e=>{
