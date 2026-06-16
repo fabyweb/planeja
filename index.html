@@ -773,6 +773,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       <button class="btn btn-ghost btn-sm" id="search-toggle-btn" onclick="toggleSearch()" title="Buscar (/)"><span class="ico" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span></button>
       <button class="btn btn-ghost btn-sm" id="filter-toggle-btn" onclick="toggleFilterPanel()"><span class="ico" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg></span><span class="filter-label"> Filtrar</span></button>
 <button class="cloud-btn off" id="cloud-btn" onclick="openCloudModal()" title="Sincronização na nuvem">☁️ <span id="cloud-text">Nuvem</span></button>
+<button class="btn btn-ghost btn-sm" onclick="window.diagBarraPreta()" style="font-size:11px">🔍 Diag</button>
 <button class="btn btn-primary btn-sm" onclick="onTopbarAction()">+ Novo</button>
     </div>
   </header>
@@ -8049,6 +8050,40 @@ function lockChangePassword() {
   setTimeout(function(){ document.getElementById('lock-input').focus(); }, 100);
 }
 
+
+
+// === DIAGNÓSTICO TEMPORÁRIO — barra preta ===
+window.diagBarraPreta = function() {
+  var out = [];
+  var all = document.querySelectorAll('*');
+  for (var i = 0; i < all.length; i++) {
+    var el = all[i];
+    var s = getComputedStyle(el);
+    if ((s.position === 'fixed' || s.position === 'absolute')) {
+      var r = el.getBoundingClientRect();
+      // Elementos grandes (cobrem boa parte da tela) e visíveis
+      if (r.width > window.innerWidth * 0.5 && r.height > window.innerHeight * 0.3 && s.display !== 'none' && s.visibility !== 'hidden' && parseFloat(s.opacity) > 0.1) {
+        out.push({
+          tag: el.tagName,
+          id: el.id || '(sem id)',
+          cls: el.className || '(sem classe)',
+          pos: s.position,
+          z: s.zIndex,
+          bg: s.backgroundColor,
+          w: Math.round(r.width),
+          h: Math.round(r.height),
+          top: Math.round(r.top),
+          display: s.display
+        });
+      }
+    }
+  }
+  var msg = 'ELEMENTOS GRANDES FIXED/ABSOLUTE:\n\n' + out.map(function(o){
+    return o.tag + ' #' + o.id + '\n  classe: ' + o.cls + '\n  pos:' + o.pos + ' z:' + o.z + ' display:' + o.display + '\n  bg:' + o.bg + '\n  ' + o.w + 'x' + o.h + ' top:' + o.top;
+  }).join('\n\n');
+  alert(msg || 'Nenhum elemento grande fixed/absolute encontrado');
+  console.log(out);
+};
 
 document.addEventListener('DOMContentLoaded', function() {
 
