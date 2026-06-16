@@ -643,8 +643,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 }
 
 /* ── LOCK SCREEN ── */
-#lock-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0;padding:16px}
-#lock-screen.hidden{display:none!important}
+#lock-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:0;padding:16px}
+#lock-screen.visible{display:flex!important}
 .lock-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:20px;padding:clamp(24px,5vw,40px) clamp(20px,5vw,36px);width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:16px;box-shadow:0 24px 64px rgba(0,0,0,.5)}
 .lock-logo{width:56px;height:56px;background:linear-gradient(135deg,var(--violet),#9F67FF);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:2px;flex-shrink:0}
 .lock-title{font-size:18px;font-weight:700;color:var(--text);letter-spacing:.01em;text-align:center}
@@ -690,7 +690,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 <button id="diag-float-btn" onclick="window.diagBarraPreta()" style="position:fixed;bottom:80px;right:16px;z-index:99999;background:#7C3AED;color:#fff;border:none;border-radius:50%;width:54px;height:54px;font-size:20px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.4)">🔍</button>
 
 <!-- ── LOCK SCREEN ── -->
-<div id="lock-screen" class="hidden">
+<div id="lock-screen">
   <div class="lock-card">
     <div class="lock-logo" id="lock-logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
     <div class="lock-title" id="lock-title">Painel Pessoal</div>
@@ -7857,8 +7857,7 @@ function lockShow(isFirst) {
   var recW  = document.getElementById('lock-recovery-wrap');
   var extBtns = document.getElementById('lock-extra-btns');
   if (!el) return;
-  el.style.removeProperty('display');
-  el.classList.remove('hidden');
+  el.classList.add('visible');
   recW.style.display = 'none';
   if (isFirst) {
     sub.textContent      = 'Crie uma senha para proteger o painel';
@@ -7885,7 +7884,7 @@ function lockShow(isFirst) {
 function lockHide() {
   lockActive = false;
   var el = document.getElementById('lock-screen');
-  if (el) { el.style.removeProperty('display'); el.classList.add('hidden'); } if (typeof forceRepaintGlobal==='function') setTimeout(forceRepaintGlobal, 50);
+  if (el) { el.classList.remove('visible'); } if (typeof forceRepaintGlobal==='function') setTimeout(forceRepaintGlobal, 50);
   lockResetTimer();
 }
 
@@ -8034,8 +8033,7 @@ function lockChangePassword() {
   var extBtns = document.getElementById('lock-extra-btns');
   var pwInp = document.getElementById('lock-input');
   if (!el) return;
-  el.style.removeProperty('display');
-  el.classList.remove('hidden');
+  el.classList.add('visible');
   lockActive = true;
   recW.style.display   = 'none';
   pwInp.style.display  = 'block';
