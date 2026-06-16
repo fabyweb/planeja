@@ -8055,35 +8055,29 @@ function lockChangePassword() {
 
 // === DIAGNÓSTICO TEMPORÁRIO — barra preta ===
 window.diagBarraPreta = function() {
-  var out = [];
-  var all = document.querySelectorAll('*');
-  for (var i = 0; i < all.length; i++) {
-    var el = all[i];
+  function info(sel){
+    var el = (sel === 'html') ? document.documentElement : (sel === 'body') ? document.body : document.querySelector(sel);
+    if (!el) return sel + ': NÃO EXISTE';
+    var r = el.getBoundingClientRect();
     var s = getComputedStyle(el);
-    if ((s.position === 'fixed' || s.position === 'absolute')) {
-      var r = el.getBoundingClientRect();
-      // Elementos grandes (cobrem boa parte da tela) e visíveis
-      if (r.width > window.innerWidth * 0.5 && r.height > window.innerHeight * 0.3 && s.display !== 'none' && s.visibility !== 'hidden' && parseFloat(s.opacity) > 0.1) {
-        out.push({
-          tag: el.tagName,
-          id: el.id || '(sem id)',
-          cls: el.className || '(sem classe)',
-          pos: s.position,
-          z: s.zIndex,
-          bg: s.backgroundColor,
-          w: Math.round(r.width),
-          h: Math.round(r.height),
-          top: Math.round(r.top),
-          display: s.display
-        });
-      }
-    }
+    return sel + ': altura=' + Math.round(r.height) + ' top=' + Math.round(r.top) + ' overflow=' + s.overflow + ' display=' + s.display + ' flex=' + s.flexDirection;
   }
-  var msg = 'ELEMENTOS GRANDES FIXED/ABSOLUTE:\n\n' + out.map(function(o){
-    return o.tag + ' #' + o.id + '\n  classe: ' + o.cls + '\n  pos:' + o.pos + ' z:' + o.z + ' display:' + o.display + '\n  bg:' + o.bg + '\n  ' + o.w + 'x' + o.h + ' top:' + o.top;
-  }).join('\n\n');
-  alert(msg || 'Nenhum elemento grande fixed/absolute encontrado');
-  console.log(out);
+  var lines = [
+    'window.innerHeight = ' + window.innerHeight,
+    'visualViewport.height = ' + (window.visualViewport ? Math.round(window.visualViewport.height) : 'N/A'),
+    'document height = ' + document.documentElement.scrollHeight,
+    '--app-h = ' + getComputedStyle(document.documentElement).getPropertyValue('--app-h'),
+    '',
+    info('html'),
+    info('body'),
+    info('.app-shell'),
+    info('.main'),
+    info('.content'),
+    info('.view.active'),
+    info('.bottom-nav'),
+  ];
+  alert(lines.join('\n'));
+  console.log(lines.join('\n'));
 };
 
 document.addEventListener('DOMContentLoaded', function() {
