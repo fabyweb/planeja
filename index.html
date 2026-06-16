@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Flow — Gestão Pessoal</title>
 <meta name="version" content="1781100010">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -24,7 +24,7 @@
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{height:100%}
-body{height:100%;height:var(--app-h,100%);overflow:hidden}
+body{height:100%;overflow:hidden}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;overscroll-behavior:none;padding-bottom:env(safe-area-inset-bottom,0)}
 
 /* ── LAYOUT ── */
@@ -8063,6 +8063,7 @@ window.diagBarraPreta = function() {
     return sel + ': altura=' + Math.round(r.height) + ' top=' + Math.round(r.top) + ' overflow=' + s.overflow + ' display=' + s.display + ' flex=' + s.flexDirection;
   }
   var lines = [
+    'window.innerWidth = ' + window.innerWidth,
     'window.innerHeight = ' + window.innerHeight,
     'visualViewport.height = ' + (window.visualViewport ? Math.round(window.visualViewport.height) : 'N/A'),
     'document height = ' + document.documentElement.scrollHeight,
@@ -8075,6 +8076,8 @@ window.diagBarraPreta = function() {
     info('.content'),
     info('.view.active'),
     info('.bottom-nav'),
+    info('.sidebar'),
+    info('.topbar'),
   ];
   alert(lines.join('\n'));
   console.log(lines.join('\n'));
@@ -8083,15 +8086,8 @@ window.diagBarraPreta = function() {
 document.addEventListener('DOMContentLoaded', function() {
 
 // Calcula altura real da viewport (exclui barra do navegador em tablets)
-function setAppHeight() {
-  var h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
-  document.documentElement.style.setProperty('--app-h', h + 'px');
-}
-setAppHeight();
-window.addEventListener('resize', setAppHeight);
-if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', setAppHeight);
-}
+// setAppHeight desativado — usando height:100% puro que funciona melhor em PWA
+function setAppHeight() {}
 
   lsLoad();
   pwaInit();
