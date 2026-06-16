@@ -687,6 +687,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
+<button id="diag-float-btn" onclick="window.diagBarraPreta()" style="position:fixed;bottom:80px;right:16px;z-index:99999;background:#7C3AED;color:#fff;border:none;border-radius:50%;width:54px;height:54px;font-size:20px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.4)">🔍</button>
+
 <!-- ── LOCK SCREEN ── -->
 <div id="lock-screen" class="hidden">
   <div class="lock-card">
@@ -773,7 +775,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       <button class="btn btn-ghost btn-sm" id="search-toggle-btn" onclick="toggleSearch()" title="Buscar (/)"><span class="ico" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span></button>
       <button class="btn btn-ghost btn-sm" id="filter-toggle-btn" onclick="toggleFilterPanel()"><span class="ico" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg></span><span class="filter-label"> Filtrar</span></button>
 <button class="cloud-btn off" id="cloud-btn" onclick="openCloudModal()" title="Sincronização na nuvem">☁️ <span id="cloud-text">Nuvem</span></button>
-<button class="btn btn-ghost btn-sm" onclick="window.diagBarraPreta()" style="font-size:11px">🔍 Diag</button>
 <button class="btn btn-primary btn-sm" onclick="onTopbarAction()">+ Novo</button>
     </div>
   </header>
