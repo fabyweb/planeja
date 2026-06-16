@@ -1361,6 +1361,16 @@ function switchView(name, btn) {
   if (name === 'lists')    renderLists();
   if (name === 'notes')    renderNotes();
   if (name === 'estudos')  renderEstudos();
+  forceRepaint();
+}
+
+// Força o navegador a redesenhar a tela (corrige faixa preta/fantasma em tablets)
+function forceRepaint() {
+  var content = document.getElementById('content');
+  if (!content) return;
+  content.style.display = 'none';
+  void content.offsetHeight; // força reflow
+  content.style.display = '';
 }
 
 function onTopbarAction() {
@@ -7875,7 +7885,7 @@ function lockShow(isFirst) {
 function lockHide() {
   lockActive = false;
   var el = document.getElementById('lock-screen');
-  if (el) { el.style.removeProperty('display'); el.classList.add('hidden'); }
+  if (el) { el.style.removeProperty('display'); el.classList.add('hidden'); } if (typeof forceRepaintGlobal==='function') setTimeout(forceRepaintGlobal, 50);
   lockResetTimer();
 }
 
@@ -8088,6 +8098,20 @@ document.addEventListener('DOMContentLoaded', function() {
 // Calcula altura real da viewport (exclui barra do navegador em tablets)
 // setAppHeight desativado — usando height:100% puro que funciona melhor em PWA
 function setAppHeight() {}
+// Força repaint ao girar a tela (corrige faixa preta em tablets)
+function forceRepaintGlobal() {
+  document.body.style.display = 'none';
+  void document.body.offsetHeight;
+  document.body.style.display = '';
+}
+window.addEventListener('orientationchange', function() {
+  setTimeout(forceRepaintGlobal, 100);
+  setTimeout(forceRepaintGlobal, 400);
+});
+window.addEventListener('resize', function() {
+  clearTimeout(window.__repaintT);
+  window.__repaintT = setTimeout(forceRepaintGlobal, 150);
+});
 
   lsLoad();
   pwaInit();
