@@ -8466,6 +8466,115 @@ function renderJogo() {
     html += '</div>';
   }
 
+  // ── LINHA DO TEMPO ──
+  var parcAtivosLT = parcelamentos.filter(function(p){ return p.data_inicio && !p.quitado; });
+  if (parcAtivosLT.length > 0) {
+    // Calcula range de meses: do mais antigo ao mais recente término
+    var hoje = new Date();
+    var minDate = new Date(Math.min.apply(null, parcAtivosLT.map(function(p){ return new Date(p.data_inicio); })));
+    var maxMeses = Math.max.apply(null, parcAtivosLT.map(function(p){ return p.parcelas_restantes; }));
+    var maxDate = new Date(hoje.getFullYear(), hoje.getMonth() + maxMeses + 1, 1);
+
+    // Gera lista de meses
+    var meses = [];
+    var cur = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+    while (cur <= maxDate) {
+      meses.push(new Date(cur));
+      cur.setMonth(cur.getMonth() + 1);
+    }
+    if (meses.length > 36) meses = meses.slice(0, 36); // máx 3 anos
+
+    // Calcula total acumulado por mês
+    var acumuladoMes = meses.map(function(m) {
+      return parcAtivosLT.reduce(function(sum, p) {
+        var inicio = new Date(p.data_inicio);
+        var inicioMes = new Date(inicio.getFullYear(), inicio.getMonth(), 1);
+        var fimMes = new Date(inicioMes.getFullYear(), inicioMes.getMonth() + p.parcelas_total, 1);
+        var mes = new Date(m.getFullYear(), m.getMonth(), 1);
+        return (mes >= inicioMes && mes < fimMes) ? sum + p.valor_parcela : sum;
+      }, 0);
+    });
+
+    var maxAcum = Math.max.apply(null, acumuladoMes) || 1;
+    var totalCols = meses.length;
+    var mesHoje = meses.findIndex(function(m){ return m.getFullYear()===hoje.getFullYear() && m.getMonth()===hoje.getMonth(); });
+
+    html += '<div class="card" style="margin-bottom:12px">';
+    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:12px">📊 Linha do Tempo</div>';
+
+    // Barras dos parcelamentos (Gantt)
+    html += '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">';
+    html += '<div style="min-width:' + Math.max(600, totalCols * 28) + 'px">';
+
+    // Header meses
+    html += '<div style="display:flex;margin-left:100px;margin-bottom:4px">';
+    meses.forEach(function(m, i) {
+      var isHoje = i === mesHoje;
+      var showLabel = i === 0 || m.getMonth() === 0 || (totalCols <= 18) || (i % 3 === 0);
+      html += '<div style="flex:0 0 ' + Math.floor(100/totalCols*totalCols) + 'px;width:' + (600/totalCols) + 'px;font-size:8px;color:' + (isHoje?'var(--violet-light)':'var(--text-dim)') + ';text-align:center;font-weight:' + (isHoje?'700':'400') + '">';
+      if (showLabel) html += m.toLocaleDateString('pt-BR',{month:'short'}).replace('.','') + (m.getMonth()===0||i===0?'/'+String(m.getFullYear()).slice(2):'');
+      if (isHoje) html += '▼';
+      html += '</div>';
+    });
+    html += '</div>';
+
+    // Linhas de cada parcelamento
+    parcAtivosLT.forEach(function(p) {
+      var inicio = new Date(p.data_inicio);
+      var inicioMes = new Date(inicio.getFullYear(), inicio.getMonth(), 1);
+      var startIdx = meses.findIndex(function(m){ return m.getFullYear()===inicioMes.getFullYear()&&m.getMonth()===inicioMes.getMonth(); });
+      if (startIdx < 0) startIdx = 0;
+      var endIdx = startIdx + p.parcelas_total - 1;
+      if (endIdx >= meses.length) endIdx = meses.length - 1;
+      var paidEnd = startIdx + p.parcelas_pagas - 1;
+
+      var colors = ['#7C3AED','#10B981','#3B82F6','#F59E0B','#EF4444','#EC4899','#8B5CF6','#14B8A6'];
+      var color = colors[p.id % colors.length];
+
+      html += '<div style="display:flex;align-items:center;margin-bottom:5px">';
+      html += '<div style="width:100px;flex-shrink:0;font-size:10px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px">' + escHtml(p.nome) + '</div>';
+      html += '<div style="position:relative;flex:1;height:18px">';
+
+      // Barra total (cinza)
+      var startPct = (startIdx / totalCols * 100).toFixed(1);
+      var widthPct = ((endIdx - startIdx + 1) / totalCols * 100).toFixed(1);
+      html += '<div style="position:absolute;left:' + startPct + '%;width:' + widthPct + '%;height:100%;background:' + color + '30;border-radius:3px;border:1px solid ' + color + '60"></div>';
+
+      // Barra pago (colorida)
+      if (p.parcelas_pagas > 0) {
+        var paidW = (p.parcelas_pagas / totalCols * 100).toFixed(1);
+        html += '<div style="position:absolute;left:' + startPct + '%;width:' + paidW + '%;height:100%;background:' + color + ';border-radius:3px;opacity:.8"></div>';
+      }
+
+      // Linha do hoje
+      if (mesHoje >= 0) {
+        var hojeLeft = (mesHoje / totalCols * 100).toFixed(1);
+        html += '<div style="position:absolute;left:' + hojeLeft + '%;width:2px;height:100%;background:var(--violet-light);opacity:.6"></div>';
+      }
+
+      // Valor
+      html += '<div style="position:absolute;right:0;top:0;bottom:0;display:flex;align-items:center;font-size:8px;color:var(--text-muted);padding-right:2px">' + fmtMoney(p.valor_parcela) + '</div>';
+      html += '</div></div>';
+    });
+
+    // Gráfico de acumulado mensal
+    html += '<div style="margin-top:10px;border-top:1px solid var(--border-soft);padding-top:8px">';
+    html += '<div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;margin-left:100px">Total mensal em parcelas</div>';
+    html += '<div style="display:flex;align-items:flex-end;margin-left:100px;height:40px;gap:1px">';
+    acumuladoMes.forEach(function(val, i) {
+      var h = Math.round(val / maxAcum * 36);
+      var isHoje = i === mesHoje;
+      html += '<div style="flex:1;height:' + h + 'px;background:' + (isHoje?'var(--violet)':'rgba(124,58,237,.35)') + ';border-radius:2px 2px 0 0;min-width:2px" title="' + meses[i].toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}) + ': ' + fmtMoney(val) + '"></div>';
+    });
+    html += '</div>';
+
+    // Legenda valor máximo
+    html += '<div style="font-size:9px;color:var(--text-muted);margin-left:100px;margin-top:3px">Pico: ' + fmtMoney(maxAcum) + '/mês</div>';
+    html += '</div>';
+
+    html += '</div></div></div>';
+  }
+
   // ── MISSÕES ──
   html += '<div class="card" style="margin-bottom:12px">';
   html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px">📋 Missões da semana</div>';
