@@ -6387,6 +6387,8 @@ function lsSave() {
       sessoes, nextSessaoId,
       questaoSessoes, nextQId,
       revisoesPendentes, nextRevId,
+      parcelamentos, nextParcId, economias, nextEcoId,
+      jogoXP, jogoMoedas, jogoStreak, jogoLastDay,
     }));
   } catch(e) { console.warn('lsSave:', e); }
 }
@@ -6450,6 +6452,12 @@ function lsLoad() {
     if (d.sessoes)          { sessoes = d.sessoes; nextSessaoId = d.nextSessaoId || nextSessaoId; }
     if (d.questaoSessoes)   { questaoSessoes = d.questaoSessoes; nextQId = d.nextQId || nextQId; }
     if (d.revisoesPendentes){ revisoesPendentes = d.revisoesPendentes; nextRevId = d.nextRevId || nextRevId; }
+    if (d.parcelamentos)    { parcelamentos = d.parcelamentos; nextParcId = d.nextParcId || nextParcId; }
+    if (d.economias)        { economias = d.economias; nextEcoId = d.nextEcoId || nextEcoId; }
+    if (typeof d.jogoXP !== 'undefined')     jogoXP     = d.jogoXP;
+    if (typeof d.jogoMoedas !== 'undefined') jogoMoedas = d.jogoMoedas;
+    if (typeof d.jogoStreak !== 'undefined') jogoStreak = d.jogoStreak;
+    if (d.jogoLastDay)      jogoLastDay = d.jogoLastDay;
     return true;
   } catch(e) { return false; }
 }
@@ -6531,6 +6539,10 @@ async function fbCloudSave() {
       questaoSessoes: typeof questaoSessoes!=='undefined'?questaoSessoes:[], nextQId: typeof nextQId!=='undefined'?nextQId:1,
       revisoesPendentes: typeof revisoesPendentes!=='undefined'?revisoesPendentes:[], nextRevId: typeof nextRevId!=='undefined'?nextRevId:1,
       studyBacklog: typeof studyBacklog!=='undefined'?studyBacklog:[], nextStudyBlogId: typeof nextStudyBlogId!=='undefined'?nextStudyBlogId:1,
+      parcelamentos: typeof parcelamentos!=='undefined'?parcelamentos:[], nextParcId: typeof nextParcId!=='undefined'?nextParcId:1,
+      economias: typeof economias!=='undefined'?economias:[], nextEcoId: typeof nextEcoId!=='undefined'?nextEcoId:1,
+      jogoXP: typeof jogoXP!=='undefined'?jogoXP:0, jogoMoedas: typeof jogoMoedas!=='undefined'?jogoMoedas:0,
+      jogoStreak: typeof jogoStreak!=='undefined'?jogoStreak:0, jogoLastDay: typeof jogoLastDay!=='undefined'?jogoLastDay:'',
     };
     await fbDocRef().set(payload);
     const time = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
@@ -8270,14 +8282,10 @@ let nextParcId    = parseInt(localStorage.getItem('jogo_next_parc_id')    || '1'
 let nextEcoId     = parseInt(localStorage.getItem('jogo_next_eco_id')     || '1');
 
 function jogoSave() {
-  localStorage.setItem('jogo_parcelamentos', JSON.stringify(parcelamentos));
-  localStorage.setItem('jogo_economias',     JSON.stringify(economias));
-  localStorage.setItem('jogo_xp',            jogoXP);
-  localStorage.setItem('jogo_moedas',        jogoMoedas);
-  localStorage.setItem('jogo_streak',        jogoStreak);
-  localStorage.setItem('jogo_last_day',      jogoLastDay);
-  localStorage.setItem('jogo_next_parc_id',  nextParcId);
-  localStorage.setItem('jogo_next_eco_id',   nextEcoId);
+  // Salva localmente via lsSave (que inclui dados do jogo)
+  lsSave();
+  // Envia para a nuvem
+  if (typeof cloudSave === 'function') cloudSave();
 }
 
 function jogoLevel() {
