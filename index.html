@@ -8408,6 +8408,20 @@ function renderJogo() {
   html += '<div class="jogo-stat"><span class="sv" style="color:var(--amber)">🪙 '+jogoMoedas+'</span><span class="sl">moedas</span></div>';
   html += '</div>';
 
+  // ── INDICADORES ──
+  var totalMensal   = parcelamentos.filter(function(p){return !p.quitado;}).reduce(function(s,p){return s+p.valor_parcela;},0);
+  var totalRestante = jogoTotalDivida();
+  var qtQuitados    = parcelamentos.filter(function(p){return p.quitado;}).length;
+  var qtAtivos      = parcelamentos.filter(function(p){return !p.quitado;}).length;
+  var mesesRestantes = totalMensal > 0 ? Math.ceil(totalRestante / totalMensal) : 0;
+  var dataQuit = mesesRestantes > 0 ? (function(){ var d=new Date(); d.setMonth(d.getMonth()+mesesRestantes); return d.toLocaleDateString('pt-BR',{month:'short',year:'numeric'}); })() : '—';
+  html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px">';
+  html += '<div class="card" style="padding:12px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--red)">'+fmtMoney(totalMensal)+'</div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;margin-top:2px">Comprometido/mês</div></div>';
+  html += '<div class="card" style="padding:12px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--amber)">'+fmtMoney(totalRestante)+'</div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;margin-top:2px">Total restante</div></div>';
+  html += '<div class="card" style="padding:12px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--violet-light)">'+dataQuit+'</div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;margin-top:2px">Previsão quitação</div></div>';
+  html += '<div class="card" style="padding:12px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--green)">'+qtQuitados+' <span style="font-size:12px;color:var(--text-muted)">/ '+(qtQuitados+qtAtivos)+'</span></div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;margin-top:2px">Quitados</div></div>';
+  html += '</div>';
+
   // ── BUSCA + BOTÕES ──
   var jogoSearch = (window._jogoSearch || '').toLowerCase();
   html += '<div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center">';
@@ -8651,7 +8665,7 @@ function renderJogo() {
     else if (eStreak) { bg = 'var(--violet)'; cor = '#fff'; }
     if (isHojeDia) borda = 'var(--violet-light)';
 
-    html += '<div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:11px;font-weight:'+(isHojeDia?'800':'500')+';background:'+bg+';color:'+cor+';border:2px solid '+borda+';cursor:default" title="'+(temParc?'Gasto parcelado':eStreak?'Dia livre':'')+'">'+dia+'</div>';
+    html += '<div style="height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:11px;font-weight:'+(isHojeDia?'800':'500')+';background:'+bg+';color:'+cor+';border:2px solid '+borda+';cursor:default" title="'+(temParc?'Gasto parcelado':eStreak?'Dia livre':'')+'">'+dia+'</div>';
   }
   html += '</div>';
 
@@ -8749,6 +8763,10 @@ function jogo_abrirNovaParcela() {
   document.getElementById('parc-valor').value = '';
   document.getElementById('parc-data-inicio').value = '';
   document.getElementById('parc-banco').value = '';
+  var titulo = document.getElementById('parc-modal-title');
+  var btn = document.getElementById('parc-save-btn');
+  if (titulo) titulo.textContent = '⚔️ Novo Parcelamento';
+  if (btn) { btn.textContent = 'Adicionar'; delete btn.dataset.editId; btn.onclick = jogo_salvarOuAtualizar; }
   openModal('modal-parc');
   setTimeout(function(){ document.getElementById('parc-nome').focus(); }, 200);
 }
@@ -8784,33 +8802,55 @@ function jogo_salvarParcela() {
 function jogo_editarParcela(id) {
   var p = parcelamentos.find(function(x){ return x.id === id; });
   if (!p) return;
-  document.getElementById('parc-nome').value = p.nome;
-  document.getElementById('parc-total').value = p.parcelas_total;
-  document.getElementById('parc-pagas').value = p.parcelas_pagas;
-  document.getElementById('parc-valor').value = p.valor_parcela;
-  // Muda o botão para atualizar
-  var btn = document.querySelector('#modal-parc .btn-primary');
-  if (btn) { btn.textContent = 'Atualizar'; btn.onclick = function(){ jogo_atualizarParcela(id); }; }
-  document.querySelector('#modal-parc .modal-title').textContent = '✏️ Editar Parcelamento';
+  document.getElementById('parc-nome').value        = p.nome || '';
+  document.getElementById('parc-total').value       = p.parcelas_total || '';
+  document.getElementById('parc-pagas').value       = p.parcelas_pagas || 0;
+  document.getElementById('parc-valor').value       = p.valor_parcela || '';
+  document.getElementById('parc-data-inicio').value = p.data_inicio || '';
+  document.getElementById('parc-banco').value       = p.banco || '';
+  var titulo = document.getElementById('parc-modal-title');
+  var btn    = document.getElementById('parc-save-btn');
+  if (titulo) titulo.textContent = '✏️ Editar Parcelamento';
+  if (btn)    { btn.textContent = 'Salvar'; btn.dataset.editId = id; btn.onclick = jogo_salvarOuAtualizar; }
   openModal('modal-parc');
+}
+
+function jogo_salvarOuAtualizar() {
+  var btn = document.getElementById('parc-save-btn');
+  var editId = btn && btn.dataset.editId ? parseInt(btn.dataset.editId) : null;
+  if (editId) {
+    jogo_atualizarParcela(editId);
+  } else {
+    jogo_salvarParcela();
+  }
 }
 
 function jogo_atualizarParcela(id) {
   var p = parcelamentos.find(function(x){ return x.id === id; });
   if (!p) return;
-  var nome  = document.getElementById('parc-nome').value.trim();
-  var pagas = parseInt(document.getElementById('parc-pagas').value) || 0;
-  var valor = parseFloat(document.getElementById('parc-valor').value) || p.valor_parcela;
-  if (!nome) return;
-  p.nome = nome; p.parcelas_pagas = pagas; p.valor_parcela = valor;
-  p.parcelas_restantes = p.parcelas_total - pagas;
-  p.quitado = p.parcelas_restantes <= 0;
+  var nome      = document.getElementById('parc-nome').value.trim();
+  var total     = parseInt(document.getElementById('parc-total').value)   || p.parcelas_total;
+  var pagas     = parseInt(document.getElementById('parc-pagas').value)   || 0;
+  var valor     = parseFloat(document.getElementById('parc-valor').value) || p.valor_parcela;
+  var dataIni   = document.getElementById('parc-data-inicio').value       || '';
+  var banco     = document.getElementById('parc-banco').value.trim()      || '';
+  if (!nome) { showToast('⚠️ Informe o nome'); return; }
+  p.nome               = nome;
+  p.parcelas_total     = total;
+  p.parcelas_pagas     = pagas;
+  p.parcelas_restantes = total - pagas;
+  p.valor_parcela      = valor;
+  p.data_inicio        = dataIni;
+  p.banco              = banco;
+  p.quitado            = p.parcelas_restantes <= 0;
   jogoSave();
   closeModal('modal-parc');
-  // Restaura botão original
-  var btn = document.querySelector('#modal-parc .btn-primary');
-  if (btn) { btn.textContent = 'Adicionar'; btn.onclick = jogo_salvarParcela; }
-  document.querySelector('#modal-parc .modal-title').textContent = '⚔️ Novo Parcelamento';
+  // Restaura modal para "novo"
+  var titulo = document.getElementById('parc-modal-title');
+  var btn    = document.getElementById('parc-save-btn');
+  if (titulo) titulo.textContent = '⚔️ Novo Parcelamento';
+  if (btn)    { btn.textContent = 'Adicionar'; btn.onclick = jogo_salvarParcela; }
+  jogoUpdateStreak();
   renderJogo();
 }
 
