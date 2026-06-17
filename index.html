@@ -8264,6 +8264,8 @@ let jogoXP        = parseInt(localStorage.getItem('jogo_xp')              || '0'
 let jogoMoedas    = parseInt(localStorage.getItem('jogo_moedas')          || '0');
 let jogoStreak    = parseInt(localStorage.getItem('jogo_streak')          || '0');
 let jogoLastDay   = localStorage.getItem('jogo_last_day')                  || '';
+// Se nunca teve lastDay registrado, zera o streak (evita valor falso)
+if (!jogoLastDay && jogoStreak > 0) { jogoStreak = 0; }
 let nextParcId    = parseInt(localStorage.getItem('jogo_next_parc_id')    || '1');
 let nextEcoId     = parseInt(localStorage.getItem('jogo_next_eco_id')     || '1');
 
@@ -8296,17 +8298,21 @@ function jogoAddXP(xp, msg) {
 
 function jogoUpdateStreak() {
   var today = new Date().toISOString().split('T')[0];
-  if (jogoLastDay === today) return;
-  // Verifica se adicionou parcela hoje
+  if (jogoLastDay === today) return; // já calculou hoje
+  var yesterday = new Date(Date.now()-86400000).toISOString().split('T')[0];
   var addedToday = parcelamentos.some(function(p){ return p.createdAt && p.createdAt.startsWith(today); });
-  if (!addedToday) {
-    if (jogoLastDay === new Date(Date.now()-86400000).toISOString().split('T')[0]) {
-      jogoStreak++;
-    } else if (jogoLastDay !== today) {
-      jogoStreak = 1;
-    }
-  } else {
+  if (addedToday) {
+    // Cadastrou parcela hoje: zera streak
     jogoStreak = 0;
+  } else if (jogoLastDay === yesterday) {
+    // Ontem também não cadastrou: continua o streak
+    jogoStreak++;
+  } else if (!jogoLastDay) {
+    // Primeira vez: começa com 0 (vai para 1 amanhã se não cadastrar)
+    jogoStreak = 0;
+  } else {
+    // Pulou dias: recomeça do 1
+    jogoStreak = 1;
   }
   jogoLastDay = today;
   jogoSave();
