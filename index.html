@@ -50,8 +50,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .topbar-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
 
 /* ── BOTTOM NAV (mobile) ── */
-.bottom-nav{display:none;height:var(--bottom-h);background:var(--surface);border-top:1px solid var(--border-soft);align-items:center;justify-content:space-around;padding:0 4px;flex-shrink:0;z-index:100;overflow-x:auto}
-.bnav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;border:none;background:transparent;color:var(--text-dim);cursor:pointer;border-radius:var(--radius-sm);transition:all 0.15s;font-size:20px;position:relative}
+.bottom-nav{display:none;height:var(--bottom-h);background:var(--surface);border-top:1px solid var(--border-soft);align-items:center;justify-content:space-around;padding:0;flex-shrink:0;z-index:100;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.bnav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 8px;border:none;background:transparent;color:var(--text-dim);cursor:pointer;border-radius:var(--radius-sm);transition:all 0.15s;font-size:18px;position:relative;flex-shrink:0;min-width:60px}
 .bnav-btn span{font-size:9px;font-weight:600;letter-spacing:0.03em;text-transform:uppercase}
 .bnav-btn.active{color:var(--violet-light);background:var(--violet-glow)}
 .bnav-btn .badge{position:absolute;top:4px;right:8px;width:14px;height:14px;background:var(--violet);border-radius:50%;font-size:8px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center}
