@@ -6716,12 +6716,19 @@ async function fbCloudLoad(forceLoad) {
     if (d.questaoSessoes)    { questaoSessoes = d.questaoSessoes; nextQId = d.nextQId||nextQId; }
     if (d.revisoesPendentes) { revisoesPendentes = d.revisoesPendentes; nextRevId = d.nextRevId||nextRevId; }
     if (d.studyBacklog)      { studyBacklog = d.studyBacklog; nextStudyBlogId = d.nextStudyBlogId||nextStudyBlogId; }
+    if (d.parcelamentos)     { parcelamentos = d.parcelamentos; nextParcId = d.nextParcId||nextParcId; }
+    if (d.economias)         { economias = d.economias; nextEcoId = d.nextEcoId||nextEcoId; }
+    if (typeof d.jogoXP !== 'undefined')     jogoXP     = d.jogoXP;
+    if (typeof d.jogoMoedas !== 'undefined') jogoMoedas = d.jogoMoedas;
+    if (typeof d.jogoStreak !== 'undefined') jogoStreak = d.jogoStreak;
+    if (d.jogoLastDay)       jogoLastDay = d.jogoLastDay;
     lsSave();
     if (typeof renderBacklog==="function") renderBacklog();
     if (typeof renderCalendar==="function") renderCalendar();
     if (typeof renderFinance==="function") renderFinance();
     if (typeof renderNotes==="function" && currentView==="notes") renderNotes();
     if (typeof renderEstudosPainel==="function" && currentView==="estudos") renderEstudosPainel();
+    if (typeof renderJogo==="function" && currentView==="jogo") { jogoUpdateStreak(); renderJogo(); }
     cloudSetBtn("ok", "Nuvem");
     var cnt = (d.backlog||[]).length+(d.tasks||[]).length+(d.finances||[]).length+(d.notes||[]).length+(d.atividades||[]).length;
     cloudDiag("OK! " + cnt + " itens carregados do Firebase!");
