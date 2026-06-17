@@ -8297,24 +8297,18 @@ function jogoAddXP(xp, msg) {
 }
 
 function jogoUpdateStreak() {
-  var today = new Date().toISOString().split('T')[0];
-  if (jogoLastDay === today) return; // já calculou hoje
-  var yesterday = new Date(Date.now()-86400000).toISOString().split('T')[0];
-  var addedToday = parcelamentos.some(function(p){ return p.createdAt && p.createdAt.startsWith(today); });
-  if (addedToday) {
-    // Cadastrou parcela hoje: zera streak
-    jogoStreak = 0;
-  } else if (jogoLastDay === yesterday) {
-    // Ontem também não cadastrou: continua o streak
-    jogoStreak++;
-  } else if (!jogoLastDay) {
-    // Primeira vez: começa com 0 (vai para 1 amanhã se não cadastrar)
-    jogoStreak = 0;
-  } else {
-    // Pulou dias: recomeça do 1
-    jogoStreak = 1;
-  }
-  jogoLastDay = today;
+  // Streak = dias desde o parcelamento mais recente cadastrado
+  if (!parcelamentos.length) { jogoStreak = 0; jogoSave(); return; }
+  var hoje = new Date();
+  hoje.setHours(0,0,0,0);
+  // Pega a data mais recente de criação de parcelamento
+  var datas = parcelamentos.map(function(p){
+    return new Date(p.createdAt || p.data_inicio || hoje.toISOString());
+  });
+  var maisRecente = new Date(Math.max.apply(null, datas));
+  maisRecente.setHours(0,0,0,0);
+  var diffMs = hoje - maisRecente;
+  jogoStreak = Math.floor(diffMs / 86400000);
   jogoSave();
 }
 
@@ -8376,16 +8370,27 @@ function renderJogo() {
   // Streak calendar — últimos 21 dias
   var calDays = [];
   var today = new Date();
+  today.setHours(0,0,0,0);
   var todayKey = today.toISOString().split('T')[0];
+  // Data do parcelamento mais recente
+  var lastParcDate = null;
+  if (parcelamentos.length) {
+    var datas2 = parcelamentos.map(function(p){ return new Date(p.createdAt || p.data_inicio || today); });
+    lastParcDate = new Date(Math.max.apply(null, datas2));
+    lastParcDate.setHours(0,0,0,0);
+  }
   for (var i = 20; i >= 0; i--) {
     var d = new Date(today.getTime() - i*86400000);
+    d.setHours(0,0,0,0);
     var key = d.toISOString().split('T')[0];
-    // Dia "on" = nenhum parcelamento CRIADO nesse dia
-    var hasNew = parcelamentos.some(function(p){ return p.createdAt && p.createdAt.startsWith(key); });
-    // Só marca como "on" os dias dentro do streak atual
-    var daysAgo = i;
-    var inStreak = !hasNew && daysAgo < jogoStreak + 1;
-    calDays.push({ key:key, day:d.getDate(), on: inStreak, isToday: key===todayKey });
+    var hasParc = parcelamentos.some(function(p){ 
+      var pd = new Date(p.createdAt || p.data_inicio || ''); 
+      pd.setHours(0,0,0,0);
+      return pd.getTime() === d.getTime();
+    });
+    // "on" = dia após o último parcelamento (livre de novas parcelas)
+    var inStreak = lastParcDate ? (d > lastParcDate) : false;
+    calDays.push({ key:key, day:d.getDate(), on: inStreak, hasParc: hasParc, isToday: key===todayKey });
   }
 
   var xpPct = Math.min(100, Math.round(lv.current / lv.next * 100));
@@ -8612,10 +8617,14 @@ function renderJogo() {
   html += '<div class="streak-cal-jogo">';
   ['D','S','T','Q','Q','S','S'].forEach(function(d){ html += '<div class="sc-day" style="background:transparent;color:var(--text-dim);font-weight:700">'+d+'</div>'; });
   calDays.forEach(function(d) {
-    html += '<div class="sc-day'+(d.on?' on':'')+(d.isToday?' today':'')+'" title="'+d.key+'">'+d.day+'</div>';
+    var extra = '';
+    if (d.hasParc) extra = 'background:var(--red);color:#fff;';
+    html += '<div class="sc-day'+(d.on?' on':'')+(d.isToday?' today':'')+'" style="'+extra+'" title="'+(d.hasParc?'Nova parcela em ':'Sem parcela em ')+d.key+'">'+d.day+'</div>';
   });
   html += '</div>';
-  html += '<div style="font-size:11px;color:var(--text-muted);margin-top:8px;text-align:center">🔥 <strong style="color:var(--amber)">'+jogoStreak+' dias</strong> sem parcelar nada</div>';
+  var streakMsg = jogoStreak === 0 ? 'Parcela cadastrada hoje ou sem histórico' : '🔥 <strong style="color:var(--amber)">'+jogoStreak+' dia'+(jogoStreak!==1?'s':'')+' </strong> desde a última parcela';
+  html += '<div style="font-size:11px;color:var(--text-muted);margin-top:8px;text-align:center">' + streakMsg + '</div>';
+  html += '<div style="font-size:10px;color:var(--text-dim);text-align:center;margin-top:2px">🔴 = dia com nova parcela &nbsp; 🟣 = dia livre</div>';
   html += '</div>';
 
   // ── CONQUISTAS ──
