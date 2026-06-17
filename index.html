@@ -8439,12 +8439,13 @@ function renderJogo() {
       html += '<div class="parc-hp"><div class="parc-hp-bar"><div class="parc-hp-fill" style="width:'+qPct+'%;background:'+hpColor+'"></div></div>';
       html += '<div class="parc-hp-pct">'+qPct+'% quitado</div></div>';
       html += '</div>';
+      html += '<div style="display:flex;gap:4px;flex-shrink:0">';
       if (!p.quitado) {
-        html += '<div style="display:flex;gap:4px;flex-shrink:0">';
         html += '<button class="btn btn-ghost btn-sm" style="padding:3px 8px;font-size:10px" onclick="jogo_pagarParcela('+p.id+')">✓ Paguei</button>';
         html += '<button class="btn btn-ghost btn-sm" style="padding:3px 6px;font-size:10px;color:var(--text-dim)" onclick="jogo_editarParcela('+p.id+')">✏️</button>';
-        html += '</div>';
       }
+      html += '<button class="btn btn-ghost btn-sm" style="padding:3px 6px;font-size:10px;color:var(--red)" onclick="jogo_excluirParcela('+p.id+')" title="Excluir">✕</button>';
+      html += '</div>';
       html += '</div>';
     });
   } else {
@@ -8671,6 +8672,16 @@ function gerarConquistas() {
     { ico:'🏁', nome:'Linha de Chegada', req:'Quite tudo', unlocked: parcelamentos.length > 0 && parcelamentos.every(function(p){ return p.quitado; }) },
     { ico:'👑', nome:'Nível 10', req:'', unlocked: jogoLevel().level >= 10 },
   ];
+}
+
+function jogo_excluirParcela(id) {
+  var p = parcelamentos.find(function(x){ return x.id === id; });
+  if (!p) return;
+  if (!confirm('Excluir "' + p.nome + '"?')) return;
+  parcelamentos = parcelamentos.filter(function(x){ return x.id !== id; });
+  jogoSave();
+  showToast('Parcelamento removido');
+  renderJogo();
 }
 
 function jogo_abrirNovaParcela() {
