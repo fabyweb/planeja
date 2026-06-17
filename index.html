@@ -243,6 +243,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .fin-cal-cell.today{border-color:var(--violet);background:rgba(139,92,246,.06)}
 .fin-cal-cell.empty{background:transparent;border-color:transparent;cursor:default}
 .fin-cal-cell.empty:hover{border-color:transparent}
+.fin-cal-cell.selected{border-color:var(--violet);background:rgba(124,58,237,.18);font-weight:700}
 .fin-cal-day{font-size:10px;color:var(--text-muted);font-weight:600;margin-bottom:2px}
 .fin-cal-val{font-size:9px;font-family:'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fin-cal-val.pos{color:var(--green)}
@@ -692,6 +693,51 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .lock-err{font-size:12px;color:var(--red);min-height:18px;text-align:center;font-weight:500}
 .lock-hint{font-size:11px;color:var(--text-dim);text-align:center;margin-top:-8px;line-height:1.5}
 @media(max-width:400px){.lock-card{border-radius:16px;padding:22px 18px;gap:12px}.lock-title{font-size:16px}}
+
+/* ══ JOGO FINANCEIRO ══ */
+#jogo-section{width:100%;max-width:100%;box-sizing:border-box}
+.jogo-header{background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(124,58,237,.05));border:1px solid rgba(124,58,237,.3);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.jogo-level{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--violet),#9F67FF);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.jogo-level .lv-label{font-size:8px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase}
+.jogo-level .lv-num{font-size:18px;font-weight:800;color:#fff;line-height:1}
+.jogo-xp-wrap{flex:1;min-width:0}
+.jogo-xp-bar{height:7px;background:var(--card);border-radius:4px;overflow:hidden;margin:4px 0}
+.jogo-xp-fill{height:100%;background:linear-gradient(90deg,var(--violet),var(--violet-light));border-radius:4px;transition:width .5s}
+.jogo-stat{display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0;padding:0 6px}
+.jogo-stat .sv{font-size:17px;font-weight:800;line-height:1}
+.jogo-stat .sl{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;text-align:center}
+.race-track-wrap{background:var(--card);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+.race-bar-outer{height:24px;background:var(--bg);border-radius:6px;position:relative;overflow:hidden;border:1px solid var(--border-soft)}
+.race-bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--violet),var(--violet-light));display:flex;align-items:center;padding-right:6px;justify-content:flex-end;transition:width .6s;min-width:28px}
+.parc-item{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border-soft)}
+.parc-item:last-child{border-bottom:none}
+.parc-emoji{font-size:18px;flex-shrink:0;width:28px;text-align:center}
+.parc-info{flex:1;min-width:0}
+.parc-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.parc-sub{font-size:10px;color:var(--text-muted);margin-top:1px}
+.parc-hp{width:90px;flex-shrink:0}
+.parc-hp-bar{height:5px;background:var(--bg);border-radius:3px;overflow:hidden;margin-bottom:2px}
+.parc-hp-fill{height:100%;border-radius:3px;transition:width .4s}
+.parc-hp-pct{font-size:9px;color:var(--text-muted);text-align:right}
+.missao-item{display:flex;gap:10px;padding:9px 11px;border-radius:8px;background:var(--card);margin-bottom:6px;border:1px solid var(--border-soft);overflow:hidden;min-width:0}
+.missao-item.done{opacity:.45}
+.missao-item .mi-ico{font-size:18px;flex-shrink:0;width:26px;text-align:center}
+.missao-item .mi-body{flex:1;min-width:0}
+.missao-item .mi-title{font-size:12px;font-weight:600;color:var(--text)}
+.missao-item .mi-desc{font-size:10px;color:var(--text-muted);margin-top:1px}
+.missao-item .mi-prog{display:flex;align-items:center;gap:6px;margin-top:5px}
+.missao-item .mi-bar{flex:1;height:4px;background:var(--bg);border-radius:2px;overflow:hidden}
+.missao-item .mi-fill{height:100%;border-radius:2px;background:var(--violet)}
+.missao-item .mi-reward{font-size:10px;color:var(--amber);font-weight:700;flex-shrink:0;white-space:nowrap}
+.streak-cal-jogo{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.sc-day{width:100%;height:28px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;background:var(--card);color:var(--text-dim)}
+.sc-day.on{background:var(--violet);color:#fff}
+.sc-day.today{outline:2px solid var(--violet-light)}
+.trophy-jogo{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;border-radius:8px;background:var(--card);border:1px solid var(--border-soft);text-align:center;font-size:9px}
+.trophy-jogo.unlocked{background:rgba(124,58,237,.1);border-color:var(--violet)}
+.trophy-jogo.locked{opacity:.3;filter:grayscale(1)}
+.scenario-jogo{padding:9px 12px;border-radius:8px;background:var(--card);border-left:3px solid var(--violet);margin-bottom:8px;font-size:11px;line-height:1.5}
+
 </style>
 
   <!-- PWA -->
@@ -746,6 +792,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
     <button class="nav-btn" onclick="switchView('kanban',this)" title="Tarefas"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v10"/></svg></span></button>
     <button class="nav-btn" onclick="switchView('calendar',this)" title="Calendário"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span></button>
     <button class="nav-btn" onclick="switchView('finance',this)" title="Financeiro"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span></button>
+    <button class="nav-btn" onclick="switchView('jogo',this)" title="Jogo de Quitação"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-style:normal">🎮</span></button>
     <button class="nav-btn" onclick="switchView('lists',this)" title="Listas"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg></span></button>
     <button class="nav-btn" onclick="switchView('notes',this)" title="Notas"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span></button>
     <button class="nav-btn" onclick="switchView('estudos',this)" title="Estudos"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></span></button>
@@ -849,6 +896,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       </div>
     </div>
 
+
+
     <!-- ═══ CALENDÁRIO ═══ -->
     <div class="view" id="view-calendar">
       <div class="calendar-layout">
@@ -884,6 +933,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 
     <!-- ═══ FINANCEIRO ═══ -->
     <div class="view" id="view-finance">
+
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <div style="display:flex;gap:8px">
           <button class="btn btn-ghost btn-sm" onclick="openFinModal(null,null)">+ Lançamento</button>
@@ -986,6 +1036,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
     </div>
 
 
+    <!-- ═══ JOGO DE QUITAÇÃO ═══ -->
+    <div class="view" id="view-jogo">
+      <div id="jogo-main"></div>
+    </div>
+
   </main>
 </div><!-- /main -->
 </div><!-- /app-shell -->
@@ -996,11 +1051,77 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   <button class="bnav-btn" onclick="switchView('kanban',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v10"/></svg></span><span>Tarefas</span></button>
   <button class="bnav-btn" onclick="switchView('calendar',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span>Agenda</span></button>
   <button class="bnav-btn" onclick="switchView('finance',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span><span>Finanças</span></button>
+  <button class="bnav-btn" onclick="switchView('jogo',this)"><span style="font-size:20px;line-height:1">🎮</span><span>Quitação</span></button>
   <button class="bnav-btn" onclick="switchView('lists',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg></span><span>Listas</span></button>
   <button class="bnav-btn" onclick="switchView('notes',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span><span>Notas</span></button>
   <button class="bnav-btn" onclick="switchView('estudos',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></span><span>Estudos</span></button>
 </nav>
 
+
+
+
+
+
+<!-- ══════════════════════════════
+     MODAL — PARCELAMENTO
+══════════════════════════════ -->
+<div class="modal-overlay" id="modal-parc">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="parc-modal-title">⚔️ Novo Parcelamento</span>
+      <button class="modal-close" onclick="closeModal('modal-parc')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label>Nome</label>
+        <input class="form-input" id="parc-nome" placeholder="Ex: Geely, Cartão Magazine">
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Total de parcelas</label>
+          <input class="form-input" id="parc-total" type="number" min="1" placeholder="48">
+        </div>
+        <div class="form-row">
+          <label>Já pagas</label>
+          <input class="form-input" id="parc-pagas" type="number" min="0" value="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Valor da parcela (R$)</label>
+        <input class="form-input" id="parc-valor" type="number" min="0" step="0.01" placeholder="0,00">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-parc')">Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="parc-save-btn" onclick="jogo_salvarParcela()">Adicionar</button>
+    </div>
+  </div>
+</div>
+<!-- ══════════════════════════════
+     MODAL — ECONOMIA
+══════════════════════════════ -->
+<div class="modal-overlay" id="modal-eco">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">💰 Registrar Economia</span>
+      <button class="modal-close" onclick="closeModal('modal-eco')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label>O que você economizou?</label>
+        <input class="form-input" id="eco-desc" placeholder="Ex: Não pedi delivery esta semana">
+      </div>
+      <div class="form-row">
+        <label>Valor economizado (R$)</label>
+        <input class="form-input" id="eco-valor" type="number" min="0" step="0.01" placeholder="0,00">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-eco')">Cancelar</button>
+      <button class="btn btn-primary btn-sm" onclick="jogo_salvarEconomia()">Registrar</button>
+    </div>
+  </div>
+</div>
 <!-- ══════════════════════════════
      MODAL — TAREFA
 ══════════════════════════════ -->
@@ -1264,6 +1385,7 @@ let finCategories = [
   {id:'IMPROS',     label:'IMPROS · Receita', type:'entrada'},
   {id:'Outro',      label:'Outro',            type:'ambos'},
 ];
+let customPayMethods = JSON.parse(localStorage.getItem('painel_pay_methods') || '[]');
 let finCalMonth = new Date().getMonth();
 let finCalYear = new Date().getFullYear();
 
@@ -1330,12 +1452,16 @@ const viewMeta = {
   lists:    {title:'Listas',      sub:'— referências'},
   notes:    {title:'Notas',       sub:'— mural de notas'},
   estudos:  {title:'Estudos',     sub:'— SEFAZ/RS · FGV'},
+  jogo:     {title:'Quitação',    sub:'— jogo de dívidas'},
 };
 
 function switchView(name, btn) {
   currentView = name;
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
+  // Reset scroll ao trocar de view
+  var contentEl = document.querySelector('.content') || document.getElementById('content');
+  if (contentEl) contentEl.scrollTop = 0;
 
   // sidebar buttons
   document.querySelectorAll('.sidebar .nav-btn').forEach(b => b.classList.remove('active'));
@@ -1356,6 +1482,7 @@ function switchView(name, btn) {
   if (name === 'lists')    renderLists();
   if (name === 'notes')    renderNotes();
   if (name === 'estudos')  renderEstudos();
+  if (name === 'jogo')     { jogoUpdateStreak(); renderJogo(); }
 }
 
 function onTopbarAction() {
@@ -1591,6 +1718,7 @@ function openFinModal(originId, text) {
   resetFinModal();
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('fin-date').value = today;
+  updateFinMethodSelects();
   openModal('modal-fin');
 }
 
@@ -2141,7 +2269,8 @@ function renderFinCalendar() {
     var dayNet = dt ? (dt.entradas - dt.saidas) : 0;
     acumulado += dayNet;
 
-    html += '<div class="fin-cal-cell' + (isToday ? ' today' : '') + '" onclick="openFinModal(null,\'' + key + '\')" title="Acumulado: ' + fmtMoney(acumulado) + '">';
+    var isFiltered = activeFilters.finDate === key;
+    html += '<div class="fin-cal-cell' + (isToday ? ' today' : '') + (isFiltered ? ' selected' : '') + '" onclick="filterFinDay(\'' + key + '\')" title="Clique para filtrar / Acumulado: ' + fmtMoney(acumulado) + '">';
     html += '<div class="fin-cal-day">' + d + '</div>';
     if (dt) {
       if (dt.saidas > 0) html += '<div class="fin-cal-val neg">-' + fmtMoney(dt.saidas) + '</div>';
@@ -2668,11 +2797,25 @@ function buildFilterPanel() {
     html += `<button class="filter-chip ${activeFilters.finType==='entrada'?'active':''}" onclick="setFilter('finType','entrada')">Entradas</button>`;
     html += `<button class="filter-chip ${activeFilters.finType==='saida'?'active':''}" onclick="setFilter('finType','saida')">Saídas</button>`;
     html += `<div class="filter-separator"></div>`;
-    const cats = [...new Set(finances.map(f=>f.category))];
+    const cats = [...new Set(finances.map(f=>f.category).filter(Boolean))];
     html += `<span style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em">Categoria:</span>`;
-    cats.forEach(c=>{
-      html += `<button class="filter-chip ${activeFilters.finCat===c?'active':''}" onclick="setFilter('finCat','${c}')">${c}</button>`;
+    cats.forEach(cat=>{
+      html += `<button class="filter-chip ${activeFilters.finCat===cat?'active':''}" onclick="setFilter('finCat','${cat}')">${cat}</button>`;
     });
+    html += `<div class="filter-separator"></div>`;
+    const methods = [...new Set(finances.map(f=>f.method).filter(Boolean))];
+    if (methods.length) {
+      html += `<span style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em">Forma:</span>`;
+      methods.forEach(m=>{
+        html += `<button class="filter-chip ${activeFilters.finMethod===m?'active':''}" onclick="setFilter('finMethod','${m}')">${m}</button>`;
+      });
+    }
+    if (activeFilters.finDate) {
+      html += `<div class="filter-separator"></div>`;
+      var dp = activeFilters.finDate.split('-');
+      html += `<span style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em">Dia:</span>`;
+      html += `<button class="filter-chip active" onclick="setFilter('finDate','${activeFilters.finDate}')">${dp[2]}/${dp[1]}/${dp[0]}</button>`;
+    }
   }
 
   if (view === 'lists') {
@@ -2742,10 +2885,25 @@ function filteredBacklog() {
   return b;
 }
 
+
+function filterFinDay(dateKey) {
+  if (activeFilters.finDate === dateKey) {
+    // Clicou duas vezes: remove filtro
+    delete activeFilters.finDate;
+    showToast('Filtro de data removido');
+  } else {
+    activeFilters.finDate = dateKey;
+    var parts = dateKey.split('-');
+    showToast('Filtrando: ' + parts[2] + '/' + parts[1] + '/' + parts[0]);
+  }
+  renderFinCalendar();
+  renderFinance();
+}
 function filteredFinances() {
   let f = [...finances];
   if (activeFilters.finType) f = f.filter(x=>x.type===activeFilters.finType);
   if (activeFilters.finCat)  f = f.filter(x=>x.category===activeFilters.finCat);
+  if (activeFilters.finDate) f = f.filter(x=>x.date===activeFilters.finDate);
   return f;
 }
 
@@ -2819,6 +2977,37 @@ function deleteFinCategory(idx) {
     renderManageCats();
     updateFinCategorySelects();
   }
+}
+
+
+function getPayMethods() {
+  return ['PIX','Débito','Crédito','Dinheiro','TED','Outro'].concat(customPayMethods);
+}
+
+function updateFinMethodSelects() {
+  var methods = getPayMethods();
+  document.querySelectorAll('#fin-method, #edit-fin-method, .fin-method-select').forEach(function(sel) {
+    var cur = sel.value;
+    sel.innerHTML = methods.map(function(m) {
+      return '<option value="' + m + '"' + (m===cur?' selected':'') + '>' + m + '</option>';
+    }).join('') + '<option value="__add__">+ Adicionar forma...</option>';
+    sel.onchange = function() {
+      if (this.value === '__add__') {
+        var nova = prompt('Nome da nova forma de pagamento:');
+        if (nova && nova.trim()) {
+          nova = nova.trim();
+          if (!customPayMethods.includes(nova)) {
+            customPayMethods.push(nova);
+            localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods));
+          }
+          updateFinMethodSelects();
+          this.value = nova;
+        } else {
+          this.value = cur || 'PIX';
+        }
+      }
+    };
+  });
 }
 
 function updateFinCategorySelects() {
@@ -8057,6 +8246,407 @@ function lockForgotPassword() {
 ['mousemove','keydown','touchstart','scroll','click'].forEach(function(ev) {
   document.addEventListener(ev, lockActivityReset, { passive: true });
 });
+
+// ══ JOGO FINANCEIRO ══
+let parcelamentos = JSON.parse(localStorage.getItem('jogo_parcelamentos') || '[]');
+let economias     = JSON.parse(localStorage.getItem('jogo_economias')     || '[]');
+let jogoXP        = parseInt(localStorage.getItem('jogo_xp')              || '0');
+let jogoMoedas    = parseInt(localStorage.getItem('jogo_moedas')          || '0');
+let jogoStreak    = parseInt(localStorage.getItem('jogo_streak')          || '0');
+let jogoLastDay   = localStorage.getItem('jogo_last_day')                  || '';
+let nextParcId    = parseInt(localStorage.getItem('jogo_next_parc_id')    || '1');
+let nextEcoId     = parseInt(localStorage.getItem('jogo_next_eco_id')     || '1');
+
+function jogoSave() {
+  localStorage.setItem('jogo_parcelamentos', JSON.stringify(parcelamentos));
+  localStorage.setItem('jogo_economias',     JSON.stringify(economias));
+  localStorage.setItem('jogo_xp',            jogoXP);
+  localStorage.setItem('jogo_moedas',        jogoMoedas);
+  localStorage.setItem('jogo_streak',        jogoStreak);
+  localStorage.setItem('jogo_last_day',      jogoLastDay);
+  localStorage.setItem('jogo_next_parc_id',  nextParcId);
+  localStorage.setItem('jogo_next_eco_id',   nextEcoId);
+}
+
+function jogoLevel() {
+  var levels = [0,100,300,600,1000,1500,2200,3000,4000,5500,7500];
+  for (var i = levels.length-1; i >= 0; i--) {
+    if (jogoXP >= levels[i]) return {level: i+1, current: jogoXP - levels[i], next: (levels[i+1]||99999) - levels[i], title: ['','Iniciante','Controlador','Economizador','Estrategista','Guerreiro Financeiro','Mestre do Orçamento','Domador de Dívidas','Caçador de Parcelas','Campeão da Liberdade','Lenda Financeira'][i+1]||'Lenda'};
+  }
+  return {level:1, current:jogoXP, next:100, title:'Iniciante'};
+}
+
+function jogoAddXP(xp, msg) {
+  jogoXP += xp;
+  jogoMoedas += Math.floor(xp / 5);
+  jogoSave();
+  showToast('⚡ +' + xp + ' XP — ' + msg);
+  if (document.getElementById('jogo-section') && document.getElementById('jogo-section').style.display !== 'none') renderJogo();
+}
+
+function jogoUpdateStreak() {
+  var today = new Date().toISOString().split('T')[0];
+  if (jogoLastDay === today) return;
+  // Verifica se adicionou parcela hoje
+  var addedToday = parcelamentos.some(function(p){ return p.createdAt && p.createdAt.startsWith(today); });
+  if (!addedToday) {
+    if (jogoLastDay === new Date(Date.now()-86400000).toISOString().split('T')[0]) {
+      jogoStreak++;
+    } else if (jogoLastDay !== today) {
+      jogoStreak = 1;
+    }
+  } else {
+    jogoStreak = 0;
+  }
+  jogoLastDay = today;
+  jogoSave();
+}
+
+// ══ JOGO FINANCEIRO — FUNÇÕES ══
+
+function switchFinTab(tab) {
+  var main = document.getElementById('fin-main-section');
+  var jogo = document.getElementById('jogo-section');
+  var vf   = document.getElementById('view-finance');
+  if (main) { main.style.display = tab === 'main' ? '' : 'none'; main.style.width = '100%'; }
+  if (jogo) { jogo.style.display = tab === 'jogo' ? 'block' : 'none'; jogo.style.width = '100%'; }
+  if (vf)   { vf.style.maxWidth = '100%'; }
+  document.getElementById('fin-tab-main').classList.toggle('active', tab === 'main');
+  document.getElementById('fin-tab-jogo').classList.toggle('active', tab === 'jogo');
+  if (tab === 'jogo') { jogoUpdateStreak(); renderJogo(); }
+}
+
+function jogoTotalDivida() {
+  return parcelamentos.filter(function(p){ return !p.quitado; })
+    .reduce(function(s,p){ return s + (p.parcelas_restantes * p.valor_parcela); }, 0);
+}
+
+function jogoTotalPago() {
+  return parcelamentos.reduce(function(s,p){ return s + (p.parcelas_pagas * p.valor_parcela); }, 0);
+}
+
+function jogoPctTotal() {
+  var total = parcelamentos.reduce(function(s,p){ return s + (p.parcelas_total * p.valor_parcela); }, 0);
+  if (!total) return 0;
+  var pago = jogoTotalPago();
+  return Math.min(100, Math.round(pago / total * 100));
+}
+
+function jogo_parcelamentoEmoji(p) {
+  var restantes = p.parcelas_restantes;
+  if (p.quitado) return '✅';
+  if (restantes > 24) return '🐉';
+  if (restantes > 12) return '🐺';
+  if (restantes > 4)  return '🐭';
+  return '⚡';
+}
+
+function jogo_hpColor(pct) {
+  if (pct >= 80) return 'var(--green)';
+  if (pct >= 40) return 'var(--amber)';
+  return 'var(--red)';
+}
+
+function renderJogo() {
+  var el = document.getElementById('jogo-main') || document.getElementById('jogo-section');
+  if (!el) return;
+  var lv = jogoLevel();
+  var pct = jogoPctTotal();
+  var totalDivida = jogoTotalDivida();
+  var totalPago   = jogoTotalPago();
+  var missoes = gerarMissoes();
+  var conquistas = gerarConquistas();
+
+  // Streak calendar — últimos 21 dias
+  var calDays = [];
+  var today = new Date();
+  var todayKey = today.toISOString().split('T')[0];
+  for (var i = 20; i >= 0; i--) {
+    var d = new Date(today.getTime() - i*86400000);
+    var key = d.toISOString().split('T')[0];
+    // Dia "on" = nenhum parcelamento CRIADO nesse dia
+    var hasNew = parcelamentos.some(function(p){ return p.createdAt && p.createdAt.startsWith(key); });
+    // Só marca como "on" os dias dentro do streak atual
+    var daysAgo = i;
+    var inStreak = !hasNew && daysAgo < jogoStreak + 1;
+    calDays.push({ key:key, day:d.getDate(), on: inStreak, isToday: key===todayKey });
+  }
+
+  var xpPct = Math.min(100, Math.round(lv.current / lv.next * 100));
+  var html = '';
+
+  // ── HEADER ──
+  html += '<div class="jogo-header">';
+  html += '<div class="jogo-level"><span class="lv-label">Nv</span><span class="lv-num">'+lv.level+'</span></div>';
+  html += '<div class="jogo-xp-wrap">';
+  html += '<div style="font-size:12px;font-weight:700;color:var(--text)">'+lv.title+'</div>';
+  html += '<div class="jogo-xp-bar"><div class="jogo-xp-fill" style="width:'+xpPct+'%"></div></div>';
+  html += '<div style="font-size:10px;color:var(--text-muted)">'+lv.current+' / '+lv.next+' XP</div>';
+  html += '</div>';
+  html += '<div class="jogo-stat"><span class="sv" style="color:var(--amber)">🔥 '+jogoStreak+'</span><span class="sl">dias streak</span></div>';
+  html += '<div class="jogo-stat"><span class="sv" style="color:var(--amber)">🪙 '+jogoMoedas+'</span><span class="sl">moedas</span></div>';
+  html += '</div>';
+
+  // ── BOTÕES ──
+  html += '<div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">';
+  html += '<button class="btn btn-primary btn-sm" onclick="jogo_abrirNovaParcela()">+ Parcelamento</button>';
+  html += '<button class="btn btn-ghost btn-sm" onclick="jogo_abrirEconomia()">+ Economia</button>';
+  html += '</div>';
+
+  // ── CORRIDA ──
+  html += '<div class="card" style="margin-bottom:12px">';
+  html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:10px">🏁 Corrida até a Liberdade</div>';
+  html += '<div class="race-track-wrap">';
+  html += '<div class="race-bar-outer">';
+  html += '<div class="race-bar-fill" style="width:'+Math.max(pct,4)+'%"><span style="font-size:14px">🏃‍♀️</span></div>';
+  html += '<span style="position:absolute;right:32px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:var(--text-muted)">'+pct+'%</span>';
+  html += '<span style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:16px">🏁</span>';
+  html += '</div></div>';
+  html += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:8px">';
+  html += '<span>Pago: <strong style="color:var(--green)">'+fmtMoney(totalPago)+'</strong></span>';
+  html += '<span>Restante: <strong style="color:var(--red)">'+fmtMoney(totalDivida)+'</strong></span>';
+  html += '</div>';
+
+  // Parcelamentos
+  if (parcelamentos.length) {
+    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin:12px 0 6px">⚔️ Parcelamentos ativos</div>';
+    parcelamentos.forEach(function(p) {
+      var qPct = p.parcelas_total > 0 ? Math.round(p.parcelas_pagas / p.parcelas_total * 100) : 0;
+      var emoji = jogo_parcelamentoEmoji(p);
+      var hpColor = jogo_hpColor(qPct);
+      html += '<div class="parc-item">';
+      html += '<div class="parc-emoji">'+emoji+'</div>';
+      html += '<div class="parc-info">';
+      html += '<div class="parc-name">'+escHtml(p.nome)+'</div>';
+      html += '<div class="parc-sub">'+(p.quitado?'✅ Quitado!':p.parcelas_restantes+' parcelas · '+fmtMoney(p.valor_parcela)+'/mês')+'</div>';
+      html += '<div class="parc-hp"><div class="parc-hp-bar"><div class="parc-hp-fill" style="width:'+qPct+'%;background:'+hpColor+'"></div></div>';
+      html += '<div class="parc-hp-pct">'+qPct+'% quitado</div></div>';
+      html += '</div>';
+      if (!p.quitado) {
+        html += '<div style="display:flex;gap:4px;flex-shrink:0">';
+        html += '<button class="btn btn-ghost btn-sm" style="padding:3px 8px;font-size:10px" onclick="jogo_pagarParcela('+p.id+')">✓ Paguei</button>';
+        html += '<button class="btn btn-ghost btn-sm" style="padding:3px 6px;font-size:10px;color:var(--text-dim)" onclick="jogo_editarParcela('+p.id+')">✏️</button>';
+        html += '</div>';
+      }
+      html += '</div>';
+    });
+  } else {
+    html += '<p style="font-size:12px;color:var(--text-muted);padding:12px 0;text-align:center">Clique em <strong>+ Parcelamento</strong> para cadastrar uma dívida</p>';
+  }
+  html += '</div>';
+
+  // ── SIMULADOR ──
+  var parcAtivos = parcelamentos.filter(function(p){return !p.quitado;});
+  if (parcAtivos.length) {
+    var mensal = parcAtivos.reduce(function(s,p){return s+p.valor_parcela;},0);
+    var meses0 = totalDivida > 0 ? Math.ceil(totalDivida / mensal) : 0;
+    var meses1 = totalDivida > 0 ? Math.ceil(totalDivida / (mensal+300)) : 0;
+    var meses2 = totalDivida > 0 ? Math.ceil(totalDivida / (mensal+700)) : 0;
+    function addMeses(m) {
+      var d2 = new Date(); d2.setMonth(d2.getMonth()+m);
+      return d2.toLocaleDateString('pt-BR',{month:'short',year:'numeric'});
+    }
+    html += '<div class="card" style="margin-bottom:12px">';
+    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px">🔮 Simulador</div>';
+    html += '<div class="scenario-jogo">💤 Ritmo atual (<strong>'+fmtMoney(mensal)+'/mês</strong>): termina em <strong style="color:var(--text)">'+addMeses(meses0)+'</strong></div>';
+    if (meses1>0 && meses1<meses0) html += '<div class="scenario-jogo" style="border-color:var(--amber)">⚡ +R$300/mês: <strong style="color:var(--amber)">'+addMeses(meses1)+'</strong> <small style="color:var(--text-muted)">('+( meses0-meses1)+' meses antes)</small></div>';
+    if (meses2>0 && meses2<meses0) html += '<div class="scenario-jogo" style="border-color:var(--green)">🚀 +R$700/mês: <strong style="color:var(--green)">'+addMeses(meses2)+'</strong> <small style="color:var(--text-muted)">('+( meses0-meses2)+' meses antes)</small></div>';
+    html += '</div>';
+  }
+
+  // ── MISSÕES ──
+  html += '<div class="card" style="margin-bottom:12px">';
+  html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px">📋 Missões da semana</div>';
+  missoes.forEach(function(m) {
+    var pctM = m.total > 0 ? Math.min(100,Math.round(m.progresso/m.total*100)) : (m.done?100:0);
+    html += '<div class="missao-item'+(m.done?' done':'') +'">';
+    html += '<div class="mi-ico">'+m.ico+'</div>';
+    html += '<div class="mi-body"><div class="mi-title">'+m.titulo+'</div><div class="mi-desc">'+m.desc+'</div>';
+    html += '<div class="mi-prog"><div class="mi-bar"><div class="mi-fill" style="width:'+pctM+'%;background:'+(m.done?'var(--green)':'var(--violet)')+'"></div></div>';
+    html += '<div class="mi-reward">'+(m.done?'✅ +'+m.xp+' XP':'+'+m.xp+' XP')+'</div></div>';
+    html += '</div></div>';
+  });
+  if (!missoes.length) html += '<p style="font-size:12px;color:var(--text-muted);text-align:center;padding:8px">Cadastre parcelamentos para gerar missões</p>';
+  html += '</div>';
+
+  // ── STREAK CALENDAR ──
+  html += '<div class="card" style="margin-bottom:12px">';
+  html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px">🔥 Dias sem nova parcela</div>';
+  html += '<div class="streak-cal-jogo">';
+  ['D','S','T','Q','Q','S','S'].forEach(function(d){ html += '<div class="sc-day" style="background:transparent;color:var(--text-dim);font-weight:700">'+d+'</div>'; });
+  calDays.forEach(function(d) {
+    html += '<div class="sc-day'+(d.on?' on':'')+(d.isToday?' today':'')+'" title="'+d.key+'">'+d.day+'</div>';
+  });
+  html += '</div>';
+  html += '<div style="font-size:11px;color:var(--text-muted);margin-top:8px;text-align:center">🔥 <strong style="color:var(--amber)">'+jogoStreak+' dias</strong> sem parcelar nada</div>';
+  html += '</div>';
+
+  // ── CONQUISTAS ──
+  html += '<div class="card">';
+  html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px">🏆 Conquistas</div>';
+  html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">';
+  conquistas.forEach(function(t) {
+    html += '<div class="trophy-jogo'+(t.unlocked?' unlocked':' locked')+'">';
+    html += '<div style="font-size:20px">'+t.ico+'</div>';
+    html += '<div style="font-size:9px;font-weight:600;color:var(--text);line-height:1.2;margin-top:2px">'+t.nome+'</div>';
+    if (!t.unlocked) html += '<div style="font-size:8px;color:var(--text-muted)">'+t.req+'</div>';
+    html += '</div>';
+  });
+  html += '</div></div>';
+
+  el.innerHTML = html;
+}
+
+function gerarMissoes() {
+  var miss = [];
+  var hoje = new Date();
+  var semInicio = new Date(hoje); semInicio.setDate(hoje.getDate() - hoje.getDay());
+  var ecosSemana = economias.filter(function(e){
+    var d = new Date(e.data);
+    return d >= semInicio;
+  });
+  var totalEcoSemana = ecosSemana.reduce(function(s,e){ return s+e.valor; }, 0);
+
+  // Missão: economizar R$300 na semana
+  miss.push({ ico: '💰', titulo: 'Economizar R$ 300 esta semana', desc: 'Registre economias para atingir a meta',
+    progresso: totalEcoSemana, total: 300, done: totalEcoSemana >= 300, xp: 100 });
+
+  // Missão: não parcelar nada
+  var addedThisWeek = parcelamentos.some(function(p){
+    return p.createdAt && new Date(p.createdAt) >= semInicio;
+  });
+  miss.push({ ico: '📵', titulo: 'Não parcelar nada esta semana', desc: 'Mantenha o streak sem novas parcelas',
+    progresso: addedThisWeek ? 0 : 1, total: 1, done: !addedThisWeek, xp: 80 });
+
+  // Missão: pagar 1 parcela extra (se houver parcelamento quase quitado)
+  var quase = parcelamentos.filter(function(p){ return !p.quitado && p.parcelas_restantes <= 3 && p.parcelas_restantes > 0; });
+  if (quase.length) {
+    miss.push({ ico: '⚡', titulo: 'Quite o ' + quase[0].nome + ' (faltam ' + quase[0].parcelas_restantes + '!)', desc: 'Esse inimigo está quase derrotado!',
+      progresso: 0, total: 1, done: false, xp: 150 });
+  }
+
+  return miss;
+}
+
+function gerarConquistas() {
+  var qtQuitados = parcelamentos.filter(function(p){ return p.quitado; }).length;
+  var totalEco = economias.reduce(function(s,e){ return s+e.valor; }, 0);
+  return [
+    { ico:'🥇', nome:'1ª Parcela Extra', req:'', unlocked: parcelamentos.some(function(p){ return p.parcelas_pagas > 0; }) },
+    { ico:'🔥', nome:'Streak 7 dias', req:'7 dias sem parcela', unlocked: jogoStreak >= 7 },
+    { ico:'⚔️', nome:'Inimigo Derrotado', req:'1 quitação', unlocked: qtQuitados >= 1 },
+    { ico:'💎', nome:'Streak 30 dias', req:'30 dias', unlocked: jogoStreak >= 30 },
+    { ico:'💰', nome:'R$ 1k Economizado', req:'R$ 1.000', unlocked: totalEco >= 1000 },
+    { ico:'🐉', nome:'Mata o Chefão', req:'Quite a maior dívida', unlocked: parcelamentos.length > 0 && parcelamentos.every(function(p){ return p.quitado || p.valor_parcela < 500; }) },
+    { ico:'🏁', nome:'Linha de Chegada', req:'Quite tudo', unlocked: parcelamentos.length > 0 && parcelamentos.every(function(p){ return p.quitado; }) },
+    { ico:'👑', nome:'Nível 10', req:'', unlocked: jogoLevel().level >= 10 },
+  ];
+}
+
+function jogo_abrirNovaParcela() {
+  var title = document.getElementById('parc-modal-title');
+  var saveBtn = document.getElementById('parc-save-btn');
+  if (title) title.textContent = '⚔️ Novo Parcelamento';
+  if (saveBtn) { saveBtn.textContent = 'Adicionar'; saveBtn.onclick = jogo_salvarParcela; }
+  document.getElementById('parc-nome').value = '';
+  document.getElementById('parc-total').value = '';
+  document.getElementById('parc-pagas').value = '0';
+  document.getElementById('parc-valor').value = '';
+  openModal('modal-parc');
+  setTimeout(function(){ document.getElementById('parc-nome').focus(); }, 200);
+}
+
+function jogo_salvarParcela() {
+  var nome  = document.getElementById('parc-nome').value.trim();
+  var total = parseInt(document.getElementById('parc-total').value) || 0;
+  var pagas = parseInt(document.getElementById('parc-pagas').value) || 0;
+  var valor = parseFloat(document.getElementById('parc-valor').value.replace(',','.')) || 0;
+  if (!nome) { document.getElementById('parc-nome').focus(); showToast('⚠️ Informe o nome'); return; }
+  if (!total || total < 1) { document.getElementById('parc-total').focus(); showToast('⚠️ Informe o total de parcelas'); return; }
+  if (!valor || valor <= 0) { document.getElementById('parc-valor').focus(); showToast('⚠️ Informe o valor da parcela'); return; }
+  if (pagas > total) { showToast('⚠️ Parcelas pagas não pode ser maior que o total'); return; }
+  var p = {
+    id: nextParcId++, nome: nome,
+    parcelas_total: total, parcelas_pagas: pagas,
+    parcelas_restantes: total - pagas,
+    valor_parcela: valor,
+    quitado: (total - pagas) <= 0,
+    createdAt: new Date().toISOString()
+  };
+  parcelamentos.push(p);
+  jogoSave();
+  closeModal('modal-parc');
+  jogoAddXP(30, 'Parcelamento cadastrado');
+  renderJogo();
+}
+
+function jogo_editarParcela(id) {
+  var p = parcelamentos.find(function(x){ return x.id === id; });
+  if (!p) return;
+  document.getElementById('parc-nome').value = p.nome;
+  document.getElementById('parc-total').value = p.parcelas_total;
+  document.getElementById('parc-pagas').value = p.parcelas_pagas;
+  document.getElementById('parc-valor').value = p.valor_parcela;
+  // Muda o botão para atualizar
+  var btn = document.querySelector('#modal-parc .btn-primary');
+  if (btn) { btn.textContent = 'Atualizar'; btn.onclick = function(){ jogo_atualizarParcela(id); }; }
+  document.querySelector('#modal-parc .modal-title').textContent = '✏️ Editar Parcelamento';
+  openModal('modal-parc');
+}
+
+function jogo_atualizarParcela(id) {
+  var p = parcelamentos.find(function(x){ return x.id === id; });
+  if (!p) return;
+  var nome  = document.getElementById('parc-nome').value.trim();
+  var pagas = parseInt(document.getElementById('parc-pagas').value) || 0;
+  var valor = parseFloat(document.getElementById('parc-valor').value) || p.valor_parcela;
+  if (!nome) return;
+  p.nome = nome; p.parcelas_pagas = pagas; p.valor_parcela = valor;
+  p.parcelas_restantes = p.parcelas_total - pagas;
+  p.quitado = p.parcelas_restantes <= 0;
+  jogoSave();
+  closeModal('modal-parc');
+  // Restaura botão original
+  var btn = document.querySelector('#modal-parc .btn-primary');
+  if (btn) { btn.textContent = 'Adicionar'; btn.onclick = jogo_salvarParcela; }
+  document.querySelector('#modal-parc .modal-title').textContent = '⚔️ Novo Parcelamento';
+  renderJogo();
+}
+
+function jogo_pagarParcela(id) {
+  var p = parcelamentos.find(function(x){ return x.id === id; });
+  if (!p || p.quitado) return;
+  p.parcelas_pagas++;
+  p.parcelas_restantes--;
+  if (p.parcelas_restantes <= 0) {
+    p.quitado = true;
+    jogoAddXP(200, '🎉 ' + p.nome + ' QUITADO!');
+    showToast('🎉 Inimigo derrotado! ' + p.nome + ' está quitado!');
+  } else {
+    jogoAddXP(25, 'Parcela paga — ' + p.nome);
+  }
+  jogoSave();
+  renderJogo();
+}
+
+function jogo_abrirEconomia() {
+  document.getElementById('eco-desc').value = '';
+  document.getElementById('eco-valor').value = '';
+  openModal('modal-eco');
+  setTimeout(function(){ document.getElementById('eco-desc').focus(); }, 200);
+}
+
+function jogo_salvarEconomia() {
+  var desc  = document.getElementById('eco-desc').value.trim();
+  var valor = parseFloat(document.getElementById('eco-valor').value.replace(',','.')) || 0;
+  if (!desc) { document.getElementById('eco-desc').focus(); showToast('⚠️ Descreva a economia'); return; }
+  if (!valor || valor <= 0) { document.getElementById('eco-valor').focus(); showToast('⚠️ Informe o valor'); return; }
+  economias.push({ id: nextEcoId++, desc: desc, valor: valor, data: new Date().toISOString() });
+  jogoSave();
+  closeModal('modal-eco');
+  jogoAddXP(15, 'Economia registrada!');
+  renderJogo();
+}
 
 document.addEventListener('DOMContentLoaded', function() {
 
