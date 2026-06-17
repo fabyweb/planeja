@@ -1090,6 +1090,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
         <label>Valor da parcela (R$)</label>
         <input class="form-input" id="parc-valor" type="number" min="0" step="0.01" placeholder="0,00">
       </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Data do 1º lançamento</label>
+          <input class="form-input" id="parc-data-inicio" type="date">
+        </div>
+        <div class="form-row">
+          <label>Cartão / Banco</label>
+          <input class="form-input" id="parc-banco" type="text" placeholder="Ex: Nubank, Itaú">
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-parc')">Cancelar</button>
@@ -8418,7 +8428,9 @@ function renderJogo() {
       html += '<div class="parc-emoji">'+emoji+'</div>';
       html += '<div class="parc-info">';
       html += '<div class="parc-name">'+escHtml(p.nome)+'</div>';
-      html += '<div class="parc-sub">'+(p.quitado?'✅ Quitado!':p.parcelas_restantes+' parcelas · '+fmtMoney(p.valor_parcela)+'/mês')+'</div>';
+      var bancoInfo = p.banco ? ' · ' + p.banco : '';
+      var dataInfo = p.data_inicio ? ' · desde ' + p.data_inicio.split('-').reverse().join('/') : '';
+      html += '<div class="parc-sub">'+(p.quitado?'✅ Quitado!':p.parcelas_restantes+' parcelas · '+fmtMoney(p.valor_parcela)+'/mês'+bancoInfo+dataInfo)+'</div>';
       html += '<div class="parc-hp"><div class="parc-hp-bar"><div class="parc-hp-fill" style="width:'+qPct+'%;background:'+hpColor+'"></div></div>';
       html += '<div class="parc-hp-pct">'+qPct+'% quitado</div></div>';
       html += '</div>';
@@ -8552,6 +8564,8 @@ function jogo_abrirNovaParcela() {
   document.getElementById('parc-total').value = '';
   document.getElementById('parc-pagas').value = '0';
   document.getElementById('parc-valor').value = '';
+  document.getElementById('parc-data-inicio').value = '';
+  document.getElementById('parc-banco').value = '';
   openModal('modal-parc');
   setTimeout(function(){ document.getElementById('parc-nome').focus(); }, 200);
 }
@@ -8561,6 +8575,8 @@ function jogo_salvarParcela() {
   var total = parseInt(document.getElementById('parc-total').value) || 0;
   var pagas = parseInt(document.getElementById('parc-pagas').value) || 0;
   var valor = parseFloat(document.getElementById('parc-valor').value.replace(',','.')) || 0;
+  var dataInicio = document.getElementById('parc-data-inicio').value || '';
+  var banco = (document.getElementById('parc-banco').value || '').trim();
   if (!nome) { document.getElementById('parc-nome').focus(); showToast('⚠️ Informe o nome'); return; }
   if (!total || total < 1) { document.getElementById('parc-total').focus(); showToast('⚠️ Informe o total de parcelas'); return; }
   if (!valor || valor <= 0) { document.getElementById('parc-valor').focus(); showToast('⚠️ Informe o valor da parcela'); return; }
@@ -8570,6 +8586,8 @@ function jogo_salvarParcela() {
     parcelas_total: total, parcelas_pagas: pagas,
     parcelas_restantes: total - pagas,
     valor_parcela: valor,
+    data_inicio: dataInicio,
+    banco: banco,
     quitado: (total - pagas) <= 0,
     createdAt: new Date().toISOString()
   };
