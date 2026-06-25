@@ -497,35 +497,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 
 
 /* ══ CURRÍCULO ══ */
-.curriculo-layout{display:grid;grid-template-columns:220px 1fr;gap:12px;margin-top:8px}
-.curriculo-sidebar{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow-y:auto}
-.curriculo-sidebar-header{padding:12px 14px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:6px;flex-shrink:0}
-.curriculo-main{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden}
-.materia-list-panel{overflow-y:auto;padding:4px;max-height:60vh}
-.mat-item{padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:all 0.12s;margin-bottom:2px}
-.mat-item:hover{background:var(--card)}
-.mat-item.active{background:var(--violet-glow);border:1px solid var(--violet)}
-.mat-item.active .mat-name{color:var(--violet-light)}
-.mat-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mat-sub{font-size:10px;color:var(--text-dim);margin-top:2px}
-.mat-prog-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px}
-.mat-prog-fill{height:100%;border-radius:2px;transition:width 0.4s}
-.mat-pct{font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:700;float:right;margin-top:-14px}
-.curriculo-header{padding:14px 18px 12px;border-bottom:1px solid var(--border-soft);flex-shrink:0}
-.curriculo-topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.cur-title{font-size:14px;font-weight:700;color:var(--text);flex:1}
-.cur-prog-bar{height:7px;background:var(--border);border-radius:4px;overflow:hidden}
-.cur-prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--violet),var(--cyan));transition:width 0.5s}
-.cur-status-row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
-.cur-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
-.cur-pill.green{background:rgba(16,185,129,0.12);border:1px solid var(--green);color:var(--green)}
-.cur-pill.amber{background:rgba(245,158,11,0.12);border:1px solid var(--amber);color:var(--amber)}
-.cur-pill.gray{background:rgba(120,120,160,0.1);border:1px solid var(--border);color:var(--text-dim)}
-.cur-filter-bar{padding:8px 18px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex-shrink:0}
-.cur-filter-chip{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all 0.12s;font-family:'Inter',sans-serif}
-.cur-filter-chip:hover{border-color:var(--violet);color:var(--violet-light)}
-.cur-filter-chip.active{background:var(--violet-glow);border-color:var(--violet);color:var(--violet-light)}
-.topicos-area{overflow-y:auto;padding:12px 18px;max-height:60vh}
+
 .topicos-grid-cur{display:flex;flex-direction:column;gap:6px}
 .top-card{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:10px 12px;display:flex;align-items:flex-start;gap:9px;cursor:pointer;transition:all 0.12s;position:relative}
 .top-card:hover{background:var(--card-hover);border-color:var(--border)}
@@ -738,6 +710,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .trophy-jogo.locked{opacity:.3;filter:grayscale(1)}
 .scenario-jogo{padding:9px 12px;border-radius:8px;background:var(--card);border-left:3px solid var(--violet);margin-bottom:8px;font-size:11px;line-height:1.5}
 
+
+.cur-sort-btn{font-size:10px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.cur-sort-btn.active{border-color:var(--violet);background:var(--violet-glow);color:var(--violet-light);font-weight:700}
+.cur-sort-btn:hover:not(.active){border-color:var(--text-dim);color:var(--text)}
 </style>
 
   <!-- PWA -->
@@ -1029,7 +1005,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       <!-- Tabs -->
       <div class="estudos-tabs" style="flex-shrink:0">
         <button class="estudos-tab active" onclick="switchEstudosTab('painel',this)">📊 Painel</button>
-        <button class="estudos-tab" onclick="switchEstudosTab('curriculo',this)">📚 Currículo</button>
+        <button class="estudos-tab" onclick="switchEstudosTab('desempenho',this)">📈 Desempenho</button>
       </div>
       <!-- Single content area — re-rendered on tab switch -->
       <div id="estudos-tab-content"></div>
@@ -1132,6 +1108,63 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
     </div>
   </div>
 </div>
+
+<!-- ══ MODAL — EDITAR MATÉRIA (Desempenho) ══ -->
+<div class="modal-overlay" id="modal-editar-materia">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <span class="modal-title">✏️ Editar Matéria</span>
+      <button class="modal-close" onclick="closeModal('modal-editar-materia')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label>Nome da matéria</label>
+        <input class="form-input" id="edit-mat-nome" placeholder="Nome da matéria">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-editar-materia')">Cancelar</button>
+      <button class="btn btn-primary btn-sm" onclick="saveEditMateriaDese()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ MODAL — EDITAR SESSÃO DE QUESTÕES ══ -->
+<div class="modal-overlay" id="modal-edit-qs">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <span class="modal-title">✏️ Editar Sessão</span>
+      <button class="modal-close" onclick="closeModal('modal-edit-qs')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-qs-idx">
+      <div class="form-row">
+        <label>📅 Data</label>
+        <input class="form-input" id="edit-qs-data" type="date">
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>📝 Questões</label>
+          <input class="form-input" id="edit-qs-total" type="number" min="1" oninput="calcEditQs()">
+        </div>
+        <div class="form-row">
+          <label>✅ Certas</label>
+          <input class="form-input" id="edit-qs-certas" type="number" min="0" oninput="calcEditQs()">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>🎯 Acerto (%)</label>
+        <input class="form-input" id="edit-qs-acerto" type="number" min="0" max="100" readonly style="background:var(--card)">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-edit-qs')">Cancelar</button>
+      <button class="btn btn-primary btn-sm" onclick="saveEditQuestaoSessao()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════════════
      MODAL — TAREFA
 ══════════════════════════════ -->
@@ -4437,9 +4470,9 @@ function renderEstudos() {
   // Route to active tab
   const container = document.getElementById('estudos-tab-content');
   if (!container) return;
-  if (estudosActiveTab === 'curriculo') {
-    if (!container.querySelector('#cur-materia-list')) container.innerHTML = buildCurriculoHTML();
-    renderCurriculo();
+  if (estudosActiveTab === 'desempenho') {
+    if (!document.getElementById('dese-root')) container.innerHTML = buildDesempenhoHTML();
+    renderDesempenho();
   } else {
     if (!container.querySelector('#timer-display')) container.innerHTML = buildEstudosPainelHTML();
     renderEstudosPainel();
@@ -5670,11 +5703,10 @@ function switchEstudosTab(tab, btn) {
 
   if (tab === 'painel') {
     container.innerHTML = buildEstudosPainelHTML();
-    // Re-attach all painel event listeners and render dynamic content
     renderEstudosPainel();
-  } else {
-    container.innerHTML = buildCurriculoHTML();
-    renderCurriculo();
+  } else if (tab === 'desempenho') {
+    container.innerHTML = buildDesempenhoHTML();
+    renderDesempenho();
   }
 }
 
@@ -5697,6 +5729,10 @@ function curToggle(mid, idx) {
   // 'estudado' → no change via toggle
   lsSave();
   scheduleSave();
+  if (estudosActiveTab === 'desempenho') {
+    renderDesempenho();
+    return;
+  }
   const searchInp = document.getElementById('cur-search');
   if (searchInp && searchInp.value && searchInp.value.length >= 2) {
     curDoSearch(searchInp.value);
@@ -5704,7 +5740,7 @@ function curToggle(mid, idx) {
     renderCurriculoHeader();
     renderCurriculoGeral();
   } else {
-    renderCurriculo();
+    renderEstudosCur();
   }
 }
 
@@ -5721,7 +5757,7 @@ function curSetStatus(mid, idx, status) {
   // NEVER clear data when changing status — only deleteHistoricoSession can do that
   lsSave();
   scheduleSave();
-  renderCurriculo();
+  renderEstudosCur();
 }
 function curMatStats(mat) {
   const total    = mat.topicos.length;
@@ -5732,233 +5768,16 @@ function curMatStats(mat) {
   return {total, estudado, andamento, pendente, pct};
 }
 
+
+
 // ── Render ──
-function renderCurriculo() {
-  try {
-    renderCurriculoSidebar();
-    renderCurriculoHeader();
-    renderCurriculoTopicos();
-    renderCurriculoGeral();
-  } catch(e) {
-    console.error('renderCurriculo error:', e);
-    const el = document.getElementById('cur-topicos-grid');
-    if (el) el.innerHTML = '<p style="color:var(--red);font-size:12px">Erro: ' + escHtml(e.message) + '</p>';
-  }
-}
-
-function renderCurriculoGeral() {
-  let totalT = 0, totalE = 0;
-  curriculo.forEach(m => {
-    totalT += m.topicos.length;
-    totalE += m.topicos.filter((_,i) => curGetStatus(m.id,i) === 'estudado').length;
-  });
-  const pct = totalT ? Math.round(totalE/totalT*100) : 0;
-  const bar = document.getElementById('cur-geral-bar');
-  const lbl = document.getElementById('cur-geral-label');
-  if (bar) bar.style.width = pct + '%';
-  if (lbl) lbl.textContent = pct + '% (' + totalE + '/' + totalT + ')';
-  const cnt = document.getElementById('cur-mat-count');
-  if (cnt) cnt.textContent = curriculo.length + ' matérias';
-}
-
-function renderCurriculoSidebar() {
-  const el = document.getElementById('cur-materia-list');
-  if (!el) return;
-  el.innerHTML = curriculo.map(m => {
-    const s = curMatStats(m);
-    const color = s.pct >= 70 ? 'var(--green)' : s.pct >= 30 ? 'var(--amber)' : 'var(--text-dim)';
-    return `<div class="mat-item${m.id===curSelectedMatId?' active':''}" onclick="selectCurMateria(${m.id})">
-      <div style="display:flex;align-items:center;gap:4px">
-        <span class="mat-name" style="flex:1">${escHtml(m.nome)}</span>
-        <span style="font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:700;color:${color}">${s.pct}%</span>
-      </div>
-      <div class="mat-prog-bar"><div class="mat-prog-fill" style="width:${s.pct}%;background:${color}"></div></div>
-      <div class="mat-sub">${s.estudado}/${s.total} tópicos</div>
-    </div>`;
-  }).join('');
-}
-
-function renderCurriculoHeader() {
-  const mat = curriculo.find(m => m.id === curSelectedMatId);
-  if (!mat) return;
-  const s = curMatStats(mat);
-  document.getElementById('cur-mat-title').textContent = mat.nome;
-  document.getElementById('cur-mat-prog').style.width  = s.pct + '%';
-  document.getElementById('cur-status-row').innerHTML = `
-    <span class="cur-pill green">✓ ${s.estudado} estudados</span>
-    <span class="cur-pill amber">⟳ ${s.andamento} andamento</span>
-    <span class="cur-pill gray">○ ${s.pendente} pendentes</span>
-    <span style="font-size:10px;color:var(--text-dim);margin-left:4px">${s.pct}%</span>
-  `;
-}
-
-function renderCurriculoTopicos() {
-  // Don't re-render grid while search is active
-  const searchInp = document.getElementById('cur-search');
-  if (searchInp && searchInp.value && searchInp.value.length >= 2) return;
-
-  const mat = curriculo.find(m => m.id === curSelectedMatId);
-  const el  = document.getElementById('cur-topicos-grid');
-  if (!mat || !el) return;
-  el.style.display = ''; // restore if hidden
-  const q = (document.getElementById('cur-search')?.value || '').toLowerCase();
-  const filtered = mat.topicos.map((t,i) => ({t, i, status: curGetStatus(mat.id, i)}))
-    .filter(({t, status}) => {
-      if (q && !t.toLowerCase().includes(q)) return false;
-      if (curFilter === 'todos') return true;
-      return status === curFilter;
-    });
-
-  if (!filtered.length) {
-    el.innerHTML = '<p style="color:var(--text-dim);font-size:12px;grid-column:1/-1;padding:12px 0">Nenhum tópico encontrado.</p>';
-    return;
-  }
-
-  el.innerHTML = filtered.map(({t, i, status}) => {
-    const chk  = status==='estudado' ? '✓' : status==='andamento' ? '⟳' : '';
-    const badge= status==='estudado' ? 'estudado' : status==='andamento' ? 'andamento' : 'pendente';
-    const lbl  = status==='estudado' ? 'Estudado' : status==='andamento' ? 'Andamento' : 'Pendente';
-    const dt   = curTopicosData[mat.id+'_'+i] ? fmtDate(curTopicosData[mat.id+'_'+i]) : '';
-    const d_obj = curTopicosData[mat.id+'_'+i];
-    // Accumulate total time from historico
-    const totalTempo = d_obj ? (
-      d_obj.historico && d_obj.historico.length
-        ? d_obj.historico.reduce((acc, h) => acc + (h.tempo||0), 0)
-        : (d_obj.tempo || 0)
-    ) : 0;
-    const acerto = d_obj ? (d_obj.acerto != null && d_obj.acerto !== '' ? parseInt(d_obj.acerto) : null) : null;
-    const acertoColor = acerto === null ? '' : acerto >= 70 ? 'var(--green)' : acerto >= 50 ? 'var(--amber)' : 'var(--red)';
-    const acertoBg = acerto === null ? '' : acerto >= 70 ? 'rgba(16,185,129,0.15)' : acerto >= 50 ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)';
-    const tempoLabel = totalTempo >= 60
-      ? Math.floor(totalTempo/60) + 'h' + (totalTempo%60 ? String(totalTempo%60).padStart(2,'0') : '')
-      : (totalTempo > 0 ? totalTempo + 'min' : '');
-
-    return `<div class="top-card ${status}" onclick="curToggle(${mat.id},${i})" title="Clique para avançar status">
-      <div class="top-check">${chk}</div>
-      <div style="flex:1;min-width:0">
-        <div class="top-name">${escHtml(t)}</div>
-        <div class="top-meta">
-          <span class="top-badge ${badge}">${lbl}</span>
-          ${dt ? '<span style="font-size:9px;font-family:JetBrains Mono,monospace;color:var(--text-dim)">'+dt+'</span>' : ''}
-          ${tempoLabel ? '<span style="font-size:10px;font-weight:600;color:var(--cyan);background:rgba(6,182,212,0.12);padding:1px 5px;border-radius:4px">⏱ '+tempoLabel+'</span>' : ''}
-        </div>
-        ${acerto !== null ? `
-        <div style="margin-top:5px;display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
-            <div style="height:100%;width:${acerto}%;background:${acertoColor};border-radius:2px;transition:width 0.4s ease"></div>
-          </div>
-          <span style="font-size:10px;font-weight:700;color:${acertoColor};min-width:30px;text-align:right">${acerto}%</span>
-        </div>` : ''}
-        ${d_obj && d_obj.historico && d_obj.historico.length > 1 ? `
-        <div class="top-historico" id="top-hist-${mat.id}_${i}" style="display:none;margin-top:8px">
-          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);margin-bottom:4px">Histórico de estudos</div>
-          ${d_obj.historico.map((h,hi) => `
-            <div style="display:flex;align-items:center;gap:6px;padding:4px 6px;background:var(--surface);border-radius:4px;margin-bottom:3px">
-              <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);flex-shrink:0">${h.date||'—'}</span>
-              <span style="font-size:10px;color:var(--cyan);flex-shrink:0">${h.tempo?'⏱'+h.tempo+'min':''}</span>
-              ${h.acerto!=null?`<div style="flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:${h.acerto}%;background:${h.acerto>=70?'var(--green)':h.acerto>=50?'var(--amber)':'var(--red)'};border-radius:2px"></div></div><span style="font-size:10px;font-weight:600;color:${h.acerto>=70?'var(--green)':h.acerto>=50?'var(--amber)':'var(--red)'}">${h.acerto}%</span>`:'<span style="flex:1"></span>'}
-              <button onclick="event.stopPropagation();editHistoricoSession(${mat.id},${i},${hi})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:10px;padding:1px 3px" title="Editar">✏️</button>
-              <button onclick="event.stopPropagation();deleteHistoricoSession(${mat.id},${i},${hi})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:10px;padding:1px 3px" title="Excluir">✕</button>
-            </div>`).join('')}
-        </div>
-        <button onclick="event.stopPropagation();toggleHistorico('${mat.id}_${i}')"
-          style="font-size:9px;color:var(--text-dim);background:none;border:none;cursor:pointer;padding:2px 0;margin-top:3px">
-          ▾ ${d_obj.historico.length} registros
-        </button>` : ''}
-      </div>
-      <div class="top-hover-btns">
-        <button class="top-hbtn" title="📖 Registrar estudo" onclick="event.stopPropagation();openRegistrarEstudo(${mat.id},${i})" style="color:var(--violet-light)">📖</button>
-        <button class="top-hbtn" title="Estudado" onclick="event.stopPropagation();curSetStatus(${mat.id},${i},'estudado')">✓</button>
-        <button class="top-hbtn" title="Andamento" onclick="event.stopPropagation();curSetStatus(${mat.id},${i},'andamento')">⟳</button>
-        <button class="top-hbtn" title="Pendente" onclick="event.stopPropagation();curSetStatus(${mat.id},${i},'pendente')">○</button>
-        <button class="top-hbtn" title="Editar" onclick="event.stopPropagation();openEditTopicoModal(${mat.id},${i})" style="color:var(--violet-light)">✏️</button>
-        <button class="top-hbtn" title="Excluir" onclick="event.stopPropagation();deleteTopico(${mat.id},${i})" style="color:var(--red)">✕</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function selectCurMateria(id) {
-  curSelectedMatId = id;
-  curFilter = 'todos';
-  document.querySelectorAll('.cur-filter-chip').forEach((c,i) => c.classList.toggle('active', i===0));
-  const inp = document.getElementById('cur-search');
-  if (inp) inp.value = '';
-  renderCurriculo();
-}
-
-function curDoSearch(q) {
-  var clearBtn  = document.getElementById('cur-search-clear');
-  var resultsEl = document.getElementById('cur-search-results');
-  var gridEl    = document.getElementById('cur-topicos-grid');
-
-  if (clearBtn) clearBtn.style.display = q ? 'inline-block' : 'none';
-
-  if (!q || q.length < 2) {
-    if (resultsEl) { resultsEl.innerHTML = ''; resultsEl.style.display = 'none'; }
-    if (gridEl)    { gridEl.style.display = ''; }
-    renderCurriculoTopicos();
-    return;
-  }
-
-  if (gridEl)    gridEl.style.display = 'none';
-  if (!resultsEl) { if(dbg){dbg.style.display='block';dbg.textContent='resultsEl NULL';} return; }
-  resultsEl.style.display = 'block';
-
-  var ql    = q.toLowerCase();
-  var parts = [];
-  var total = 0;
-  var mats  = 0;
-
-  for (var mi = 0; mi < curriculo.length; mi++) {
-    var mat  = curriculo[mi];
-    var hits = [];
-    for (var ti = 0; ti < mat.topicos.length; ti++) {
-      if (mat.topicos[ti].toLowerCase().indexOf(ql) !== -1) {
-        hits.push({ t: mat.topicos[ti], i: ti, status: curGetStatus(mat.id, ti) });
-      }
-    }
-    if (!hits.length) continue;
-    total += hits.length;
-    mats++;
-
-    var rows = '';
-    var limit = Math.min(hits.length, 6);
-    for (var hi = 0; hi < limit; hi++) {
-      var h      = hits[hi];
-      var color  = h.status==='estudado' ? 'var(--green)' : h.status==='andamento' ? 'var(--amber)' : 'var(--text-dim)';
-      var chk    = h.status==='estudado' ? '✓' : h.status==='andamento' ? '⟳' : '○';
-      var hlText = escHtml(h.t).replace(new RegExp(escHtml(q).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi'),
-        '<mark style="background:rgba(124,58,237,0.3);color:var(--violet-light);border-radius:2px;padding:0 2px">$&</mark>');
-      rows += '<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border-soft);cursor:pointer" '
-            + 'onclick="(function(){selectCurMateria('+mat.id+');setTimeout(function(){curToggle('+mat.id+','+h.i+');},80);})()">'
-            + '<span style="color:'+color+';font-size:12px;flex-shrink:0;font-weight:700;margin-top:1px">'+chk+'</span>'
-            + '<span style="font-size:12px;color:var(--text);flex:1;line-height:1.4">'+hlText+'</span>'
-            + '</div>';
-    }
-    var more = hits.length > 6 ? '<div style="font-size:11px;color:var(--text-dim);padding:4px 0">+' + (hits.length-6) + ' mais…</div>' : '';
-
-    parts.push(
-      '<div style="margin-bottom:14px">'
-      + '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;'
-      + 'color:var(--violet-light);margin-bottom:6px;cursor:pointer;padding:4px 8px;background:var(--card);border-radius:4px" '
-      + 'onclick="selectCurMateria('+mat.id+');curClearSearch()">'
-      + escHtml(mat.nome) + ' <span style="color:var(--text-dim);font-weight:400">('+hits.length+')</span></div>'
-      + rows + more
-      + '</div>'
-    );
-  }
 
 
-  if (!total) {
-    resultsEl.innerHTML = '<p style="color:var(--text-dim);font-size:13px;padding:8px 0">Nenhum tópico encontrado para <strong>' + escHtml(q) + '</strong>.</p>';
-  } else {
-    resultsEl.innerHTML =
-      '<div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border-soft)">'
-      + '<strong>'+total+'</strong> tópico(s) em <strong>'+mats+'</strong> matéria(s)</div>'
-      + parts.join('');
-  }
-}
+
+
+
+
+
 
 
 
@@ -6098,53 +5917,6 @@ function buildEstudosPainelHTML() {
 }
 
 
-function buildCurriculoHTML() {
-  return `
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted)">Progresso geral</span>
-    <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;min-width:80px">
-      <div id="cur-geral-bar" style="height:100%;background:linear-gradient(90deg,var(--violet),var(--cyan));border-radius:3px;width:0%;transition:width 0.5s"></div>
-    </div>
-    <span id="cur-geral-label" style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-muted)">0%</span>
-    <button class="btn btn-ghost btn-sm" onclick="openAddMateriaModal()">+ Matéria</button>
-  </div>
-  <div class="curriculo-layout">
-    <div class="curriculo-sidebar">
-      <div class="curriculo-sidebar-header">
-        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);flex:1">Matérias</span>
-        <span id="cur-mat-count" style="font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace"></span>
-      </div>
-      <div class="materia-list-panel" id="cur-materia-list"></div>
-    </div>
-    <div class="curriculo-main">
-      <div class="curriculo-header">
-        <div class="curriculo-topbar">
-          <span class="cur-title" id="cur-mat-title">Selecione uma matéria</span>
-          <button class="btn btn-ghost btn-sm" onclick="openAddTopicoModal()">+ Tópico</button>
-          <button class="btn btn-ghost btn-sm" onclick="openEditMateriaModal()">✏️</button>
-          <button class="btn btn-primary btn-sm" onclick="marcarTodosCur('estudado')">✓ Todos</button>
-        </div>
-        <div class="cur-prog-bar"><div class="cur-prog-fill" id="cur-mat-prog" style="width:0%"></div></div>
-        <div class="cur-status-row" id="cur-status-row"></div>
-      </div>
-      <div class="cur-filter-bar">
-        <button class="cur-filter-chip active" onclick="setCurFilter('todos',this)">Todos</button>
-        <button class="cur-filter-chip" onclick="setCurFilter('estudado',this)">✓ Estudados</button>
-        <button class="cur-filter-chip" onclick="setCurFilter('andamento',this)">⟳ Andamento</button>
-        <button class="cur-filter-chip" onclick="setCurFilter('pendente',this)">○ Pendentes</button>
-        <div style="display:flex;align-items:center;gap:4px;margin-left:auto">
-          <input id="cur-search" class="form-input" style="font-size:12px;padding:5px 10px;width:200px" placeholder="🔍 Buscar em todas as matérias…" oninput="curDoSearch(this.value)">
-          <button class="cur-filter-chip" id="cur-search-clear" onclick="curClearSearch()" style="display:none">✕</button>
-        </div>
-      </div>
-      <div id="cur-search-results" style="display:none;padding:12px 18px;border-bottom:1px solid var(--border-soft)"></div>
-      <div class="topicos-area">
-        <div class="topicos-grid-cur" id="cur-topicos-grid"></div>
-        <div id="cur-desempenho" style="padding:0 18px 16px"></div>
-      </div>
-    </div>
-  </div>`;
-}
 
 function renderEstudosPainel() {
   populateEstudosSelects();
@@ -6169,91 +5941,17 @@ function renderEstudosPainel() {
 }
 
 
-function openAddMateriaModal() {
-  document.getElementById('mat-edit-id').value = '';
-  document.getElementById('mat-nome').value = '';
-  document.getElementById('mat-topicos-bulk').value = '';
-  document.getElementById('mat-delete-btn').style.display = 'none';
-  document.getElementById('modal-materia-title').textContent = 'Nova Matéria';
-  openModal('modal-materia');
-}
 
-function openEditMateriaModal() {
-  const mat = curriculo.find(m => m.id === curSelectedMatId);
-  if (!mat) return;
-  document.getElementById('mat-edit-id').value = mat.id;
-  document.getElementById('mat-nome').value = mat.nome;
-  document.getElementById('mat-topicos-bulk').value = mat.topicos.join('\n');
-  document.getElementById('mat-delete-btn').style.display = 'inline-flex';
-  document.getElementById('modal-materia-title').textContent = 'Editar Matéria';
-  openModal('modal-materia');
-}
 
-function openAddTopicoModal() {
-  curEditTopicoIdx = null;
-  document.getElementById('top-edit-idx').value = '';
-  document.getElementById('top-nome').value = '';
-  document.getElementById('top-status').value = 'pendente';
-  document.getElementById('top-delete-btn').style.display = 'none';
-  document.getElementById('modal-topico-title').textContent = 'Novo Tópico';
-  openModal('modal-topico');
-}
 
-function setCurFilter(f, btn) {
-  curFilter = f;
-  document.querySelectorAll('.cur-filter-chip').forEach(c => c.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  renderCurriculoTopicos();
-}
 
-function marcarTodosCur(status) {
-  const mat = curriculo.find(m => m.id === curSelectedMatId);
-  if (!mat) return;
-  mat.topicos.forEach((_, i) => curSetStatus(mat.id, i, status));
-  renderCurriculo();
-}
 
-function curClearSearch() {
-  const inp = document.getElementById('cur-search');
-  if (inp) inp.value = '';
-  const clearBtn = document.getElementById('cur-search-clear');
-  if (clearBtn) clearBtn.style.display = 'none';
-  const resultsEl = document.getElementById('cur-search-results');
-  if (resultsEl) { resultsEl.innerHTML = ''; resultsEl.style.display = 'none'; }
-  const gridEl = document.getElementById('cur-topicos-grid');
-  if (gridEl) gridEl.style.display = '';
-  renderCurriculoTopicos();
-}
 
 
 
 
 // ══ CURRICULO CRUD — FUNÇÕES RESTAURADAS ══
 
-function saveMateria() {
-  const nome = document.getElementById('mat-nome').value.trim();
-  if (!nome) { showToast('⚠️ Informe o nome da matéria'); return; }
-  const bulk = document.getElementById('mat-topicos-bulk').value;
-  const topicos = bulk.split('\n').map(t => t.trim()).filter(Boolean);
-  const editId = parseInt(document.getElementById('mat-edit-id').value);
-  if (editId) {
-    const mat = curriculo.find(m => m.id === editId);
-    if (mat) {
-      mat.nome = nome;
-      topicos.forEach(t => { if (!mat.topicos.includes(t)) mat.topicos.push(t); });
-    }
-    showToast('✏️ Matéria atualizada');
-  } else {
-    const newId = curNextId++;
-    curriculo.push({ id: newId, nome, topicos, tags: [] });
-    curSelectedMatId = newId;
-    showToast('✅ Matéria "' + nome + '" criada com ' + topicos.length + ' tópicos');
-  }
-  closeModal('modal-materia');
-  if (!DISCIPLINAS.includes(nome)) DISCIPLINAS.push(nome);
-  lsSave();
-  renderCurriculo();
-}
 
 function deleteMateriaAtual() {
   const mat = curriculo.find(m => m.id === curSelectedMatId);
@@ -6263,7 +5961,7 @@ function deleteMateriaAtual() {
   curSelectedMatId = curriculo[0]?.id || null;
   closeModal('modal-materia');
   lsSave();
-  renderCurriculo();
+  renderEstudosCur();
   showToast('🗑️ Matéria excluída');
 }
 
@@ -6287,27 +5985,10 @@ function saveTopico() {
   }
   closeModal('modal-topico');
   lsSave();
-  renderCurriculo();
+  renderEstudosCur();
   curEditTopicoIdx = null;
 }
 
-function deleteTopico(mid, idx) {
-  const mat = curriculo.find(m => m.id === mid);
-  if (!mat) return;
-  if (!confirm('Excluir tópico "' + mat.topicos[idx] + '"?')) return;
-  mat.topicos.splice(idx, 1);
-  const newStatus = {}, newData = {};
-  Object.entries(curTopicosStatus).forEach(([k, v]) => {
-    const [m, i] = k.split('_').map(Number);
-    if (m !== mid) { newStatus[k] = v; if (curTopicosData[k]) newData[k] = curTopicosData[k]; }
-    else if (i < idx) { newStatus[k] = v; if (curTopicosData[k]) newData[k] = curTopicosData[k]; }
-    else if (i > idx) { newStatus[mid + '_' + (i-1)] = v; if (curTopicosData[k]) newData[mid + '_' + (i-1)] = curTopicosData[k]; }
-  });
-  curTopicosStatus = newStatus;
-  curTopicosData = newData;
-  lsSave();
-  renderCurriculo();
-}
 
 function deleteTopicoAtual() {
   if (curEditTopicoIdx === null) return;
@@ -6316,17 +5997,6 @@ function deleteTopicoAtual() {
   curEditTopicoIdx = null;
 }
 
-function openEditTopicoModal(mid, idx) {
-  const mat = curriculo.find(m => m.id === mid);
-  if (!mat) return;
-  curEditTopicoIdx = idx;
-  document.getElementById('top-edit-idx').value = idx;
-  document.getElementById('top-nome').value = mat.topicos[idx] || '';
-  document.getElementById('top-status').value = curGetStatus(mid, idx);
-  document.getElementById('top-delete-btn').style.display = 'inline-flex';
-  document.getElementById('modal-topico-title').textContent = 'Editar Tópico';
-  openModal('modal-topico');
-}
 
 function openTagsModal(listId) {
   currentTagListId = listId;
@@ -7152,10 +6822,29 @@ function saveRegistroEstudo() {
     });
   }
 
+  // Salva questões em questaoSessoes se preenchido
+  const qTotal  = parseInt(document.getElementById('reg-questoes-total')?.value) || 0;
+  const qCertas = parseInt(document.getElementById('reg-questoes-certas')?.value) || 0;
+  const mat3 = curriculo.find(m => m.id === mid);
+  if (mat3 && qTotal > 0) {
+    questaoSessoes.push({
+      id: nextQId++,
+      disciplina: mat3.nome,
+      tema: mat3.topicos[idx] || '',
+      matId: mid,
+      topicoIdx: idx,
+      total: qTotal,
+      acertos: qCertas,
+      acerto: qTotal > 0 ? Math.round(qCertas/qTotal*100) : 0,
+      fonte: 'Registro de Estudo',
+      data: data,
+    });
+  }
+
   lsSave();
   scheduleSave();
   closeModal('modal-registrar-estudo');
-  renderCurriculo();
+  renderEstudosCur();
 }
 
 // ══ DESEMPENHO POR TÓPICO ══
@@ -7428,7 +7117,7 @@ function saveConclusao() {
   renderRevisoes();
   renderHorasDisc();
   renderSessoes();
-  renderCurriculo();
+  renderEstudosCur();
   showToast('✅ Estudo concluído!' + (revisao ? ' Revisões agendadas.' : ''));
 }
 
@@ -7593,7 +7282,7 @@ function reabrirEstudo(id) {
   renderRevisoes();
   renderHorasDisc();
   renderSessoes();
-  renderCurriculo();
+  renderEstudosCur();
   showToast('↩ Estudo reaberto');
 }
 
@@ -7762,7 +7451,7 @@ function saveHistoricoEdit() {
   lsSave();
   scheduleSave();
   closeModal('modal-hist-edit');
-  renderCurriculo();
+  renderEstudosCur();
   showToast('✏️ Registro atualizado');
 }
 
@@ -7782,7 +7471,7 @@ function deleteHistoricoSession(mid, topicoIdx, histIdx) {
   }
   lsSave();
   scheduleSave();
-  renderCurriculo();
+  renderEstudosCur();
   showToast('🗑️ Registro excluído');
 }
 
@@ -8902,6 +8591,521 @@ function jogo_salvarEconomia() {
   closeModal('modal-eco');
   jogoAddXP(15, 'Economia registrada!');
   renderJogo();
+}
+
+// ══ CURRÍCULO — SORT E INDICADORES ══
+let curSort = 'status'; // status | q-desc | q-asc | acerto-desc | acerto-asc | nome-az | nome-za
+
+function setCurSort(by, btn) {
+  curSort = by;
+  document.querySelectorAll('.cur-sort-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderCurriculoTopicos();
+}
+
+// Retorna stats de questões para um texto de tópico
+function curTopicoQStats(topicoNome, disciplinaNome, matId, topicoIdx) {
+  var sessoes;
+  if (matId != null && topicoIdx != null) {
+    // Matching exato por ID — prioridade máxima
+    sessoes = questaoSessoes.filter(function(s) {
+      if (s.matId != null && s.topicoIdx != null) {
+        return s.matId === matId && s.topicoIdx === topicoIdx;
+      }
+      // Fallback para sessões antigas sem ID: match por texto exato
+      return s.tema === topicoNome && (s.disciplina||'') === (disciplinaNome||'');
+    });
+  } else {
+    // Sem ID: match por texto exato
+    sessoes = questaoSessoes.filter(function(s) {
+      return s.tema === topicoNome && (s.disciplina||'') === (disciplinaNome||'');
+    });
+  }
+  if (!sessoes.length) return null;
+  const total   = sessoes.reduce(function(s,q){ return s + (q.total||0); }, 0);
+  const acertos = sessoes.reduce(function(s,q){ return s + (q.acertos||0); }, 0);
+  const pct     = total > 0 ? Math.round(acertos / total * 100) : 0;
+  return { total, acertos, pct };
+}
+
+// Stats de questões de uma matéria inteira
+function curMatQStats(mat) {
+  const sessoes = questaoSessoes.filter(function(s) {
+    // Prioridade: matId exato
+    if (s.matId != null) return s.matId === mat.id;
+    // Fallback: nome exato da disciplina
+    return (s.disciplina||'') === mat.nome;
+  });
+  if (!sessoes.length) return null;
+  const total   = sessoes.reduce(function(s,q){ return s + (q.total||0); }, 0);
+  const acertos = sessoes.reduce(function(s,q){ return s + (q.acertos||0); }, 0);
+  const pct     = total > 0 ? Math.round(acertos / total * 100) : 0;
+  // Por tema para tópico mais forte/fraco
+  const porTema = {};
+  sessoes.forEach(function(s) {
+    const k = s.tema || '?';
+    if (!porTema[k]) porTema[k] = {total:0, acertos:0};
+    porTema[k].total   += s.total || 0;
+    porTema[k].acertos += s.acertos || 0;
+  });
+  const temas = Object.entries(porTema)
+    .filter(function(e){ return e[1].total >= 3; })
+    .map(function(e){ return {tema: e[0], pct: Math.round(e[1].acertos/e[1].total*100), total: e[1].total}; });
+  temas.sort(function(a,b){ return b.pct - a.pct; });
+  return { total, acertos, pct, melhor: temas[0]||null, pior: temas[temas.length-1]||null };
+}
+
+// ══ ABA DESEMPENHO ══
+let deseMatId  = null; // matéria selecionada na aba desempenho
+let deseSort   = 'status';
+let deseFilter = 'todos'; // todos | estudado | andamento | pendente
+
+function buildDesempenhoHTML() {
+  return '<div id="dese-root" style="display:flex;gap:0;height:100%;min-height:0"></div>';
+}
+
+function renderDesempenho() {
+  var root = document.getElementById('dese-root');
+  if (!root) return;
+
+  // ── Calcula stats gerais ──
+  var totalT = 0, totalE = 0;
+  curriculo.forEach(function(m){
+    totalT += m.topicos.length;
+    totalE += m.topicos.filter(function(_,i){ return curGetStatus(m.id,i)==='estudado'; }).length;
+  });
+  var pctGeral = totalT ? Math.round(totalE/totalT*100) : 0;
+  var totalQ   = questaoSessoes.reduce(function(s,q){ return s+(q.total||0); },0);
+  var totalAc  = questaoSessoes.reduce(function(s,q){ return s+(q.acertos||0); },0);
+  var acertoG  = totalQ ? Math.round(totalAc/totalQ*100) : 0;
+  var acGC = acertoG>=70?'var(--green)':acertoG>=50?'var(--amber)':'var(--red)';
+  var porDisc = {};
+  questaoSessoes.forEach(function(s){ var d=s.disciplina||'?'; porDisc[d]=(porDisc[d]||0)+(s.total||0); });
+  var discArr = Object.entries(porDisc).sort(function(a,b){return b[1]-a[1];});
+
+  // Seleciona primeira matéria se não tiver
+  if (!deseMatId && curriculo.length) deseMatId = curriculo[0].id;
+  var mat = curriculo.find(function(m){ return m.id === deseMatId; }) || curriculo[0];
+
+  // ── HTML ──
+  var html = '';
+
+  // KPI cards gerais
+  html += '<div style="width:100%">';
+  html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">';
+  html += kpiCard(pctGeral+'%','var(--violet-light)','Progresso geral', totalE+'/'+totalT+' tópicos estudados');
+  html += kpiCard(totalQ.toLocaleString('pt-BR'),'var(--blue)','Questões feitas', questaoSessoes.length+' sessões registradas');
+  html += kpiCard((totalQ?acertoG+'%':'—'), acGC,'Acerto geral', totalAc+'/'+totalQ+' acertos');
+  html += kpiCard(discArr[0]?discArr[0][0]:'—','var(--amber)','Mais estudada', discArr[0]?discArr[0][1]+'q':'');
+  html += '</div>';
+
+  // Layout: sidebar matérias + conteúdo
+  html += '<div style="display:grid;grid-template-columns:220px 1fr;gap:12px;align-items:start">';
+
+  // Sidebar matérias
+  html += '<div style="background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden">';
+  html += '<div style="padding:10px 12px;border-bottom:1px solid var(--border-soft);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)">Matérias</div>';
+  html += '<div style="max-height:70vh;overflow-y:auto">';
+  curriculo.forEach(function(m) {
+    var s = curMatStats(m);
+    var isA = m.id === (mat ? mat.id : null);
+    var pc = s.pct>=70?'var(--green)':s.pct>=30?'var(--amber)':'var(--text-dim)';
+    html += '<div onclick="deseMatId='+m.id+';renderDesempenho()" style="padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border-soft);'+
+      'background:'+(isA?'var(--violet-glow)':'transparent')+';border-left:3px solid '+(isA?'var(--violet)':'transparent')+'">' +
+      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">' +
+        '<span style="flex:1;font-size:11px;font-weight:'+(isA?'700':'400')+';color:'+(isA?'var(--text)':'var(--text-muted)')+
+          ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(m.nome)+'</span>' +
+        '<span style="font-size:10px;font-weight:700;color:'+pc+'">'+s.pct+'%</span>' +
+      '</div>' +
+      '<div style="height:3px;background:var(--border-soft);border-radius:2px;overflow:hidden">' +
+        '<div style="height:100%;width:'+s.pct+'%;background:'+pc+';border-radius:2px"></div>' +
+      '</div>' +
+      '<div style="font-size:9px;color:var(--text-dim);margin-top:3px">'+s.estudado+'/'+s.total+' tópicos</div>' +
+    '</div>';
+  });
+  html += '</div></div>';
+
+  // Conteúdo principal
+  html += '<div>';
+
+  if (mat) {
+    // Card desempenho da matéria
+    var mqs = curMatQStats(mat);
+    var ms  = curMatStats(mat);
+
+    html += '<div style="background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:16px;margin-bottom:12px">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
+    html += '<div><div style="font-size:15px;font-weight:700;color:var(--text)">'+escHtml(mat.nome)+'</div>' +
+            '<div style="font-size:10px;color:var(--text-muted);margin-top:2px">'+mat.topicos.length+' tópicos no currículo</div></div>';
+    html += '</div>';
+
+    // KPIs da matéria
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">';
+    html += kpiCard(ms.pct+'%','var(--violet-light)','Progresso', ms.estudado+'/'+ms.total+' estudados', true);
+    if (mqs) {
+      var mqc = mqs.pct>=70?'var(--green)':mqs.pct>=50?'var(--amber)':'var(--red)';
+      html += kpiCard(mqs.total+'','var(--blue)','Questões feitas', mqs.acertos+' acertos', true);
+      html += kpiCard(mqs.pct+'%', mqc,'Taxa de acerto','',true);
+    } else {
+      html += kpiCard('—','var(--text-dim)','Questões feitas','sem registros', true);
+      html += kpiCard('—','var(--text-dim)','Taxa de acerto','sem registros', true);
+    }
+    html += '</div>';
+
+    // Barra de acerto
+    if (mqs) {
+      var mqc2 = mqs.pct>=70?'var(--green)':mqs.pct>=50?'var(--amber)':'var(--red)';
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">' +
+        '<span style="font-size:9px;color:var(--text-muted);width:50px">Acerto</span>' +
+        '<div style="flex:1;height:8px;background:var(--card);border-radius:4px;overflow:hidden">' +
+          '<div style="width:'+mqs.pct+'%;height:100%;background:'+mqc2+';border-radius:4px"></div>' +
+        '</div>' +
+        '<span style="font-size:12px;font-weight:800;color:'+mqc2+'">'+mqs.pct+'%</span>' +
+      '</div>';
+      // Forte/fraco
+      if (mqs.melhor && mqs.pior && mqs.melhor.tema !== mqs.pior.tema) {
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+        html += '<div style="background:var(--card);border-radius:8px;padding:10px 12px;border-left:3px solid var(--green)">' +
+          '<div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px">💪 Mais forte</div>' +
+          '<div style="font-size:11px;font-weight:600;color:var(--text);line-height:1.3">'+escHtml(mqs.melhor.tema)+'</div>' +
+          '<div style="font-size:10px;color:var(--green);font-weight:700;margin-top:4px">'+mqs.melhor.pct+'% · '+mqs.melhor.total+'q</div>' +
+        '</div>';
+        html += '<div style="background:var(--card);border-radius:8px;padding:10px 12px;border-left:3px solid var(--red)">' +
+          '<div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px">⚠️ Reforçar</div>' +
+          '<div style="font-size:11px;font-weight:600;color:var(--text);line-height:1.3">'+escHtml(mqs.pior.tema)+'</div>' +
+          '<div style="font-size:10px;color:var(--red);font-weight:700;margin-top:4px">'+mqs.pior.pct+'% · '+mqs.pior.total+'q</div>' +
+        '</div>';
+        html += '</div>';
+      }
+    }
+    html += '</div>'; // card desempenho
+
+    // ── LISTA DE TÓPICOS ──
+    html += '<div style="background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden">';
+
+    // Header matéria
+    var ms2 = curMatStats(mat);
+    html += '<div style="padding:14px 16px;border-bottom:1px solid var(--border-soft)">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
+    html += '<div style="display:flex;align-items:center;gap:8px">';
+    html += '<span style="font-size:14px;font-weight:700;color:var(--text)">'+escHtml(mat.nome)+'</span>';
+    html += '<span style="font-size:11px;color:var(--text-muted)">'+mat.topicos.length+' tópicos</span>';
+    html += '</div>';
+    html += '<div style="display:flex;gap:6px">';
+    html += '<button onclick="openAddTopicoModal()" style="font-size:11px;padding:5px 11px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text-muted);cursor:pointer">+ Tópico</button>';
+    html += '<button onclick="openEditMateriaModalDese()" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text-muted);cursor:pointer;font-size:13px">✏️</button>';
+    html += '<button onclick="deseTodosEstudado()" style="font-size:11px;padding:5px 11px;border-radius:8px;border:none;background:var(--violet);color:#fff;cursor:pointer;font-weight:700">✓ Todos</button>';
+    html += '</div></div>';
+    // Barra progresso
+    var pcBr = ms2.pct>=70?'var(--green)':ms2.pct>=30?'var(--amber)':'var(--violet)';
+    html += '<div style="height:4px;background:var(--card);border-radius:2px;overflow:hidden;margin-bottom:8px">';
+    html += '<div style="width:'+ms2.pct+'%;height:100%;background:'+pcBr+';border-radius:2px"></div></div>';
+    // Status chips
+    html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
+    html += '<span onclick="deseSetFilter(&quot;estudado&quot;)" style="font-size:10px;padding:3px 10px;border-radius:20px;cursor:pointer;background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)">✓ '+ms2.estudado+' estudados</span>';
+    html += '<span onclick="deseSetFilter(&quot;andamento&quot;)" style="font-size:10px;padding:3px 10px;border-radius:20px;cursor:pointer;background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2)">⟳ '+ms2.andamento+' andamento</span>';
+    html += '<span onclick="deseSetFilter(&quot;pendente&quot;)" style="font-size:10px;padding:3px 10px;border-radius:20px;cursor:pointer;background:var(--card);color:var(--text-muted);border:1px solid var(--border-soft)">○ '+ms2.pendente+' pendentes</span>';
+    html += '</div></div>';
+
+    // Filtros + busca + ordenação
+    html += '<div style="padding:10px 16px;border-bottom:1px solid var(--border-soft);display:flex;gap:6px;flex-wrap:wrap;align-items:center">';
+    var filters = [['todos','Todos'],['estudado','✓ Estudados'],['andamento','⟳ Andamento'],['pendente','○ Pendentes']];
+    filters.forEach(function(fv){
+      var isAct = fv[0]===deseFilter;
+      html += '<button onclick="deseSetFilter(&quot;'+fv[0]+'&quot;);" style="font-size:10px;padding:3px 10px;border-radius:20px;cursor:pointer;'+
+              'border:1px solid '+(isAct?'var(--violet)':'var(--border-soft)')+';'+
+              'background:'+(isAct?'var(--violet-glow)':'transparent')+';'+
+              'color:'+(isAct?'var(--violet-light)':'var(--text-muted)')+';'+
+              'font-weight:'+(isAct?'700':'400')+'">'+fv[1]+'</button>';
+    });
+    html += '<input id="dese-search" type="text" placeholder="🔍 Buscar tópico..." oninput="renderDesempenhoTopicos()" '+
+            'style="flex:1;min-width:140px;padding:5px 10px;background:var(--card);border:1px solid var(--border-soft);border-radius:8px;color:var(--text);font-size:11px;outline:none">';
+    html += '</div>';
+
+    // Ordenação
+    html += '<div style="padding:8px 16px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:5px;flex-wrap:wrap">';
+    html += '<span style="font-size:10px;color:var(--text-dim);font-weight:600">Ordenar:</span>';
+    var sorts = [['status','Status'],['q-desc','+questões'],['q-asc','−questões'],['pct-desc','+acerto'],['pct-asc','−acerto'],['az','A–Z'],['za','Z–A']];
+    sorts.forEach(function(sv){
+      var isAct = sv[0]===deseSort;
+      html += '<button onclick="deseSortSet(\''+sv[0]+'\');" style="font-size:10px;padding:3px 10px;border-radius:20px;cursor:pointer;'+
+              'border:1px solid '+(isAct?'var(--violet)':'var(--border)')+';'+
+              'background:'+(isAct?'var(--violet-glow)':'transparent')+';'+
+              'color:'+(isAct?'var(--violet-light)':'var(--text-muted)')+';'+
+              'font-weight:'+(isAct?'700':'400')+'">'+sv[1]+'</button>';
+    });
+    html += '</div>';
+
+    html += '<div id="dese-topicos" style="padding:0 16px"></div>';
+    html += '</div>';
+  }
+
+  html += '</div></div></div>'; // col principal, grid, root
+
+  root.innerHTML = html;
+  renderDesempenhoTopicos();
+}
+
+function kpiCard(val, color, label, sub, small) {
+  var fs = small ? '16px' : '20px';
+  return '<div style="background:var(--card);border:1px solid var(--border-soft);border-radius:10px;padding:'+(small?'10px 12px':'12px 14px')+'">' +
+    '<div style="font-size:'+fs+';font-weight:800;color:'+color+';line-height:1">'+val+'</div>' +
+    '<div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-top:3px">'+label+'</div>' +
+    (sub ? '<div style="font-size:10px;color:var(--text-dim);margin-top:2px">'+sub+'</div>' : '') +
+  '</div>';
+}
+
+function renderDesempenhoTopicos() {
+  var el = document.getElementById('dese-topicos');
+  if (!el) return;
+  var mat = curriculo.find(function(m){ return m.id === deseMatId; });
+  if (!mat) { el.innerHTML = ''; return; }
+
+  var q = ((document.getElementById('dese-search') || {}).value || '').toLowerCase();
+  var statusOrder = {estudado:0, andamento:1, pendente:2};
+
+  // Prepara dados
+  var topicos = mat.topicos.map(function(t, i) {
+    var status = curGetStatus(mat.id, i);
+    var d = curTopicosData[mat.id+'_'+i];
+    var acerto = d ? (d.acerto != null ? parseInt(d.acerto) : null) : null;
+    var qs = curTopicoQStats(t, mat.nome, mat.id, i);
+    // Prefere questaoSessoes (média ponderada acumulada) sobre acerto do último registro
+    var pct = (qs && qs.total > 0) ? qs.pct : (acerto != null ? acerto : null);
+    var qTotal = qs ? qs.total : 0;
+    return { t, i, status, acerto, qs, pct, qTotal, d };
+  }).filter(function(x){
+    if (deseFilter !== 'todos' && x.status !== deseFilter) return false;
+    return !q || x.t.toLowerCase().includes(q);
+  });
+
+  var maxQ = Math.max.apply(null, topicos.map(function(x){ return x.qTotal; }).concat([1]));
+
+  // Ordena
+  if (deseSort==='status')   topicos.sort(function(a,b){ return statusOrder[a.status]-statusOrder[b.status]; });
+  if (deseSort==='q-desc')   topicos.sort(function(a,b){ return b.qTotal-a.qTotal; });
+  if (deseSort==='q-asc')    topicos.sort(function(a,b){ return a.qTotal-b.qTotal; });
+  if (deseSort==='pct-desc') topicos.sort(function(a,b){ return (b.pct||0)-(a.pct||0); });
+  if (deseSort==='pct-asc')  topicos.sort(function(a,b){ return (a.pct||0)-(b.pct||0); });
+  if (deseSort==='az')       topicos.sort(function(a,b){ return a.t.localeCompare(b.t); });
+  if (deseSort==='za')       topicos.sort(function(a,b){ return b.t.localeCompare(a.t); });
+
+  if (!topicos.length) { el.innerHTML = '<p style="font-size:12px;color:var(--text-dim);padding:12px;text-align:center">Nenhum tópico encontrado.</p>'; return; }
+
+  var BAR_W = 100;
+  el.innerHTML = topicos.map(function(x) {
+    var statusIcon = x.status==='estudado'?'✓':x.status==='andamento'?'⟳':'○';
+    var statusColor = x.status==='estudado'?'var(--green)':x.status==='andamento'?'var(--amber)':'var(--border)';
+    var pctColor = x.pct!=null ? (x.pct>=70?'var(--green)':x.pct>=50?'var(--amber)':'var(--red)') : '';
+    var qBarW = Math.round(x.qTotal/maxQ*100);
+    var badge = x.pct != null ?
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;min-width:'+BAR_W+'px">' +
+        '<div style="display:flex;align-items:baseline;gap:5px">' +
+          '<span style="font-size:15px;font-weight:800;color:'+pctColor+';line-height:1">'+x.pct+'%</span>' +
+          (x.qTotal>0?'<span style="font-size:10px;font-weight:700;color:var(--violet-light)">'+x.qTotal+'q</span>':'') +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:4px;width:'+BAR_W+'px">' +
+          '<span style="font-size:8px;color:var(--text-dim);width:10px">%</span>' +
+          '<div style="flex:1;height:5px;background:var(--border-soft);border-radius:3px;overflow:hidden">' +
+            '<div style="width:'+x.pct+'%;height:100%;background:'+pctColor+';border-radius:3px"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:4px;width:'+BAR_W+'px">' +
+          '<span style="font-size:8px;color:var(--text-dim);width:10px">q</span>' +
+          '<div style="flex:1;height:5px;background:var(--border-soft);border-radius:3px;overflow:hidden">' +
+            (x.qTotal>0?'<div style="width:'+qBarW+'%;height:100%;background:var(--violet-light);opacity:.7;border-radius:3px"></div>':'') +
+          '</div>' +
+          (x.qTotal>0?'<span style="font-size:9px;color:var(--text-dim)">'+x.qTotal+'q</span>':'') +
+        '</div>' +
+      '</div>'
+      : '<div style="min-width:60px;flex-shrink:0;text-align:right"><span style="font-size:9px;padding:2px 8px;border-radius:10px;background:var(--border-soft);color:var(--text-dim)">sem dados</span></div>';
+
+    var btns =
+      '<div style="display:flex;gap:4px;flex-shrink:0;margin-left:6px">' +
+        '<button onclick="event.stopPropagation();openRegistrarEstudo('+mat.id+','+x.i+')" title="Registrar Estudo" '+
+          'style="font-size:9px;padding:3px 8px;border-radius:6px;border:1px solid rgba(124,58,237,.4);background:var(--violet-glow);color:var(--violet-light);cursor:pointer;font-weight:600;white-space:nowrap">📖</button>' +
+        '<button onclick="event.stopPropagation();openEditTopicoModal('+mat.id+','+x.i+')" title="Editar" '+
+          'style="width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text-muted);cursor:pointer;font-size:11px">✏️</button>' +
+        '<button onclick="event.stopPropagation();deleteTopicoConfirm('+mat.id+','+x.i+')" title="Excluir" '+
+          'style="width:26px;height:26px;border-radius:6px;border:1px solid rgba(239,68,68,.3);background:transparent;color:var(--red);cursor:pointer;font-size:11px">✕</button>' +
+      '</div>';
+
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border-soft)">' +
+      '<div style="width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;'+
+        'font-size:11px;font-weight:700;background:'+statusColor+'22;color:'+statusColor+';border:1px solid '+statusColor+'44;flex-shrink:0">'+statusIcon+'</div>' +
+      '<div style="flex:1;min-width:0;font-size:12px;color:var(--text);line-height:1.3">'+escHtml(x.t)+'</div>' +
+      badge +
+      btns +
+    '</div>' +
+    // Histórico de sessões deste tópico (questaoSessoes por matId+topicoIdx)
+    (function(){
+      var sessions = questaoSessoes.filter(function(s){
+        return s.matId === mat.id && s.topicoIdx === x.i;
+      }).sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); });
+      if (!sessions.length) return '';
+      return '<div style="padding:4px 0 0 30px">' +
+        sessions.map(function(s){
+          var sc = s.acerto>=70?'var(--green)':s.acerto>=50?'var(--amber)':'var(--red)';
+          var qsIdx = questaoSessoes.indexOf(s);
+          return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:10px;color:var(--text-dim);border-bottom:1px solid var(--border-soft)">' +
+            '<span style="font-family:monospace;flex-shrink:0;min-width:72px">'+( s.data||'—')+'</span>' +
+            '<span style="flex-shrink:0;font-weight:600;color:var(--text)">'+s.total+'q</span>' +
+            '<span style="font-weight:800;color:'+sc+';min-width:32px">'+s.acerto+'%</span>' +
+            '<div style="flex:1;height:4px;background:var(--border-soft);border-radius:2px;overflow:hidden">' +
+              '<div style="width:'+s.acerto+'%;height:100%;background:'+sc+';border-radius:2px"></div>' +
+            '</div>' +
+            '<button onclick="event.stopPropagation();editQuestaoSessao('+qsIdx+')" title="Editar" '+
+              'style="background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:11px;padding:1px 4px;flex-shrink:0">✏️</button>' +
+            '<button onclick="event.stopPropagation();deleteQuestaoSessao('+qsIdx+')" title="Excluir" '+
+              'style="background:none;border:none;cursor:pointer;color:var(--red);font-size:11px;padding:1px 4px;flex-shrink:0">✕</button>' +
+          '</div>';
+        }).join('') +
+      '</div>';
+    })();
+  }).join('') + '<div style="height:8px"></div>';
+}
+
+function deseSortSet(by) {
+  deseSort = by;
+  renderDesempenho();
+}
+
+function deleteTopicoConfirm(mid, idx) {
+  if (confirm('Excluir tópico?')) {
+    deleteTopico(mid, idx);
+    setTimeout(renderDesempenho, 100);
+  }
+}
+
+function renderEstudosCur() {
+  if (estudosActiveTab === 'desempenho') {
+    renderDesempenho();
+  } else {
+    renderEstudosCur();
+  }
+}
+
+function deseSetFilter(f) {
+  deseFilter = f;
+  renderDesempenhoTopicos();
+}
+
+function deseTodosEstudado() {
+  var mat = curriculo.find(function(m){ return m.id === deseMatId; });
+  if (!mat || !confirm('Marcar todos os tópicos de ' + mat.nome + ' como Estudado?')) return;
+  mat.topicos.forEach(function(_, i){ curSetStatus(mat.id, i, 'estudado'); });
+  renderDesempenho();
+}
+
+function openEditMateriaModalDese() {
+  var mat = curriculo.find(function(m){ return m.id === deseMatId; });
+  if (!mat) return;
+  document.getElementById('edit-mat-nome').value = mat.nome;
+  openModal('modal-editar-materia');
+  setTimeout(function(){ document.getElementById('edit-mat-nome').focus(); }, 200);
+}
+
+function saveEditMateriaDese() {
+  var nome = document.getElementById('edit-mat-nome').value.trim();
+  if (!nome) { showToast('⚠️ Informe o nome'); return; }
+  var mat = curriculo.find(function(m){ return m.id === deseMatId; });
+  if (!mat) return;
+  mat.nome = nome;
+  lsSave();
+  scheduleSave();
+  closeModal('modal-editar-materia');
+  renderDesempenho();
+  showToast('✅ Matéria atualizada');
+}
+
+function openAddTopicoModal() {
+  // Usa deseMatId (aba Desempenho) ou curSelectedMatId (aba Currículo)
+  var mid = (estudosActiveTab === 'desempenho') ? deseMatId : curSelectedMatId;
+  if (!mid) { showToast('⚠️ Selecione uma matéria primeiro'); return; }
+  curSelectedMatId = mid; // garante que saveTopico use o id correto
+  curEditTopicoIdx = null;
+  var titleEl = document.getElementById('modal-topico-title');
+  if (titleEl) titleEl.textContent = 'Novo Tópico';
+  var nomeEl = document.getElementById('top-nome');
+  if (nomeEl) nomeEl.value = '';
+  var statusEl = document.getElementById('top-status');
+  if (statusEl) statusEl.value = 'pendente';
+  openModal('modal-topico');
+  setTimeout(function(){ if (nomeEl) nomeEl.focus(); }, 200);
+}
+
+function openEditTopicoModal(mid, idx) {
+  curSelectedMatId = mid;
+  curEditTopicoIdx = idx;
+  var mat = curriculo.find(function(m){ return m.id === mid; });
+  if (!mat) return;
+  var titleEl = document.getElementById('modal-topico-title');
+  if (titleEl) titleEl.textContent = 'Editar Tópico';
+  var nomeEl = document.getElementById('top-nome');
+  if (nomeEl) nomeEl.value = mat.topicos[idx] || '';
+  var statusEl = document.getElementById('top-status');
+  if (statusEl) statusEl.value = curGetStatus(mid, idx);
+  openModal('modal-topico');
+  setTimeout(function(){ if (nomeEl) nomeEl.focus(); }, 200);
+}
+
+function editQuestaoSessao(idx) {
+  var s = questaoSessoes[idx];
+  if (!s) return;
+  document.getElementById('edit-qs-idx').value = idx;
+  document.getElementById('edit-qs-data').value = s.data || '';
+  document.getElementById('edit-qs-total').value = s.total || '';
+  document.getElementById('edit-qs-certas').value = s.acertos || '';
+  document.getElementById('edit-qs-acerto').value = s.acerto || '';
+  openModal('modal-edit-qs');
+}
+
+function calcEditQs() {
+  var total  = parseInt(document.getElementById('edit-qs-total').value)  || 0;
+  var certas = parseInt(document.getElementById('edit-qs-certas').value) || 0;
+  document.getElementById('edit-qs-acerto').value = total > 0 ? Math.round(certas/total*100) : 0;
+}
+
+function saveEditQuestaoSessao() {
+  var idx    = parseInt(document.getElementById('edit-qs-idx').value);
+  var s      = questaoSessoes[idx];
+  if (!s) return;
+  var total  = parseInt(document.getElementById('edit-qs-total').value)  || 0;
+  var certas = parseInt(document.getElementById('edit-qs-certas').value) || 0;
+  var data   = document.getElementById('edit-qs-data').value;
+  if (!total || !data) { showToast('⚠️ Preencha os campos'); return; }
+  s.total   = total;
+  s.acertos = certas;
+  s.acerto  = total > 0 ? Math.round(certas/total*100) : 0;
+  s.data    = data;
+  lsSave();
+  scheduleSave();
+  closeModal('modal-edit-qs');
+  renderDesempenho();
+  showToast('✅ Sessão atualizada');
+}
+
+function deleteQuestaoSessao(idx) {
+  if (!confirm('Excluir este lançamento de questões?')) return;
+  var s = questaoSessoes[idx];
+  var matId = s ? s.matId : null;
+  var topicoIdx = s ? s.topicoIdx : null;
+  questaoSessoes.splice(idx, 1);
+  // Se não há mais sessões para este tópico, remove status e dados
+  if (matId != null && topicoIdx != null) {
+    var restantes = questaoSessoes.filter(function(q){
+      return q.matId === matId && q.topicoIdx === topicoIdx;
+    });
+    if (!restantes.length) {
+      var key = matId + '_' + topicoIdx;
+      delete curTopicosData[key];
+      curTopicosStatus[key] = 'pendente';
+    }
+  }
+  lsSave();
+  scheduleSave();
+  renderDesempenho();
+  showToast('🗑️ Lançamento excluído');
 }
 
 document.addEventListener('DOMContentLoaded', function() {
