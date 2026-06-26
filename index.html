@@ -6512,7 +6512,10 @@ function openSettingsModal() {
   // Update cloud status
   var cs = document.getElementById('settings-cloud-status');
   var fbCfg = fbLoadConfig();
-  if (cs) cs.textContent = (fbCfg && fbCfg.projectId) ? ('✅ Firebase: ' + fbCfg.projectId) : 'Não configurado';
+  var isConnected = fbCfg && fbCfg.projectId;
+  if (cs) cs.textContent = isConnected ? ('✅ Firebase: ' + fbCfg.projectId) : 'Não configurado';
+  var cloudBtns = document.getElementById('settings-cloud-btns');
+  if (cloudBtns) cloudBtns.style.display = isConnected ? 'flex' : 'none';
 
   // Update gcal status
   var gs = document.getElementById('settings-gcal-status');
