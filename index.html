@@ -714,6 +714,40 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .cur-sort-btn{font-size:10px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all .15s;white-space:nowrap}
 .cur-sort-btn.active{border-color:var(--violet);background:var(--violet-glow);color:var(--violet-light);font-weight:700}
 .cur-sort-btn:hover:not(.active){border-color:var(--text-dim);color:var(--text)}
+
+/* ══ KANBAN ESTUDO ══ */
+.kbe-layout{display:grid;grid-template-columns:250px 1fr;gap:12px;height:calc(100vh - 160px);min-height:500px}
+.kbe-backlog{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden}
+.kbe-backlog-scroll{overflow-y:auto;flex:1;padding:6px}
+.kbe-mat-header{display:flex;align-items:center;gap:6px;padding:8px 10px;cursor:pointer;background:var(--card);border:1px solid var(--border-soft);border-radius:8px;margin-bottom:3px;transition:all .15s;user-select:none}
+.kbe-mat-header:hover{border-color:var(--violet-light)}
+.kbe-mat-topics{display:none;background:var(--card);border:1px solid var(--border-soft);border-top:none;border-radius:0 0 8px 8px;margin-bottom:4px}
+.kbe-mat-topics.open{display:block}
+.kbe-topic-row{padding:7px 10px;font-size:11px;color:var(--text-muted);border-bottom:1px solid var(--border-soft);cursor:grab;display:flex;align-items:center;gap:6px;line-height:1.3;transition:background .1s}
+.kbe-topic-row:last-child{border-bottom:none}
+.kbe-topic-row:hover{background:rgba(124,58,237,.08);color:var(--text)}
+.kbe-topic-row.kbe-dragging{opacity:.35;cursor:grabbing}
+.kbe-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;overflow:hidden}
+.kbe-col{display:flex;flex-direction:column;border-radius:var(--radius);overflow:hidden;border:1px solid}
+.kbe-col.kbe-red   {border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.04)}
+.kbe-col.kbe-yellow{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04)}
+.kbe-col.kbe-green {border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.04)}
+.kbe-col-hdr{padding:11px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;border-bottom:1px solid}
+.kbe-col.kbe-red    .kbe-col-hdr{border-bottom-color:rgba(239,68,68,.2);background:rgba(239,68,68,.08)}
+.kbe-col.kbe-yellow .kbe-col-hdr{border-bottom-color:rgba(245,158,11,.2);background:rgba(245,158,11,.08)}
+.kbe-col.kbe-green  .kbe-col-hdr{border-bottom-color:rgba(16,185,129,.2);background:rgba(16,185,129,.08)}
+.kbe-col-body{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+.kbe-col-body.kbe-dragover{background:rgba(124,58,237,.07);border-radius:8px}
+.kbe-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:9px;padding:10px 12px;cursor:grab;transition:all .15s;position:relative}
+.kbe-card:hover{border-color:var(--violet);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.kbe-card.kbe-dragging{opacity:.35}
+.kbe-card-btns{position:absolute;top:5px;right:5px;display:flex;gap:2px;opacity:0;transition:opacity .15s}
+.kbe-card:hover .kbe-card-btns{opacity:1}
+.kbe-mbtn{background:var(--card);border:1px solid var(--border-soft);border-radius:4px;padding:2px 5px;font-size:9px;cursor:pointer;color:var(--muted);transition:all .1s}
+.kbe-mbtn:hover{border-color:var(--violet);color:var(--violet-light)}
+.kbe-drop-empty{border:2px dashed var(--border-soft);border-radius:9px;padding:20px;text-align:center;font-size:11px;color:var(--dim)}
+.kbe-col.kbe-dragover .kbe-drop-empty{border-color:var(--violet);color:var(--violet-light);background:var(--violet-glow)}
+
 </style>
 
   <!-- PWA -->
@@ -1006,6 +1040,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       <div class="estudos-tabs" style="flex-shrink:0">
         <button class="estudos-tab active" onclick="switchEstudosTab('painel',this)">📊 Painel</button>
         <button class="estudos-tab" onclick="switchEstudosTab('desempenho',this)">📈 Desempenho</button>
+        <button class="estudos-tab" onclick="switchEstudosTab('consistencia',this)">📅 Consistência</button>
+        <button class="estudos-tab" onclick="switchEstudosTab('kanban-estudo',this)">🗂️ Kanban</button>
       </div>
       <!-- Single content area — re-rendered on tab switch -->
       <div id="estudos-tab-content"></div>
@@ -4473,6 +4509,12 @@ function renderEstudos() {
   if (estudosActiveTab === 'desempenho') {
     if (!document.getElementById('dese-root')) container.innerHTML = buildDesempenhoHTML();
     renderDesempenho();
+  } else if (estudosActiveTab === 'consistencia') {
+    if (!document.getElementById('consist-root')) container.innerHTML = '<div id="consist-root"></div>';
+    renderConsistencia();
+  } else if (estudosActiveTab === 'kanban-estudo') {
+    if (!document.getElementById('kbe-root')) container.innerHTML = '<div id="kbe-root" style="height:100%;min-height:0"></div>';
+    renderKanbanEstudo();
   } else {
     if (!container.querySelector('#timer-display')) container.innerHTML = buildEstudosPainelHTML();
     renderEstudosPainel();
@@ -5707,6 +5749,12 @@ function switchEstudosTab(tab, btn) {
   } else if (tab === 'desempenho') {
     container.innerHTML = buildDesempenhoHTML();
     renderDesempenho();
+  } else if (tab === 'consistencia') {
+    container.innerHTML = '<div id="consist-root"></div>';
+    renderConsistencia();
+  } else if (tab === 'kanban-estudo') {
+    container.innerHTML = '<div id="kbe-root" style="height:100%;min-height:0"></div>';
+    renderKanbanEstudo();
   }
 }
 
@@ -7503,7 +7551,7 @@ function renderDesempenho() {
       return `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;background:var(--surface);border-radius:4px;margin-top:3px">
         <span style="flex:1;font-size:10px;color:var(--text-muted)">${q.data||''} ${q.tema?'· '+escHtml(q.tema.slice(0,30)):''}</span>
         <span style="font-size:10px;color:var(--text-dim)">${q.acertos||0}/${q.total||0}</span>
-        <span style="font-size:10px;color:${(q.acerto||0)>=70?'var(--green)':(q.acerto||0)>=50?'var(--amber)':'var(--red)'}">${q.acerto||0}%</span>
+        <span style="font-size:10px;color:${acertoColor(q.acerto||0)}">${q.acerto||0}%</span>
         <button onclick="event.stopPropagation();deleteQuestaoById(${q.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;padding:0 3px">✕</button>
       </div>`;
     }).join('');
@@ -8678,7 +8726,7 @@ function renderDesempenho() {
   var totalQ   = questaoSessoes.reduce(function(s,q){ return s+(q.total||0); },0);
   var totalAc  = questaoSessoes.reduce(function(s,q){ return s+(q.acertos||0); },0);
   var acertoG  = totalQ ? Math.round(totalAc/totalQ*100) : 0;
-  var acGC = acertoG>=70?'var(--green)':acertoG>=50?'var(--amber)':'var(--red)';
+  var acGC = acertoColor(acertoG);
   var porDisc = {};
   questaoSessoes.forEach(function(s){ var d=s.disciplina||'?'; porDisc[d]=(porDisc[d]||0)+(s.total||0); });
   var discArr = Object.entries(porDisc).sort(function(a,b){return b[1]-a[1];});
@@ -8743,7 +8791,7 @@ function renderDesempenho() {
     html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">';
     html += kpiCard(ms.pct+'%','var(--violet-light)','Progresso', ms.estudado+'/'+ms.total+' estudados', true);
     if (mqs) {
-      var mqc = mqs.pct>=70?'var(--green)':mqs.pct>=50?'var(--amber)':'var(--red)';
+      var mqc = acertoColor(mqs.pct);
       html += kpiCard(mqs.total+'','var(--blue)','Questões feitas', mqs.acertos+' acertos', true);
       html += kpiCard(mqs.pct+'%', mqc,'Taxa de acerto','',true);
     } else {
@@ -8754,7 +8802,7 @@ function renderDesempenho() {
 
     // Barra de acerto
     if (mqs) {
-      var mqc2 = mqs.pct>=70?'var(--green)':mqs.pct>=50?'var(--amber)':'var(--red)';
+      var mqc2 = acertoColor(mqs.pct);
       html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">' +
         '<span style="font-size:9px;color:var(--text-muted);width:50px">Acerto</span>' +
         '<div style="flex:1;height:8px;background:var(--card);border-radius:4px;overflow:hidden">' +
@@ -8896,7 +8944,7 @@ function renderDesempenhoTopicos() {
   el.innerHTML = topicos.map(function(x) {
     var statusIcon = x.status==='estudado'?'✓':x.status==='andamento'?'⟳':'○';
     var statusColor = x.status==='estudado'?'var(--green)':x.status==='andamento'?'var(--amber)':'var(--border)';
-    var pctColor = x.pct!=null ? (x.pct>=70?'var(--green)':x.pct>=50?'var(--amber)':'var(--red)') : '';
+    var pctColor = acertoColor(x.pct);
     var qBarW = Math.round(x.qTotal/maxQ*100);
     var badge = x.pct != null ?
       '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;min-width:'+BAR_W+'px">' +
@@ -8945,7 +8993,7 @@ function renderDesempenhoTopicos() {
       if (!sessions.length) return '';
       return '<div style="padding:4px 0 0 30px">' +
         sessions.map(function(s){
-          var sc = s.acerto>=70?'var(--green)':s.acerto>=50?'var(--amber)':'var(--red)';
+          var sc = acertoColor(s.acerto);
           var qsIdx = questaoSessoes.indexOf(s);
           return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:10px;color:var(--text-dim);border-bottom:1px solid var(--border-soft)">' +
             '<span style="font-family:monospace;flex-shrink:0;min-width:72px">'+( s.data||'—')+'</span>' +
@@ -9106,6 +9154,383 @@ function deleteQuestaoSessao(idx) {
   scheduleSave();
   renderDesempenho();
   showToast('🗑️ Lançamento excluído');
+}
+
+// ══ ABA CONSISTÊNCIA ══
+let consistMonth = new Date().getMonth();
+let consistYear  = new Date().getFullYear();
+let consistSelDay = null;
+
+function renderConsistencia() {
+  var root = document.getElementById('consist-root');
+  if (!root) return;
+
+  // ── Agrupa questaoSessoes por data ──
+  var byDay = {};
+  questaoSessoes.forEach(function(s) {
+    if (!s.data) return;
+    var key = s.data.substring(0, 10);
+    if (!byDay[key]) byDay[key] = [];
+    byDay[key].push(s);
+  });
+
+  // ── KPIs ──
+  var today = new Date();
+  var todayKey = today.toISOString().split('T')[0];
+
+  // Streak: dias consecutivos até hoje
+  var streak = 0;
+  var d = new Date(today);
+  while (true) {
+    var k = d.toISOString().split('T')[0];
+    if (byDay[k] && byDay[k].length) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  // Dias no mês atual com estudo
+  var mesAtual = today.getMonth();
+  var anoAtual = today.getFullYear();
+  var diasMes  = Object.keys(byDay).filter(function(k){
+    var dd = new Date(k+'T00:00:00');
+    return dd.getMonth() === consistMonth && dd.getFullYear() === consistYear;
+  }).length;
+
+  // Acerto médio global
+  var tqAll = questaoSessoes.reduce(function(s,q){ return s+(q.total||0); }, 0);
+  var acAll = questaoSessoes.reduce(function(s,q){ return s+(q.acertos||0); }, 0);
+  var acMed = tqAll ? Math.round(acAll/tqAll*100) : 0;
+  var acMedC = acertoColor(acMed);
+
+  // Questões no mês exibido
+  var qMes = Object.keys(byDay).filter(function(k){
+    var dd = new Date(k+'T00:00:00');
+    return dd.getMonth() === consistMonth && dd.getFullYear() === consistYear;
+  }).reduce(function(s,k){ return s + byDay[k].reduce(function(a,q){ return a+(q.total||0); },0); }, 0);
+
+  // ── Calendário ──
+  var mes = new Date(consistYear, consistMonth, 1);
+  var mesNome = mes.toLocaleDateString('pt-BR', {month:'long', year:'numeric'});
+  mesNome = mesNome.charAt(0).toUpperCase() + mesNome.slice(1);
+  var primeiroDia = mes.getDay();
+  var diasNoMes   = new Date(consistYear, consistMonth+1, 0).getDate();
+
+  function getLevel(sessions) {
+    if (!sessions || !sessions.length) return 0;
+    var q = sessions.reduce(function(s,x){ return s+(x.total||0); }, 0);
+    if (q >= 40) return 4;
+    if (q >= 25) return 3;
+    if (q >= 10) return 2;
+    return 1;
+  }
+
+  var html = '';
+
+  // KPI row
+  html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">';
+  html += consistKpi('🔥 '+streak, 'var(--amber)', 'Dias seguidos', '');
+  html += consistKpi(diasMes+'', 'var(--violet-light)', 'Dias estudados', mesNome.split(' ')[0]);
+  html += consistKpi(acMed+'%', acMedC, 'Acerto médio', tqAll+' questões total');
+  html += consistKpi(qMes+'', 'var(--blue)', 'Questões no mês', mesNome.split(' ')[0]);
+  html += '</div>';
+
+  // Layout calendário + painel
+  html += '<div style="display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start">';
+
+  // Card calendário
+  html += '<div style="background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:16px">';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">';
+  html += '<button onclick="consistChangeMonth(-1)" style="background:var(--card);border:1px solid var(--border-soft);border-radius:8px;padding:5px 12px;color:var(--muted);cursor:pointer;font-size:13px">‹</button>';
+  html += '<span style="font-size:14px;font-weight:700;color:var(--text)">'+mesNome+'</span>';
+  html += '<button onclick="consistChangeMonth(1)" style="background:var(--card);border:1px solid var(--border-soft);border-radius:8px;padding:5px 12px;color:var(--muted);cursor:pointer;font-size:13px">›</button>';
+  html += '</div>';
+
+  // Grid semanas
+  html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">';
+  ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].forEach(function(w){
+    html += '<div style="font-size:9px;font-weight:700;text-transform:uppercase;color:var(--dim);text-align:center;padding:3px 0">'+w+'</div>';
+  });
+
+  for (var b = 0; b < primeiroDia; b++) html += '<div></div>';
+
+  for (var dia = 1; dia <= diasNoMes; dia++) {
+    var key = consistYear+'-'+String(consistMonth+1).padStart(2,'0')+'-'+String(dia).padStart(2,'0');
+    var sessions = byDay[key];
+    var lv = getLevel(sessions);
+    var isToday = key === todayKey;
+    var isSel   = key === consistSelDay;
+    var hasDot  = sessions && sessions.length > 0;
+
+    var bg = ['var(--card)','rgba(124,58,237,.2)','rgba(124,58,237,.4)','rgba(124,58,237,.65)','var(--violet)'][lv];
+    var fg = lv >= 2 ? '#fff' : (lv === 1 ? 'var(--violet-light)' : 'var(--dim)');
+    var border = isSel ? 'var(--violet)' : (isToday ? 'var(--violet-light)' : 'transparent');
+    // Verifica se alguma sessão teve acerto < 75% (precisa revisar)
+    var needsReview = hasDot && sessions.some(function(s){ return (s.acerto||0) < 75; });
+
+    html += '<div onclick="consistSelDay=&quot;'+key+'&quot;;renderConsistencia()" '+
+            'style="aspect-ratio:1;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;'+
+            'background:'+bg+';color:'+fg+';border:2px solid '+border+';font-size:11px;font-weight:700;'+
+            'position:relative;transition:all .15s" '+
+            'title="'+key+(hasDot?' · '+sessions.reduce(function(s,q){return s+(q.total||0);},0)+'q':'')+(needsReview?' · ⚠ revisar':'')+'">' +
+            dia +
+            (needsReview ? '<span style="position:absolute;top:1px;right:2px;font-size:28px;color:var(--red);font-weight:900;line-height:1;opacity:.85">●</span>' : '') +
+      '</div>';
+  }
+  html += '</div>';
+
+  // Legenda
+  html += '<div style="display:flex;align-items:center;gap:6px;margin-top:12px;font-size:10px;color:var(--muted)">';
+  html += '<span>Menos</span>';
+  ['var(--card)','rgba(124,58,237,.2)','rgba(124,58,237,.4)','rgba(124,58,237,.65)','var(--violet)'].forEach(function(bg){
+    html += '<div style="width:14px;height:14px;border-radius:3px;background:'+bg+'"></div>';
+  });
+  html += '<span>Mais questões</span></div>';
+  html += '</div>'; // card calendário
+
+  // Painel do dia
+  html += '<div style="background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:16px;min-height:280px" id="consist-day-panel">';
+  if (!consistSelDay || !byDay[consistSelDay]) {
+    html += '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:220px;gap:8px;color:var(--dim)">'+
+            '<span style="font-size:24px">📅</span>'+
+            '<span style="font-size:12px">Clique em um dia</span></div>';
+  } else {
+    var ss = byDay[consistSelDay];
+    var dd2 = new Date(consistSelDay+'T00:00:00');
+    var dateStr = dd2.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+    dateStr = dateStr.charAt(0).toUpperCase()+dateStr.slice(1);
+    var tqDay = ss.reduce(function(s,q){ return s+(q.total||0); },0);
+    var acDay = tqDay ? Math.round(ss.reduce(function(s,q){ return s+(q.acertos||0); },0)/tqDay*100) : 0;
+    var acDayC = acertoColor(acDay);
+
+    html += '<div style="border-bottom:1px solid var(--border-soft);padding-bottom:10px;margin-bottom:12px">';
+    html += '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px">'+dateStr+'</div>';
+    html += '<div style="font-size:11px;color:var(--muted)">'+tqDay+' questões · <span style="color:'+acDayC+';font-weight:700">'+acDay+'% acerto</span></div>';
+    html += '</div>';
+
+    ss.forEach(function(s) {
+      var sc = acertoColor(s.acerto||0);
+      html += '<div style="padding:9px 0;border-bottom:1px solid var(--border-soft)">';
+      html += '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:3px">'+escHtml(s.disciplina||'')+'</div>';
+      html += '<div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.3">'+escHtml(s.tema||'')+'</div>';
+      html += '<div style="display:flex;align-items:center;gap:8px">';
+      html += '<span style="font-size:11px;font-weight:700;color:var(--violet-light);flex-shrink:0">'+(s.total||0)+'q</span>';
+      html += '<div style="flex:1;height:5px;background:var(--border-soft);border-radius:3px;overflow:hidden">';
+      html += '<div style="width:'+(s.acerto||0)+'%;height:100%;background:'+sc+';border-radius:3px"></div></div>';
+      html += '<span style="font-size:12px;font-weight:800;color:'+sc+';flex-shrink:0">'+(s.acerto||0)+'%</span>';
+      html += '</div></div>';
+    });
+  }
+  html += '</div>'; // painel dia
+
+  html += '</div>'; // grid
+  root.innerHTML = html;
+}
+
+function consistKpi(val, color, label, sub) {
+  return '<div style="background:var(--card);border:1px solid var(--border-soft);border-radius:10px;padding:12px 14px">' +
+    '<div style="font-size:20px;font-weight:800;color:'+color+';line-height:1">'+val+'</div>' +
+    '<div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:3px">'+label+'</div>' +
+    (sub ? '<div style="font-size:10px;color:var(--dim);margin-top:2px">'+sub+'</div>' : '') +
+  '</div>';
+}
+
+function consistChangeMonth(dir) {
+  consistMonth += dir;
+  if (consistMonth > 11) { consistMonth = 0; consistYear++; }
+  if (consistMonth < 0)  { consistMonth = 11; consistYear--; }
+  consistSelDay = null;
+  renderConsistencia();
+}
+
+// ══ KANBAN ESTUDO ══
+var kbeState     = JSON.parse(localStorage.getItem('kbe_state') || '{}'); // key: matId+'_'+topicoIdx => 'red'|'yellow'|'green'
+var kbeDragging  = null;
+var kbeSearchQ   = '';
+var kbeOpenMats  = {};
+
+function kbeSave() { localStorage.setItem('kbe_state', JSON.stringify(kbeState)); }
+
+function kbeKey(matId, idx) { return matId + '_' + idx; }
+
+function kbeGetAcerto(matId, idx) {
+  var key = matId + '_' + idx;
+  // usa curTopicosData
+  var d = curTopicosData[key];
+  var pct = d && d.acerto != null ? parseInt(d.acerto) : null;
+  // complementa com questaoSessoes
+  var qs = curTopicoQStats(null, null, matId, idx);
+  if (qs && qs.total > 0) pct = qs.pct;
+  return pct;
+}
+
+function renderKanbanEstudo() {
+  var root = document.getElementById('kbe-root');
+  if (!root) return;
+
+  var html = '';
+
+  // Toolbar
+  html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">';
+  html += '<span style="font-size:13px;font-weight:700;color:var(--text)">🗂️ Kanban de Aprendizagem</span>';
+  html += '<div style="flex:1"></div>';
+  html += '<span style="font-size:10px;color:var(--muted)"><span style="color:var(--red)">●</span> Aprendendo &nbsp; <span style="color:var(--amber)">●</span> Praticando &nbsp; <span style="color:var(--green)">●</span> Dominado</span>';
+  html += '</div>';
+
+  // Layout
+  html += '<div class="kbe-layout">';
+
+  // ── Backlog ──
+  html += '<div class="kbe-backlog">';
+  html += '<div style="padding:10px 12px;border-bottom:1px solid var(--border-soft);flex-shrink:0">';
+  html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px">📚 Backlog</div>';
+  html += '<input oninput="kbeSearchQ=this.value.toLowerCase();renderKanbanEstudo()" value="'+escHtml(kbeSearchQ)+'" placeholder="🔍 Buscar tópico..." '+
+          'style="width:100%;padding:5px 10px;background:var(--card);border:1px solid var(--border-soft);border-radius:7px;color:var(--text);font-size:11px;outline:none">';
+  html += '</div>';
+  html += '<div class="kbe-backlog-scroll">';
+
+  curriculo.forEach(function(mat) {
+    var inBacklog = mat.topicos.filter(function(_, i){ return !kbeState[kbeKey(mat.id, i)]; });
+    var matchesMat = !kbeSearchQ || mat.nome.toLowerCase().includes(kbeSearchQ);
+    var matchesTopic = mat.topicos.some(function(t,i){ return !kbeState[kbeKey(mat.id,i)] && t.toLowerCase().includes(kbeSearchQ); });
+    if (kbeSearchQ && !matchesMat && !matchesTopic) return;
+    if (!inBacklog.length && kbeSearchQ === '') return;
+
+    var isOpen = kbeOpenMats[mat.id] !== false; // aberto por padrão
+    html += '<div class="kbe-mat-header" onclick="kbeToggleMat('+mat.id+')">';
+    html += '<span style="font-size:10px;color:var(--muted);transition:transform .15s;'+(isOpen?'transform:rotate(90deg)':'')+'">▶</span>';
+    html += '<span style="flex:1;font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(mat.nome)+'</span>';
+    html += '<span style="font-size:9px;color:var(--muted);background:var(--border-soft);padding:1px 6px;border-radius:10px">'+inBacklog.length+'</span>';
+    html += '</div>';
+
+    html += '<div class="kbe-mat-topics'+(isOpen?' open':'') +'" id="kbe-mat-'+mat.id+'">';
+    mat.topicos.forEach(function(t, i) {
+      var key = kbeKey(mat.id, i);
+      if (kbeState[key]) return;
+      if (kbeSearchQ && !t.toLowerCase().includes(kbeSearchQ) && !matchesMat) return;
+      var pct = kbeGetAcerto(mat.id, i);
+      var dotBg = pct != null ? (acertoColor(pct)) : 'var(--dim)';
+      html += '<div class="kbe-topic-row" draggable="true" data-kbekey="'+key+'" '+
+              'ondragstart="kbeDragStart(event,&quot;'+key+'&quot;)">' +
+              '<span style="width:6px;height:6px;border-radius:50%;background:'+dotBg+';flex-shrink:0"></span>'+
+              escHtml(t)+
+              '</div>';
+    });
+    html += '</div>';
+  });
+
+  html += '</div></div>'; // backlog-scroll + backlog
+
+  // ── Colunas ──
+  html += '<div class="kbe-cols">';
+
+  var cols = [
+    {id:'red',   label:'🔴 Aprendendo', bdot:'var(--red)',   bg:'rgba(239,68,68,.08)',   bc:'rgba(239,68,68,.2)',   bbg:'rgba(239,68,68,.15)',  bfg:'var(--red)'},
+    {id:'yellow',label:'🟡 Praticando', bdot:'var(--amber)', bg:'rgba(245,158,11,.08)', bc:'rgba(245,158,11,.2)',  bbg:'rgba(245,158,11,.12)', bfg:'var(--amber)'},
+    {id:'green', label:'🟢 Dominado',   bdot:'var(--green)', bg:'rgba(16,185,129,.08)', bc:'rgba(16,185,129,.2)',  bbg:'rgba(16,185,129,.12)', bfg:'var(--green)'},
+  ];
+
+  cols.forEach(function(col) {
+    var items = [];
+    curriculo.forEach(function(mat){
+      mat.topicos.forEach(function(t, i){
+        if (kbeState[kbeKey(mat.id,i)] === col.id) items.push({mat, t, i, key:kbeKey(mat.id,i)});
+      });
+    });
+    var others = cols.filter(function(cc){ return cc.id !== col.id; });
+
+    html += '<div class="kbe-col kbe-'+col.id+'" '+
+            'ondragover="event.preventDefault();kbeDragOverCol(&quot;'+col.id+'&quot;)" '+
+            'ondragleave="kbeDragLeaveCol(&quot;'+col.id+'&quot;)" '+
+            'ondrop="kbeDrop(event,&quot;'+col.id+'&quot;)">';
+    html += '<div class="kbe-col-hdr">';
+    html += '<span style="width:10px;height:10px;border-radius:50%;background:'+col.bdot+';flex-shrink:0"></span>';
+    html += '<span style="font-size:12px;font-weight:700;color:var(--text);flex:1">'+col.label+'</span>';
+    html += '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+col.bbg+';color:'+col.bfg+'">'+items.length+'</span>';
+    html += '</div>';
+    html += '<div class="kbe-col-body" id="kbe-col-body-'+col.id+'">';
+
+    if (!items.length) {
+      html += '<div class="kbe-drop-empty">Arraste tópicos aqui</div>';
+    } else {
+      items.forEach(function(item) {
+        var pct = kbeGetAcerto(item.mat.id, item.i);
+        var pctC = pct!=null ? (acertoColor(pct)) : '';
+        var qs = curTopicoQStats(null, null, item.mat.id, item.i);
+        html += '<div class="kbe-card" draggable="true" data-kbekey="'+item.key+'" ondragstart="kbeDragStart(event,&quot;'+item.key+'&quot;)">';
+        html += '<div class="kbe-card-btns">';
+        others.forEach(function(cc){
+          html += '<button class="kbe-mbtn" onclick="kbeMoveCard(&quot;'+item.key+'&quot;,&quot;'+cc.id+'&quot;)" title="→ '+cc.label+'">'+cc.label.split(' ')[0]+'</button>';
+        });
+        html += '<button class="kbe-mbtn" onclick="kbeMoveCard(&quot;'+item.key+'&quot;,null)" title="Voltar ao backlog" style="color:var(--dim)">↩</button>';
+        html += '</div>';
+        html += '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:3px">'+escHtml(item.mat.nome)+'</div>';
+        html += '<div style="font-size:11px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:'+(pct!=null?'7px':'2px')+'">'+escHtml(item.t)+'</div>';
+        if (pct != null) {
+          var qtotal = qs ? qs.total : 0;
+          html += '<div style="display:flex;align-items:center;gap:6px">';
+          if (qtotal) html += '<span style="font-size:10px;font-weight:700;color:var(--violet-light);flex-shrink:0">'+qtotal+'q</span>';
+          html += '<div style="flex:1;height:4px;background:var(--border-soft);border-radius:2px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:'+pctC+';border-radius:2px"></div></div>';
+          html += '<span style="font-size:11px;font-weight:800;color:'+pctC+'">'+pct+'%</span>';
+          html += '</div>';
+        } else {
+          html += '<div style="font-size:10px;color:var(--dim)">sem dados</div>';
+        }
+        html += '</div>';
+      });
+    }
+
+    html += '</div></div>'; // col-body + col
+  });
+
+  html += '</div></div>'; // cols + layout
+  root.innerHTML = html;
+}
+
+
+function kbeDragOverCol(colId) {
+  var el = document.getElementById('kbe-col-body-'+colId);
+  if (el) el.classList.add('kbe-dragover');
+}
+function kbeDragLeaveCol(colId) {
+  var el = document.getElementById('kbe-col-body-'+colId);
+  if (el) el.classList.remove('kbe-dragover');
+}
+function kbeToggleMat(matId) {
+  kbeOpenMats[matId] = kbeOpenMats[matId] === false ? true : false;
+  var el = document.getElementById('kbe-mat-'+matId);
+  if (el) el.classList.toggle('open');
+}
+
+function kbeDragStart(e, key) {
+  kbeDragging = key;
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function kbeDrop(e, col) {
+  e.preventDefault();
+  document.querySelectorAll('.kbe-col-body').forEach(function(b){ b.classList.remove('kbe-dragover'); });
+  if (kbeDragging) { kbeState[kbeDragging] = col; kbeDragging = null; kbeSave(); renderKanbanEstudo(); }
+}
+
+function kbeMoveCard(key, col) {
+  kbeState[key] = col;
+  kbeSave();
+  renderKanbanEstudo();
+}
+
+function acertoColor(pct) {
+  if (pct == null) return 'var(--dim)';
+  if (pct > 90)  return '#16a34a'; // verde escuro   > 90%–100%
+  if (pct > 87)  return '#22c55e'; // verde           > 87%–90%
+  if (pct > 84)  return '#86efac'; // verde claro     > 84%–87%
+  if (pct > 80)  return '#bef264'; // verde-amarelo   > 80%–84%
+  if (pct > 76)  return '#facc15'; // amarelo         > 76%–80%
+  if (pct > 70)  return '#fb923c'; // laranja-amarelo > 70%–76%
+  if (pct > 60)  return '#f97316'; // laranja         > 60%–70%
+  return '#ef4444';                 // vermelho-laranja até 60%
 }
 
 document.addEventListener('DOMContentLoaded', function() {
