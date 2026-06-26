@@ -6060,7 +6060,9 @@ function saveTopico() {
   }
   closeModal('modal-topico');
   lsSave();
-  scheduleSave();
+  // Salva imediatamente no Firebase sem debounce para não perder na recarga
+  if (cloudTimer) clearTimeout(cloudTimer);
+  fbCloudSave();
   renderEstudosCur();
   curEditTopicoIdx = null;
 }
@@ -9110,6 +9112,9 @@ function deseSortSet(by) {
 function deleteTopicoConfirm(mid, idx) {
   if (confirm('Excluir tópico?')) {
     deleteTopico(mid, idx);
+    lsSave();
+    if (cloudTimer) clearTimeout(cloudTimer);
+    fbCloudSave();
     setTimeout(renderDesempenho, 100);
   }
 }
@@ -9149,7 +9154,8 @@ function saveEditMateriaDese() {
   if (!mat) return;
   mat.nome = nome;
   lsSave();
-  scheduleSave();
+  if (cloudTimer) clearTimeout(cloudTimer);
+  fbCloudSave();
   closeModal('modal-editar-materia');
   renderDesempenho();
   showToast('✅ Matéria atualizada');
