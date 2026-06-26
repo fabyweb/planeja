@@ -6130,6 +6130,7 @@ function lsSave() {
       finances, nextFinId, finCategories,
       lists, nextListId, nextListItemId,
       notes, nextNoteId, noteFolders,
+      curriculo,
       curTopicosStatus, curTopicosData,
       atividades, nextAtivId,
       sessoes, nextSessaoId,
@@ -6194,6 +6195,7 @@ function lsLoad() {
     if (d.lists)            { lists = d.lists; nextListId = d.nextListId || nextListId; nextListItemId = d.nextListItemId || nextListItemId; }
     if (d.notes)            { notes = d.notes; nextNoteId = d.nextNoteId || nextNoteId; }
     if (d.noteFolders)      { noteFolders = d.noteFolders; }
+    if (d.curriculo && d.curriculo.length) { curriculo = d.curriculo; }
     if (d.curTopicosStatus) { curTopicosStatus = d.curTopicosStatus; }
     if (d.curTopicosData)   { curTopicosData = d.curTopicosData; }
     if (d.atividades)       { atividades = d.atividades; nextAtivId = d.nextAtivId || nextAtivId; }
@@ -6280,6 +6282,7 @@ async function fbCloudSave() {
       nextListItemId: typeof nextListItemId!=='undefined'?nextListItemId:100,
       notes: notesClean, nextNoteId: typeof nextNoteId!=='undefined'?nextNoteId:10,
       noteFolders: typeof noteFolders!=='undefined'?noteFolders:[],
+      curriculo: curriculo || [],
       curTopicosStatus: typeof curTopicosStatus!=='undefined'?curTopicosStatus:{},
       curTopicosData: typeof curTopicosData!=='undefined'?curTopicosData:{},
       atividades: typeof atividades!=='undefined'?atividades:[], nextAtivId: typeof nextAtivId!=='undefined'?nextAtivId:10,
@@ -6375,6 +6378,7 @@ async function cloudLoad(forceLoad) {
     if (d.lists)            { lists = d.lists; nextListId = d.nextListId || nextListId; nextListItemId = d.nextListItemId || nextListItemId; }
     if (d.notes)            { notes = d.notes; nextNoteId = d.nextNoteId || nextNoteId; }
     if (d.noteFolders)      { noteFolders = d.noteFolders; }
+    if (d.curriculo && d.curriculo.length) { curriculo = d.curriculo; }
     if (d.curTopicosStatus) { curTopicosStatus = d.curTopicosStatus; }
     if (d.curTopicosData)   { curTopicosData = d.curTopicosData; }
     if (d.atividades)       { atividades = d.atividades; nextAtivId = d.nextAtivId || nextAtivId; }
@@ -6457,6 +6461,7 @@ async function fbCloudLoad(forceLoad) {
       nextNoteId = d.nextNoteId || nextNoteId;
     }
     if (d.noteFolders)       { noteFolders = d.noteFolders; }
+    if (d.curriculo && d.curriculo.length) { curriculo = d.curriculo; }
     if (d.curTopicosStatus)  { curTopicosStatus = d.curTopicosStatus; }
     if (d.curTopicosData)    { curTopicosData = d.curTopicosData; }
     if (d.atividades)        { atividades = d.atividades; nextAtivId = d.nextAtivId||nextAtivId; }
