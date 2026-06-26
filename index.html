@@ -6060,6 +6060,7 @@ function saveTopico() {
   }
   closeModal('modal-topico');
   lsSave();
+  scheduleSave();
   renderEstudosCur();
   curEditTopicoIdx = null;
 }
@@ -8688,7 +8689,9 @@ function curTopicoQStats(topicoNome, disciplinaNome, matId, topicoIdx) {
     // Matching exato por ID — prioridade máxima
     sessoes = questaoSessoes.filter(function(s) {
       if (s.matId != null && s.topicoIdx != null) {
-        return s.matId === matId && s.topicoIdx === topicoIdx;
+        // Match por matId+topicoIdx OU por matId+tema (índice pode ter deslocado)
+        if (s.matId !== matId) return false;
+        return s.topicoIdx === topicoIdx || (topicoNome && s.tema === topicoNome);
       }
       // Fallback para sessões antigas sem ID: match por texto exato
       return s.tema === topicoNome && (s.disciplina||'') === (disciplinaNome||'');
@@ -8781,13 +8784,17 @@ function renderDesempenho() {
   var orfas = questaoSessoes.filter(function(s) {
     if (s.matId != null && s.topicoIdx != null) {
       var mat2 = curriculo.find(function(m){ return m.id === s.matId; });
-      return !mat2 || s.topicoIdx >= mat2.topicos.length;
+      if (!mat2) return true; // matéria não existe mais
+      // Verifica pelo índice E pelo tema para robustez contra deslocamento de índices
+      var topicoPorIdx  = mat2.topicos[s.topicoIdx];
+      var topicoPorTema = s.tema ? mat2.topicos.indexOf(s.tema) !== -1 : false;
+      // Só é órfã se nem o índice nem o tema existirem
+      return !topicoPorIdx && !topicoPorTema;
     }
     // Sem ID: verifica se disciplina+tema ainda existe no currículo
     var matMatch = curriculo.find(function(m){ return m.nome === s.disciplina; });
-    if (!matMatch) return true; // disciplina não existe mais
-    var temaMatch = matMatch.topicos.indexOf(s.tema) !== -1;
-    return !temaMatch; // tema não existe mais nessa disciplina
+    if (!matMatch) return true;
+    return matMatch.topicos.indexOf(s.tema) === -1;
   });
 
   if (orfas.length > 0) {
@@ -9674,6 +9681,12 @@ function salvarVinculoOrfa() {
   s.topicoIdx  = topIdx;
   s.disciplina = mat.nome;
   s.tema       = mat.topicos[topIdx] || s.tema;
+  // Corrige outros lançamentos da mesma sessão que tenham tema igual mas índice errado
+  questaoSessoes.forEach(function(q) {
+    if (q !== s && q.matId === matId && q.tema === s.tema && q.topicoIdx !== topIdx) {
+      q.topicoIdx = topIdx;
+    }
+  });
   lsSave();
   scheduleSave();
   closeModal('modal-vincular-orfa');
