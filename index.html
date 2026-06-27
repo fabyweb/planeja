@@ -1228,6 +1228,26 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   </div>
 </div>
 
+
+<!-- ══ MODAL — ADICIONAR MATÉRIA ══ -->
+<div class="modal-overlay" id="modal-add-materia">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <span class="modal-title">+ Nova Matéria</span>
+      <button class="modal-close" onclick="closeModal('modal-add-materia')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label>Nome da matéria</label>
+        <input class="form-input" id="add-mat-nome" placeholder="Ex: Direito Tributário">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-add-materia')">Cancelar</button>
+      <button class="btn btn-primary btn-sm" onclick="saveAddMateriaDese()">Adicionar</button>
+    </div>
+  </div>
+</div>
 <!-- ══════════════════════════════
      MODAL — TAREFA
 ══════════════════════════════ -->
@@ -8848,7 +8868,10 @@ function renderDesempenho() {
 
   // Sidebar matérias
   html += '<div style="background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden">';
-  html += '<div style="padding:10px 12px;border-bottom:1px solid var(--border-soft);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)">Matérias</div>';
+  html += '<div style="padding:10px 12px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between">';
+  html += '<span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)">Matérias</span>';
+  html += '<button onclick="openAddMateriaDese()" style="font-size:10px;padding:3px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text-muted);cursor:pointer">+ Matéria</button>';
+  html += '</div>';
   html += '<div style="max-height:70vh;overflow-y:auto">';
   curriculo.forEach(function(m) {
     var s = curMatStats(m);
@@ -9703,6 +9726,27 @@ function salvarVinculoOrfa() {
   closeModal('modal-vincular-orfa');
   renderDesempenho();
   showToast('✅ Lançamento vinculado a: '+escHtml(mat.topicos[topIdx]||''));
+}
+
+function openAddMateriaDese() {
+  document.getElementById('add-mat-nome').value = '';
+  openModal('modal-add-materia');
+  setTimeout(function(){ document.getElementById('add-mat-nome').focus(); }, 200);
+}
+
+function saveAddMateriaDese() {
+  var nome = document.getElementById('add-mat-nome').value.trim();
+  if (!nome) { showToast('⚠️ Informe o nome da matéria'); return; }
+  // Gera próximo ID
+  var maxId = curriculo.reduce(function(mx, m){ return Math.max(mx, m.id); }, 0);
+  curriculo.push({ id: maxId + 1, nome: nome, tags: [], topicos: [] });
+  deseMatId = maxId + 1;
+  lsSave();
+  if (cloudTimer) clearTimeout(cloudTimer);
+  fbCloudSave();
+  closeModal('modal-add-materia');
+  renderDesempenho();
+  showToast('✅ Matéria adicionada: ' + nome);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
