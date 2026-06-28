@@ -6192,6 +6192,7 @@ function lsSave() {
       lists, nextListId, nextListItemId,
       notes, nextNoteId, noteFolders,
       curriculo,
+      kbeState,
       curTopicosStatus, curTopicosData,
       atividades, nextAtivId,
       sessoes, nextSessaoId,
@@ -6257,6 +6258,7 @@ function lsLoad() {
     if (d.notes)            { notes = d.notes; nextNoteId = d.nextNoteId || nextNoteId; }
     if (d.noteFolders)      { noteFolders = d.noteFolders; }
     if (d.curriculo && d.curriculo.length) { curriculo = d.curriculo; }
+    if (d.kbeState) { kbeState = d.kbeState; }
     if (d.curTopicosStatus) { curTopicosStatus = d.curTopicosStatus; }
     if (d.curTopicosData)   { curTopicosData = d.curTopicosData; }
     if (d.atividades)       { atividades = d.atividades; nextAtivId = d.nextAtivId || nextAtivId; }
@@ -6344,6 +6346,7 @@ async function fbCloudSave() {
       notes: notesClean, nextNoteId: typeof nextNoteId!=='undefined'?nextNoteId:10,
       noteFolders: typeof noteFolders!=='undefined'?noteFolders:[],
       curriculo: curriculo || [],
+      kbeState: kbeState || {},
       curTopicosStatus: typeof curTopicosStatus!=='undefined'?curTopicosStatus:{},
       curTopicosData: typeof curTopicosData!=='undefined'?curTopicosData:{},
       atividades: typeof atividades!=='undefined'?atividades:[], nextAtivId: typeof nextAtivId!=='undefined'?nextAtivId:10,
@@ -6440,6 +6443,7 @@ async function cloudLoad(forceLoad) {
     if (d.notes)            { notes = d.notes; nextNoteId = d.nextNoteId || nextNoteId; }
     if (d.noteFolders)      { noteFolders = d.noteFolders; }
     if (d.curriculo && d.curriculo.length) { curriculo = d.curriculo; }
+    if (d.kbeState) { kbeState = d.kbeState; }
     if (d.curTopicosStatus) { curTopicosStatus = d.curTopicosStatus; }
     if (d.curTopicosData)   { curTopicosData = d.curTopicosData; }
     if (d.atividades)       { atividades = d.atividades; nextAtivId = d.nextAtivId || nextAtivId; }
@@ -6523,6 +6527,7 @@ async function fbCloudLoad(forceLoad) {
     }
     if (d.noteFolders)       { noteFolders = d.noteFolders; }
     if (d.curriculo && d.curriculo.length) { curriculo = d.curriculo; }
+    if (d.kbeState) { kbeState = d.kbeState; }
     if (d.curTopicosStatus)  { curTopicosStatus = d.curTopicosStatus; }
     if (d.curTopicosData)    { curTopicosData = d.curTopicosData; }
     if (d.atividades)        { atividades = d.atividades; nextAtivId = d.nextAtivId||nextAtivId; }
@@ -9555,7 +9560,7 @@ var kbeDragging  = null;
 var kbeSearchQ   = '';
 var kbeOpenMats  = {};
 
-function kbeSave() { localStorage.setItem('kbe_state', JSON.stringify(kbeState)); }
+function kbeSave() { lsSave(); scheduleSave(); }
 
 function kbeKey(matId, idx) { return matId + '_' + idx; }
 
