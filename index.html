@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Flow — Gestão Pessoal</title>
-<meta name="version" content="1781100010">
+<meta name="version" content="1782613655">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -7879,7 +7879,14 @@ function lockSetEjs(o)  { localStorage.setItem(LOCK_EJS_KEY, JSON.stringify(o));
 function lockHide() {
   lockActive = false;
   var el = document.getElementById('lock-screen');
-  if (el) { el.classList.remove('visible'); }
+  if (el) {
+    el.classList.remove('visible');
+    el.style.height = '';
+    el.style.bottom = '';
+    if (el._fitFn && window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', el._fitFn);
+    }
+  }
   document.body.classList.remove('locked');
   lockResetTimer();
 }
@@ -8029,6 +8036,32 @@ async function sha256(msg) {
 function lockShow(isFirst) {
   lockActive = true;
   var el    = document.getElementById('lock-screen');
+  // Reposiciona o card via JS para sobreviver ao teclado virtual (independe de cache CSS)
+  if (el) {
+    el.style.justifyContent = 'flex-start';
+    el.style.alignItems = 'center';
+    el.style.overflowY = 'auto';
+    el.style.paddingTop = '0';
+    el.style.paddingBottom = '0';
+    var card = el.querySelector('.lock-card');
+    if (card) {
+      card.style.marginTop = '6vh';
+      card.style.marginBottom = '40px';
+      card.style.flexShrink = '0';
+    }
+    // Ajusta altura à viewport visível (visualViewport reage ao teclado)
+    var fitToViewport = function() {
+      var vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+      el.style.height = vh + 'px';
+      el.style.bottom = 'auto';
+    };
+    fitToViewport();
+    if (window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', fitToViewport);
+      window.visualViewport.addEventListener('resize', fitToViewport);
+      el._fitFn = fitToViewport;
+    }
+  }
   var sub   = document.getElementById('lock-sub');
   var btn   = document.getElementById('lock-btn');
   var hint  = document.getElementById('lock-hint');
@@ -8062,7 +8095,14 @@ function lockShow(isFirst) {
 function lockHide() {
   lockActive = false;
   var el = document.getElementById('lock-screen');
-  if (el) { el.classList.remove('visible'); }
+  if (el) {
+    el.classList.remove('visible');
+    el.style.height = '';
+    el.style.bottom = '';
+    if (el._fitFn && window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', el._fitFn);
+    }
+  }
   lockResetTimer();
 }
 
