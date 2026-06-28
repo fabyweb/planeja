@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Flow — Gestão Pessoal</title>
 <meta name="version" content="1781100010">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -646,10 +646,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 
 #lock-screen{
   position:fixed;
-  top:0;left:0;
-  width:100vw;
-  height:100vh;
-  height:100dvh;
+  top:0;left:0;right:0;bottom:0;
   z-index:9999;
   background:var(--bg);
   display:none;
@@ -7877,7 +7874,11 @@ function lockSetEjs(o)  { localStorage.setItem(LOCK_EJS_KEY, JSON.stringify(o));
 function lockHide() {
   lockActive = false;
   var el = document.getElementById('lock-screen');
-  if (el) { el.classList.remove('visible'); }
+  if (el) {
+    el.classList.remove('visible');
+    el.style.height = '';
+    el.style.bottom = '';
+  }
   document.body.classList.remove('locked');
   lockResetTimer();
 }
@@ -8027,6 +8028,12 @@ async function sha256(msg) {
 function lockShow(isFirst) {
   lockActive = true;
   var el    = document.getElementById('lock-screen');
+  // Trava a altura na janela visível atual (evita reflow com teclado virtual)
+  if (el) {
+    var h = window.innerHeight;
+    el.style.height = h + 'px';
+    el.style.bottom = 'auto';
+  }
   var sub   = document.getElementById('lock-sub');
   var btn   = document.getElementById('lock-btn');
   var hint  = document.getElementById('lock-hint');
@@ -8060,7 +8067,11 @@ function lockShow(isFirst) {
 function lockHide() {
   lockActive = false;
   var el = document.getElementById('lock-screen');
-  if (el) { el.classList.remove('visible'); }
+  if (el) {
+    el.classList.remove('visible');
+    el.style.height = '';
+    el.style.bottom = '';
+  }
   lockResetTimer();
 }
 
