@@ -650,15 +650,20 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   z-index:9999;
   background:var(--bg);
   display:none;
-  align-items:center;justify-content:center;
+  align-items:center;
+  justify-content:flex-start;
   flex-direction:column;gap:0;
-  padding:24px 16px;
+  padding:0 16px;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
   box-sizing:border-box
 }
 #lock-screen.visible{display:flex!important}
-#lock-screen .lock-card{flex-shrink:0;margin:auto 0}
+#lock-screen .lock-card{
+  flex-shrink:0;
+  margin-top:max(8vh, 40px);
+  margin-bottom:40px;
+}
 .lock-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:20px;padding:clamp(24px,5vw,40px) clamp(20px,5vw,36px);width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:16px;box-shadow:0 12px 40px rgba(0,0,0,.4)}
 .lock-logo{width:56px;height:56px;background:linear-gradient(135deg,var(--violet),#9F67FF);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:2px;flex-shrink:0}
 .lock-title{font-size:18px;font-weight:700;color:var(--text);letter-spacing:.01em;text-align:center}
@@ -7874,11 +7879,7 @@ function lockSetEjs(o)  { localStorage.setItem(LOCK_EJS_KEY, JSON.stringify(o));
 function lockHide() {
   lockActive = false;
   var el = document.getElementById('lock-screen');
-  if (el) {
-    el.classList.remove('visible');
-    el.style.height = '';
-    el.style.bottom = '';
-  }
+  if (el) { el.classList.remove('visible'); }
   document.body.classList.remove('locked');
   lockResetTimer();
 }
@@ -8028,12 +8029,6 @@ async function sha256(msg) {
 function lockShow(isFirst) {
   lockActive = true;
   var el    = document.getElementById('lock-screen');
-  // Trava a altura na janela visível atual (evita reflow com teclado virtual)
-  if (el) {
-    var h = window.innerHeight;
-    el.style.height = h + 'px';
-    el.style.bottom = 'auto';
-  }
   var sub   = document.getElementById('lock-sub');
   var btn   = document.getElementById('lock-btn');
   var hint  = document.getElementById('lock-hint');
@@ -8067,11 +8062,7 @@ function lockShow(isFirst) {
 function lockHide() {
   lockActive = false;
   var el = document.getElementById('lock-screen');
-  if (el) {
-    el.classList.remove('visible');
-    el.style.height = '';
-    el.style.bottom = '';
-  }
+  if (el) { el.classList.remove('visible'); }
   lockResetTimer();
 }
 
