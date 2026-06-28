@@ -748,6 +748,36 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .kbe-drop-empty{border:2px dashed var(--border-soft);border-radius:9px;padding:20px;text-align:center;font-size:11px;color:var(--dim)}
 .kbe-col.kbe-dragover .kbe-drop-empty{border-color:var(--violet);color:var(--violet-light);background:var(--violet-glow)}
 
+
+/* ══ RESPONSIVIDADE — ABAS DE ESTUDO ══ */
+@media(max-width:1024px){
+  /* Desempenho: sidebar de matérias vira topo */
+  #dese-root > div > div[style*="grid-template-columns:220px"]{grid-template-columns:1fr!important}
+  /* Consistência: calendário + painel empilham */
+  #consist-root div[style*="grid-template-columns:1fr 300px"]{grid-template-columns:1fr!important}
+  /* Kanban: layout vertical */
+  .kbe-layout{grid-template-columns:1fr!important;height:auto!important;min-height:auto!important}
+  .kbe-backlog{max-height:280px}
+  .kbe-cols{grid-template-columns:1fr!important}
+  .kbe-col{min-height:200px}
+}
+@media(max-width:768px){
+  /* KPI cards: 2 colunas em vez de 4 */
+  #dese-root div[style*="grid-template-columns:repeat(4"]{grid-template-columns:repeat(2,1fr)!important}
+  #consist-root div[style*="grid-template-columns:repeat(4"]{grid-template-columns:repeat(2,1fr)!important}
+  /* Desempenho KPIs da matéria: empilha para 1 ou mantém legível */
+  #dese-root div[style*="grid-template-columns:repeat(3"]{grid-template-columns:repeat(3,1fr)!important}
+}
+@media(max-width:540px){
+  /* KPIs em coluna única ou 2 */
+  #dese-root div[style*="grid-template-columns:repeat(2"]{grid-template-columns:repeat(2,1fr)!important}
+  /* Kanban backlog: tópicos maiores para toque */
+  .kbe-topic-row{padding:11px 12px;font-size:12px}
+  .kbe-card{padding:12px 14px}
+  /* Forte/fraco empilha */
+  #dese-root div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+}
+
 </style>
 
   <!-- PWA -->
@@ -9501,6 +9531,15 @@ function renderKanbanEstudo() {
   html += '<div style="flex:1"></div>';
   html += '<span style="font-size:10px;color:var(--muted)"><span style="color:var(--red)">●</span> Aprendendo &nbsp; <span style="color:var(--amber)">●</span> Praticando &nbsp; <span style="color:var(--green)">●</span> Dominado</span>';
   html += '</div>';
+  // Barra de instrução para toque (aparece quando algo selecionado)
+  html += '<div id="kbe-tap-hint" style="display:none;align-items:center;gap:10px;margin-bottom:10px;padding:8px 14px;background:var(--violet-glow);border:1px solid var(--violet);border-radius:8px;font-size:11px;color:var(--violet-light);flex-wrap:wrap">';
+  html += '<span>👆 Tópico selecionado — toque numa coluna para mover, ou:</span>';
+  html += '<button onclick="kbeTapMoveTo(&quot;red&quot;)" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1px solid rgba(239,68,68,.4);background:rgba(239,68,68,.1);color:var(--red);cursor:pointer">🔴 Aprendendo</button>';
+  html += '<button onclick="kbeTapMoveTo(&quot;yellow&quot;)" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1px solid rgba(245,158,11,.4);background:rgba(245,158,11,.1);color:var(--amber);cursor:pointer">🟡 Praticando</button>';
+  html += '<button onclick="kbeTapMoveTo(&quot;green&quot;)" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1px solid rgba(16,185,129,.4);background:rgba(16,185,129,.1);color:var(--green);cursor:pointer">🟢 Dominado</button>';
+  html += '<button onclick="kbeTapMoveTo(null)" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text-dim);cursor:pointer">↩ Backlog</button>';
+  html += '<button onclick="kbeTapSelected=null;kbeUpdateTapVisual()" style="font-size:11px;padding:3px 8px;border-radius:6px;border:none;background:transparent;color:var(--text-dim);cursor:pointer;margin-left:auto">✕ Cancelar</button>';
+  html += '</div>';
 
   // Layout
   html += '<div class="kbe-layout">';
@@ -9536,7 +9575,7 @@ function renderKanbanEstudo() {
       var pct = kbeGetAcerto(mat.id, i);
       var dotBg = pct != null ? (acertoColor(pct)) : 'var(--dim)';
       html += '<div class="kbe-topic-row" draggable="true" data-kbekey="'+key+'" '+
-              'ondragstart="kbeDragStart(event,&quot;'+key+'&quot;)">' +
+              'ondragstart="kbeDragStart(event,&quot;'+key+'&quot;)" onclick="kbeTapSelect(&quot;'+key+'&quot;,event)">' +
               '<span style="width:6px;height:6px;border-radius:50%;background:'+dotBg+';flex-shrink:0"></span>'+
               escHtml(t)+
               '</div>';
@@ -9567,7 +9606,8 @@ function renderKanbanEstudo() {
     html += '<div class="kbe-col kbe-'+col.id+'" '+
             'ondragover="event.preventDefault();kbeDragOverCol(&quot;'+col.id+'&quot;)" '+
             'ondragleave="kbeDragLeaveCol(&quot;'+col.id+'&quot;)" '+
-            'ondrop="kbeDrop(event,&quot;'+col.id+'&quot;)">';
+            'ondrop="kbeDrop(event,&quot;'+col.id+'&quot;)" '+
+            'onclick="if(kbeTapSelected)kbeTapMoveTo(&quot;'+col.id+'&quot;)">';
     html += '<div class="kbe-col-hdr">';
     html += '<span style="width:10px;height:10px;border-radius:50%;background:'+col.bdot+';flex-shrink:0"></span>';
     html += '<span style="font-size:12px;font-weight:700;color:var(--text);flex:1">'+col.label+'</span>';
@@ -9582,7 +9622,7 @@ function renderKanbanEstudo() {
         var pct = kbeGetAcerto(item.mat.id, item.i);
         var pctC = pct!=null ? (acertoColor(pct)) : '';
         var qs = curTopicoQStats(null, null, item.mat.id, item.i);
-        html += '<div class="kbe-card" draggable="true" data-kbekey="'+item.key+'" ondragstart="kbeDragStart(event,&quot;'+item.key+'&quot;)">';
+        html += '<div class="kbe-card" draggable="true" data-kbekey="'+item.key+'" ondragstart="kbeDragStart(event,&quot;'+item.key+'&quot;)" onclick="kbeTapSelect(&quot;'+item.key+'&quot;,event)">';
         html += '<div class="kbe-card-btns">';
         others.forEach(function(cc){
           html += '<button class="kbe-mbtn" onclick="kbeMoveCard(&quot;'+item.key+'&quot;,&quot;'+cc.id+'&quot;)" title="→ '+cc.label+'">'+cc.label.split(' ')[0]+'</button>';
@@ -9610,6 +9650,7 @@ function renderKanbanEstudo() {
 
   html += '</div></div>'; // cols + layout
   root.innerHTML = html;
+  kbeUpdateTapVisual();
 }
 
 
@@ -9747,6 +9788,62 @@ function saveAddMateriaDese() {
   closeModal('modal-add-materia');
   renderDesempenho();
   showToast('✅ Matéria adicionada: ' + nome);
+}
+
+// ══ KANBAN — SUPORTE A TOQUE (TABLET) ══
+var kbeTapSelected = null; // key do tópico/card selecionado por toque
+
+function kbeTapSelect(key, e) {
+  if (e) { e.stopPropagation(); }
+  if (kbeTapSelected === key) {
+    kbeTapSelected = null; // deseleciona
+  } else {
+    kbeTapSelected = key;
+  }
+  kbeUpdateTapVisual();
+}
+
+function kbeUpdateTapVisual() {
+  // Remove destaque de todos
+  document.querySelectorAll('[data-kbekey]').forEach(function(el){
+    el.style.outline = '';
+    el.style.outlineOffset = '';
+  });
+  // Destaca o selecionado
+  if (kbeTapSelected) {
+    document.querySelectorAll('[data-kbekey="'+kbeTapSelected+'"]').forEach(function(el){
+      el.style.outline = '2px solid var(--violet)';
+      el.style.outlineOffset = '1px';
+    });
+  }
+  // Mostra/esconde barra de instrução
+  var bar = document.getElementById('kbe-tap-hint');
+  if (bar) bar.style.display = kbeTapSelected ? 'flex' : 'none';
+}
+
+function kbeTapMoveTo(col) {
+  if (!kbeTapSelected) return;
+  kbeState[kbeTapSelected] = col;
+  kbeTapSelected = null;
+  kbeSave();
+  renderKanbanEstudo();
+}
+
+// ══ PROTEÇÃO CONTRA MODAL PRESO / TELA PRETA ══
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(function(m){ m.classList.remove('open'); });
+  }
+});
+// Clicar no fundo do overlay (fora do .modal) fecha
+document.addEventListener('click', function(e) {
+  if (e.target.classList && e.target.classList.contains('modal-overlay')) {
+    e.target.classList.remove('open');
+  }
+}, true);
+// Função de emergência: fecha tudo
+function closeAllModals() {
+  document.querySelectorAll('.modal-overlay.open').forEach(function(m){ m.classList.remove('open'); });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
