@@ -5863,15 +5863,27 @@ function importData(input) {
       // Bloqueia Firebase de sobrescrever por 5 minutos
       localStorage.setItem('painel_block_cloud_load', Date.now().toString());
       lsLoad();
-      // Salva no Firebase imediatamente (dados importados viram a verdade)
+      // Bloqueia Firebase e salva nele
+      localStorage.setItem('painel_block_cloud_load', Date.now().toString());
       setTimeout(function() {
         if (typeof fbCloudSave === 'function') fbCloudSave();
       }, 2000);
-      renderBacklog();
-      renderCalendar();
-      if (typeof renderFinance === 'function') renderFinance();
-      if (typeof renderDesempenho === 'function' && estudosActiveTab === 'desempenho') renderDesempenho();
-      showToast('📥 Dados importados! ' + (d.finances||[]).length + ' lançamentos restaurados. Firebase será sincronizado.');
+      // Re-renderiza TODAS as views
+      try { renderBacklog(); } catch(e){}
+      try { renderCalendar(); } catch(e){}
+      try { renderFinance(); } catch(e){}
+      try { renderLists(); } catch(e){}
+      try { renderNotes(); } catch(e){}
+      try { if (estudosActiveTab === 'desempenho') renderDesempenho(); } catch(e){}
+      try { if (estudosActiveTab === 'consistencia') renderConsistencia(); } catch(e){}
+      try { if (estudosActiveTab === 'kanban-estudo') renderKanbanEstudo(); } catch(e){}
+      var counts = [
+        (d.finances||[]).length + ' lançamentos',
+        (d.lists||[]).length + ' listas',
+        (d.notes||[]).length + ' notas',
+        (d.curriculo||[]).length + ' matérias',
+      ].join(', ');
+      showToast('📥 Importado: ' + counts);
     } catch(err) {
       showToast('❌ Arquivo inválido: ' + err.message);
     }
