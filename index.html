@@ -10163,7 +10163,7 @@ function finRelRender() {
     var badge = f.type==='entrada'
       ? '<span style="background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.25);padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700">Entrada</span>'
       : '<span style="background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.2);padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700">Saída</span>';
-    return '<tr>' +
+    return '<tr style="cursor:pointer" onclick="editFinance('+f.id+');if(finRelOpen){setTimeout(function(){renderFinRelatorio();},300)}" title="Clique para editar">' +
       '<td style="font-family:monospace;color:var(--text-muted);font-size:10px;white-space:nowrap">'+dateF+'</td>' +
       '<td style="font-weight:600;max-width:200px">'+escHtml(f.desc)+(f.source?'<div style="font-size:9px;color:var(--dim)">'+escHtml(f.source)+'</div>':'')+'</td>' +
       '<td>'+badge+'</td>' +
