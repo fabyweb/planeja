@@ -9543,7 +9543,16 @@ function setAppHeight() {}
   // Auto-sync do Firebase se configurado
   if (fbIsConfigured()) {
     cloudSetBtn('ok', '✓ Firebase');
-    setTimeout(function() { fbCloudLoad(false); }, 1200);
+    // Verifica bloqueio de restauração antes de auto-carregar
+    var blockTs2 = parseInt(localStorage.getItem('painel_block_cloud_load') || '0');
+    if (blockTs2 && (Date.now() - blockTs2) < 300000) {
+      console.log('[CLOUD] Auto-carga bloqueada — restauração recente');
+      cloudSetBtn('ok', '✓ Dados locais');
+      // Salva dados locais no Firebase em vez de sobrescrever
+      setTimeout(function() { fbCloudSave(); }, 3000);
+    } else {
+      setTimeout(function() { fbCloudLoad(false); }, 1200);
+    }
   }
 
   // Auto-reconnect Google Calendar
