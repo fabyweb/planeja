@@ -5860,12 +5860,20 @@ function importData(input) {
     try {
       var d = JSON.parse(e.target.result);
       localStorage.setItem('painel_dados_v1', JSON.stringify(d));
+      // Bloqueia Firebase de sobrescrever por 5 minutos
+      localStorage.setItem('painel_block_cloud_load', Date.now().toString());
       lsLoad();
+      // Salva no Firebase imediatamente (dados importados viram a verdade)
+      setTimeout(function() {
+        if (typeof fbCloudSave === 'function') fbCloudSave();
+      }, 2000);
       renderBacklog();
       renderCalendar();
-      showToast('📥 Dados importados com sucesso!');
+      if (typeof renderFinance === 'function') renderFinance();
+      if (typeof renderDesempenho === 'function' && estudosActiveTab === 'desempenho') renderDesempenho();
+      showToast('📥 Dados importados! ' + (d.finances||[]).length + ' lançamentos restaurados. Firebase será sincronizado.');
     } catch(err) {
-      showToast('❌ Arquivo inválido');
+      showToast('❌ Arquivo inválido: ' + err.message);
     }
   };
   reader.readAsText(file);
