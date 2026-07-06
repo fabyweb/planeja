@@ -7438,6 +7438,8 @@ function lockForgotPassword() {
 // ══ JOGO FINANCEIRO ══
 let parcelamentos = JSON.parse(localStorage.getItem('jogo_parcelamentos') || '[]');
 let economias     = JSON.parse(localStorage.getItem('jogo_economias')     || '[]');
+let jogoSort  = 'valor';   // valor | data | restantes | pagas
+let jogoSortAsc = false;
 let jogoXP        = parseInt(localStorage.getItem('jogo_xp')              || '0');
 let jogoMoedas    = parseInt(localStorage.getItem('jogo_moedas')          || '0');
 let jogoStreak    = parseInt(localStorage.getItem('jogo_streak')          || '0');
@@ -7627,8 +7629,29 @@ function renderJogo() {
 
   // Ativos
   if (parcAtivos.length) {
-    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin:12px 0 8px">⚔️ Parcelamentos ativos' + (jogoSearch ? ' (' + parcAtivos.length + ')' : '') + '</div>';
-    parcAtivos.forEach(function(p) {
+    // Ordenação
+    var sortedAtivos = parcAtivos.slice().sort(function(a,b){
+      var av, bv;
+      if (jogoSort==='valor')      { av=a.valor_parcela;       bv=b.valor_parcela; }
+      else if (jogoSort==='data')  { av=a.data_inicio||'';     bv=b.data_inicio||''; }
+      else if (jogoSort==='restantes') { av=a.parcelas_restantes||0; bv=b.parcelas_restantes||0; }
+      else if (jogoSort==='pagas') { av=a.parcelas_pagas||0;   bv=b.parcelas_pagas||0; }
+      else { av=a.valor_parcela; bv=b.valor_parcela; }
+      return jogoSortAsc ? (av>bv?1:av<bv?-1:0) : (av<bv?1:av>bv?-1:0);
+    });
+
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin:12px 0 8px;flex-wrap:wrap;gap:6px">';
+    html += '<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)">⚔️ Parcelamentos ativos' + (jogoSearch ? ' (' + parcAtivos.length + ')' : '') + '</span>';
+    html += '<div style="display:flex;gap:4px;flex-wrap:wrap">';
+    var sortOpts = [['valor','Valor'],['data','Data'],['restantes','Faltam'],['pagas','Pagas']];
+    sortOpts.forEach(function(s){
+      var isAct = jogoSort===s[0];
+      var arrow = isAct ? (jogoSortAsc ? ' ↑' : ' ↓') : '';
+      html += '<button onclick="jogoSetSort(\''+s[0]+'\')" style="font-size:10px;padding:3px 9px;border-radius:15px;cursor:pointer;border:1px solid '+(isAct?'var(--violet)':'var(--border)')+';background:'+(isAct?'var(--violet-glow)':'var(--card)')+';color:'+(isAct?'var(--violet-light)':'var(--text-muted)')+';font-weight:'+(isAct?'700':'400')+'">'+s[1]+arrow+'</button>';
+    });
+    html += '</div></div>';
+
+    sortedAtivos.forEach(function(p) {
       var qPct = p.parcelas_total > 0 ? Math.round(p.parcelas_pagas / p.parcelas_total * 100) : 0;
       var isHi   = qPct >= 70;
       var cardCls = qPct >= 70 ? 'parc-quase' : (qPct === 0 ? 'parc-novo' : '');
@@ -9584,6 +9607,12 @@ function removeFinTag(finId, tagName) {
   renderFinance();
   if (finRelOpen) finRelRender();
   showToast('🏷️ Tag "' + tagName + '" removida');
+}
+
+function jogoSetSort(field) {
+  if (jogoSort === field) { jogoSortAsc = !jogoSortAsc; }
+  else { jogoSort = field; jogoSortAsc = false; }
+  renderJogo();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
