@@ -789,6 +789,28 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   #dese-root div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
 }
 
+
+/* ══ TAGS FINANCEIRO ══ */
+.fin-tag-wrap{display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:5px 8px;background:var(--card);border:1px solid var(--border-soft);border-radius:8px;cursor:text;min-height:34px}
+.fin-tag-wrap:focus-within{border-color:var(--violet)}
+.fin-tag-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;background:var(--violet-glow);border:1px solid rgba(124,58,237,.3);color:var(--violet-light);font-size:10px;font-weight:600;white-space:nowrap}
+.fin-tag-chip .fin-tag-rm{cursor:pointer;color:var(--muted);font-size:9px;line-height:1;padding:0 1px;background:none;border:none}
+.fin-tag-chip .fin-tag-rm:hover{color:var(--red)}
+.fin-tag-input{border:none;background:transparent;color:var(--text);outline:none;font-size:12px;min-width:70px;flex:1;font-family:inherit}
+.fin-tag-recent{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.fin-tag-recent span{font-size:10px;color:var(--violet-light);cursor:pointer;padding:1px 6px;border-radius:8px;background:var(--violet-glow);border:1px solid rgba(124,58,237,.2)}
+.fin-tag-recent span:hover{background:var(--violet);color:#fff}
+/* ══ RELATÓRIO FINANCEIRO ══ */
+.rel-table{width:100%;border-collapse:collapse}
+.rel-table th{padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:2px solid var(--border-soft);cursor:pointer;user-select:none;white-space:nowrap}
+.rel-table th:hover{color:var(--text)}
+.rel-table th.rel-active{color:var(--violet-light)}
+.rel-table td{padding:8px 10px;border-bottom:1px solid var(--border-soft);vertical-align:middle;font-size:11px}
+.rel-table tr:hover td{background:rgba(124,58,237,.04)}
+.rel-filter-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:768px){.rel-filter-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.rel-filter-grid{grid-template-columns:1fr}}
+
 </style>
 
   <!-- PWA -->
@@ -989,8 +1011,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
         <div style="display:flex;gap:8px">
           <button class="btn btn-ghost btn-sm" onclick="openFinModal(null,null)">+ Lançamento</button>
           <button class="btn btn-ghost btn-sm" onclick="openManageCats()"><span class="ico" style="width:13px;height:13px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span> Categorias</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleFinRelatorio(this)" id="btn-fin-relatorio">📊 Relatório</button>
         </div>
       </div>
+      <div id="fin-relatorio-section" style="display:none"></div>
+      <div id="fin-main-section">
       <div class="fin-summary">
         <div class="fin-card saldo">
           <div class="fin-label">Saldo atual</div>
@@ -1072,6 +1097,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       </div>
       <div class="notes-folders" id="notes-folders"></div>
       <div style="margin-top:14px" id="notes-container"></div>
+      </div>
     </div>
 
 
@@ -1468,6 +1494,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       <div class="form-row">
         <label>Observação</label>
         <input class="form-input" id="fin-obs" placeholder="Opcional…">
+      </div>
+      <div class="form-row">
+        <label>🏷️ Tags <span style="font-size:10px;color:var(--text-dim);font-weight:400">(Enter ou vírgula para confirmar)</span></label>
+        <div class="fin-tag-wrap" id="fin-tag-wrap" onclick="document.getElementById('fin-tag-inp').focus()">
+          <input class="fin-tag-input" id="fin-tag-inp" placeholder="Adicionar tag…"
+            onkeydown="finTagKey(event)" oninput="finTagSuggest(this.value)">
+        </div>
+        <div class="fin-tag-recent" id="fin-tag-recent" style="display:none"></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -1887,6 +1921,7 @@ function openFinModal(originId, text) {
   document.getElementById('fin-date').value = today;
   updateFinMethodSelects();
   openModal('modal-fin');
+  setTimeout(finShowRecentTags, 100);
 }
 
 function updateFinType() {
@@ -1908,7 +1943,8 @@ function saveFinance() {
   const source   = document.getElementById('fin-source').value.trim();
   const obs      = document.getElementById('fin-obs').value.trim();
 
-  finances.unshift({id: nextFinId++, desc, type, value:val, date, method, category, source, obs});
+  const tags = finGetTags();
+  finances.unshift({id: nextFinId++, desc, type, value:val, date, method, category, source, obs, tags});
   if (originId) removeFromBacklog(originId);
   closeModal('modal-fin');
   lsSave();
@@ -2493,6 +2529,7 @@ function renderFinance() {
         <div>
           <div class="tx-name">${escHtml(f.desc)}</div>
           <div class="tx-cat">${escHtml(f.category)}${f.source?' · '+escHtml(f.source):''}</div>
+          ${f.tags&&f.tags.length?'<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:3px">'+f.tags.map(t=>'<span style="font-size:9px;padding:1px 5px;border-radius:7px;background:var(--violet-glow);border:1px solid rgba(124,58,237,.25);color:var(--violet-light);font-weight:600">'+escHtml(t)+'</span>').join('')+'</div>':''}
         </div>
         <span class="tx-date">${f.date?fmtDate(f.date):'—'}</span>
         <span class="tx-method">${f.method}</span>
@@ -3427,7 +3464,17 @@ function resetFinModal() {
   const btn = document.querySelector('#modal-fin .btn-primary');
   btn.textContent = 'Registrar';
   btn.onclick = saveFinance;
+  // Limpa tags
+  var wrap = document.getElementById('fin-tag-wrap');
+  if (wrap) {
+    wrap.querySelectorAll('.fin-tag-chip').forEach(function(ch){ ch.remove(); });
+    var inp = document.getElementById('fin-tag-inp');
+    if (inp) inp.value = '';
+  }
+  var recent = document.getElementById('fin-tag-recent');
+  if (recent) recent.style.display = 'none';
 }
+
 
 // ══════════════════════════════════════════
 //  EDIÇÃO — LISTA ITENS
@@ -9900,6 +9947,298 @@ document.addEventListener('click', function(e) {
 // Função de emergência: fecha tudo
 function closeAllModals() {
   document.querySelectorAll('.modal-overlay.open').forEach(function(m){ m.classList.remove('open'); });
+}
+
+// ══ FINANCEIRO — TAGS ══
+function finAddTagChip(txt) {
+  var wrap = document.getElementById('fin-tag-wrap');
+  var inp  = document.getElementById('fin-tag-inp');
+  if (!wrap || !txt.trim()) return;
+  // Evita duplicata
+  var existing = Array.from(wrap.querySelectorAll('.fin-tag-chip')).map(function(c){ return c.dataset.tag; });
+  if (existing.indexOf(txt.trim()) !== -1) return;
+  var chip = document.createElement('span');
+  chip.className = 'fin-tag-chip';
+  chip.dataset.tag = txt.trim();
+  chip.innerHTML = escHtml(txt.trim()) + ' <button class="fin-tag-rm" onclick="this.parentElement.remove()">✕</button>';
+  wrap.insertBefore(chip, inp);
+}
+
+function finGetTags() {
+  var wrap = document.getElementById('fin-tag-wrap');
+  if (!wrap) return [];
+  return Array.from(wrap.querySelectorAll('.fin-tag-chip')).map(function(c){ return c.dataset.tag; });
+}
+
+function finTagKey(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    var val = e.target.value.replace(/,$/, '').trim();
+    if (val) { finAddTagChip(val); e.target.value = ''; }
+    document.getElementById('fin-tag-recent').style.display = 'none';
+  } else if (e.key === 'Backspace' && !e.target.value) {
+    var chips = document.querySelectorAll('#fin-tag-wrap .fin-tag-chip');
+    if (chips.length) chips[chips.length-1].remove();
+  }
+}
+
+function finTagSuggest(val) {
+  var recent = document.getElementById('fin-tag-recent');
+  if (!recent) return;
+  if (!val || val.length < 1) { recent.style.display = 'none'; return; }
+  // Coleta todas as tags já usadas
+  var allTags = {};
+  finances.forEach(function(f){ (f.tags||[]).forEach(function(t){ allTags[t] = (allTags[t]||0)+1; }); });
+  var matches = Object.keys(allTags).filter(function(t){ return t.toLowerCase().includes(val.toLowerCase()); })
+    .sort(function(a,b){ return allTags[b]-allTags[a]; }).slice(0,6);
+  if (!matches.length) { recent.style.display = 'none'; return; }
+  recent.style.display = 'flex';
+  recent.innerHTML = matches.map(function(t){
+    return '<span onclick="finAddTagChip(\''+escHtml(t)+'\');document.getElementById(\'fin-tag-inp\').value=\'\';document.getElementById(\'fin-tag-recent\').style.display=\'none\'">'+escHtml(t)+'</span>';
+  }).join('');
+}
+
+function finShowRecentTags() {
+  var allTags = {};
+  finances.forEach(function(f){ (f.tags||[]).forEach(function(t){ allTags[t] = (allTags[t]||0)+1; }); });
+  var top = Object.keys(allTags).sort(function(a,b){ return allTags[b]-allTags[a]; }).slice(0,8);
+  var recent = document.getElementById('fin-tag-recent');
+  if (!recent || !top.length) return;
+  recent.style.display = 'flex';
+  recent.innerHTML = '<span style="color:var(--dim);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;align-self:center">Recentes:</span>' +
+    top.map(function(t){
+      return '<span onclick="finAddTagChip(\''+escHtml(t)+'\')">'+escHtml(t)+'</span>';
+    }).join('');
+}
+
+// ══ FINANCEIRO — RELATÓRIO ══
+var finRelSort = 'date';
+var finRelAsc  = false;
+var finRelOpen = false;
+
+function toggleFinRelatorio(btn) {
+  finRelOpen = !finRelOpen;
+  var section = document.getElementById('fin-relatorio-section');
+  var main    = document.getElementById('fin-main-section');
+  if (!section || !main) return;
+  if (finRelOpen) {
+    btn.style.background = 'var(--violet)';
+    btn.style.color = '#fff';
+    btn.style.border = 'none';
+    section.style.display = 'block';
+    main.style.display = 'none';
+    renderFinRelatorio();
+  } else {
+    btn.style.background = '';
+    btn.style.color = '';
+    btn.style.border = '';
+    section.style.display = 'none';
+    main.style.display = 'block';
+  }
+}
+
+function renderFinRelatorio() {
+  var section = document.getElementById('fin-relatorio-section');
+  if (!section) return;
+
+  // Coleta opções de filtro
+  var cats    = [...new Set(finances.map(function(f){ return f.category; }).filter(Boolean))].sort();
+  var methods = [...new Set(finances.map(function(f){ return f.method;   }).filter(Boolean))].sort();
+  var allTags = {};
+  finances.forEach(function(f){ (f.tags||[]).forEach(function(t){ allTags[t]=(allTags[t]||0)+1; }); });
+  var tagOpts = Object.keys(allTags).sort(function(a,b){ return allTags[b]-allTags[a]; });
+
+  var catOpts    = cats.map(function(c){ return '<option value="'+escHtml(c)+'">'+escHtml(c)+'</option>'; }).join('');
+  var methodOpts = methods.map(function(m){ return '<option value="'+escHtml(m)+'">'+escHtml(m)+'</option>'; }).join('');
+  var tagOptList = tagOpts.map(function(t){ return '<option value="'+escHtml(t)+'">'+escHtml(t)+'</option>'; }).join('');
+
+  var sortIcon = function(f){ return finRelSort===f ? (finRelAsc?'↑':'↓') : '↕'; };
+  var th = function(f, label){
+    var cls = finRelSort===f ? ' rel-active' : '';
+    return '<th class="'+cls+'" onclick="finRelSortBy(\''+f+'\')">'+label+' <span style="opacity:.6">'+sortIcon(f)+'</span></th>';
+  };
+
+  section.innerHTML =
+    '<div style="background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:16px;margin-bottom:12px">' +
+
+      // KPIs
+      '<div id="fin-rel-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>' +
+
+      // Filtros
+      '<div style="background:var(--card);border:1px solid var(--border-soft);border-radius:10px;padding:12px;margin-bottom:12px">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+          '<span style="font-size:11px;font-weight:700;color:var(--text)">🔍 Filtros</span>' +
+          '<button onclick="finRelClear()" style="font-size:10px;padding:3px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text-muted);cursor:pointer">Limpar</button>' +
+        '</div>' +
+        '<div class="rel-filter-grid">' +
+          '<div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">📅 Data inicial</div>' +
+            '<input class="form-input" style="font-size:11px" type="date" id="frel-ini" oninput="finRelRender()"></div>' +
+          '<div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">📅 Data final</div>' +
+            '<input class="form-input" style="font-size:11px" type="date" id="frel-fim" oninput="finRelRender()"></div>' +
+          '<div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">⚡ Tipo</div>' +
+            '<select class="form-select" style="font-size:11px" id="frel-tipo" onchange="finRelRender()"><option value="">Todos</option><option value="entrada">Entrada</option><option value="saida">Saída</option></select></div>' +
+          '<div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">📂 Categoria</div>' +
+            '<select class="form-select" style="font-size:11px" id="frel-cat" onchange="finRelRender()"><option value="">Todas</option>'+catOpts+'</select></div>' +
+          '<div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">💳 Forma pgto</div>' +
+            '<select class="form-select" style="font-size:11px" id="frel-method" onchange="finRelRender()"><option value="">Todas</option>'+methodOpts+'</select></div>' +
+          '<div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">🏷️ Tag</div>' +
+            '<input class="form-input" list="frel-tag-list" style="font-size:11px" id="frel-tag" placeholder="Ex: IMPROS" oninput="finRelRender()">'+
+            '<datalist id="frel-tag-list">'+tagOptList+'</datalist></div>' +
+          '<div style="grid-column:1/-1"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">📝 Buscar em descrição / observação</div>' +
+            '<input class="form-input" style="font-size:11px;width:100%" id="frel-obs" placeholder="Palavra-chave..." oninput="finRelRender()"></div>' +
+        '</div>' +
+      '</div>' +
+
+      // Ações
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">' +
+        '<span style="font-size:11px;color:var(--muted)" id="frel-count">— lançamentos</span>' +
+        '<div style="display:flex;gap:6px">' +
+          '<button onclick="finRelExportCSV()" style="font-size:10px;padding:4px 12px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--text-muted);cursor:pointer">📥 CSV</button>' +
+          '<button onclick="window.print()" style="font-size:10px;padding:4px 12px;border-radius:7px;border:none;background:var(--violet);color:#fff;cursor:pointer">🖨️ Imprimir</button>' +
+        '</div>' +
+      '</div>' +
+
+      // Tabela
+      '<div style="overflow-x:auto">' +
+        '<table class="rel-table">' +
+          '<thead><tr>' +
+            th('date','Data') + th('desc','Descrição') + th('type','Tipo') +
+            th('category','Categoria') + th('method','Forma') + th('value','Valor') +
+            '<th>Tags</th><th>Obs.</th>' +
+          '</tr></thead>' +
+          '<tbody id="frel-tbody"></tbody>' +
+        '</table>' +
+      '</div>' +
+
+      // Totais
+      '<div style="display:flex;gap:20px;justify-content:flex-end;margin-top:10px;padding-top:10px;border-top:1px solid var(--border-soft);font-size:11px">' +
+        '<span>Entradas: <strong id="frel-tot-in" style="color:var(--green)">—</strong></span>' +
+        '<span>Saídas: <strong id="frel-tot-out" style="color:var(--red)">—</strong></span>' +
+        '<span>Saldo: <strong id="frel-tot-bal">—</strong></span>' +
+      '</div>' +
+    '</div>';
+
+  finRelRender();
+}
+
+function finRelFiltered() {
+  var ini    = (document.getElementById('frel-ini')    || {}).value || '';
+  var fim    = (document.getElementById('frel-fim')    || {}).value || '';
+  var tipo   = (document.getElementById('frel-tipo')   || {}).value || '';
+  var cat    = (document.getElementById('frel-cat')    || {}).value || '';
+  var method = (document.getElementById('frel-method') || {}).value || '';
+  var tag    = ((document.getElementById('frel-tag')   || {}).value || '').toLowerCase().trim();
+  var obs    = ((document.getElementById('frel-obs')   || {}).value || '').toLowerCase().trim();
+
+  return finances.filter(function(f) {
+    if (ini && f.date < ini) return false;
+    if (fim && f.date > fim) return false;
+    if (tipo && f.type !== tipo) return false;
+    if (cat && f.category !== cat) return false;
+    if (method && f.method !== method) return false;
+    if (tag && !(f.tags||[]).some(function(t){ return t.toLowerCase().includes(tag); })) return false;
+    if (obs && !f.desc.toLowerCase().includes(obs) && !(f.obs||'').toLowerCase().includes(obs)) return false;
+    return true;
+  });
+}
+
+function finRelRender() {
+  var data = finRelFiltered();
+  var sorted = data.slice().sort(function(a,b){
+    var av = a[finRelSort], bv = b[finRelSort];
+    if (typeof av === 'string') { av=av.toLowerCase(); bv=bv.toLowerCase(); }
+    if (av == null) av = ''; if (bv == null) bv = '';
+    return finRelAsc ? (av>bv?1:-1) : (av<bv?1:-1);
+  });
+
+  var tbody = document.getElementById('frel-tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = sorted.map(function(f) {
+    var tags = (f.tags||[]).map(function(t){
+      return '<span style="display:inline-flex;align-items:center;padding:1px 6px;border-radius:8px;background:var(--violet-glow);border:1px solid rgba(124,58,237,.25);color:var(--violet-light);font-size:9px;font-weight:600;margin:1px">'+escHtml(t)+'</span>';
+    }).join(' ');
+    var dateF = f.date ? new Date(f.date+'T00:00:00').toLocaleDateString('pt-BR') : '—';
+    var valC  = f.type==='entrada' ? 'var(--green)' : 'var(--red)';
+    var badge = f.type==='entrada'
+      ? '<span style="background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.25);padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700">Entrada</span>'
+      : '<span style="background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.2);padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700">Saída</span>';
+    return '<tr>' +
+      '<td style="font-family:monospace;color:var(--text-muted);font-size:10px;white-space:nowrap">'+dateF+'</td>' +
+      '<td style="font-weight:600;max-width:200px">'+escHtml(f.desc)+(f.source?'<div style="font-size:9px;color:var(--dim)">'+escHtml(f.source)+'</div>':'')+'</td>' +
+      '<td>'+badge+'</td>' +
+      '<td><span style="font-size:10px;background:var(--border-soft);padding:2px 7px;border-radius:6px;color:var(--muted)">'+escHtml(f.category||'')+'</span></td>' +
+      '<td style="color:var(--text-muted);font-size:11px;white-space:nowrap">'+escHtml(f.method||'')+'</td>' +
+      '<td style="font-weight:800;color:'+valC+';font-size:12px;white-space:nowrap">'+(f.type==='entrada'?'+':'-')+fmtMoney(f.value)+'</td>' +
+      '<td>'+(tags||'<span style="color:var(--dim);font-size:10px">—</span>')+'</td>' +
+      '<td style="color:var(--dim);font-size:10px;max-width:120px">'+escHtml(f.obs||'—')+'</td>' +
+    '</tr>';
+  }).join('') || '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--dim)">Nenhum lançamento encontrado</td></tr>';
+
+  // Totais
+  var totIn  = data.filter(function(f){ return f.type==='entrada'; }).reduce(function(s,f){ return s+f.value; }, 0);
+  var totOut = data.filter(function(f){ return f.type==='saida';   }).reduce(function(s,f){ return s+f.value; }, 0);
+  var bal    = totIn - totOut;
+  var el;
+  el = document.getElementById('frel-count');    if (el) el.textContent = sorted.length + ' lançamento(s)';
+  el = document.getElementById('frel-tot-in');   if (el) el.textContent = 'R$ '+fmtMoney(totIn);
+  el = document.getElementById('frel-tot-out');  if (el) el.textContent = 'R$ '+fmtMoney(totOut);
+  el = document.getElementById('frel-tot-bal');
+  if (el) {
+    el.textContent = (bal>=0?'+':'-')+'R$ '+fmtMoney(Math.abs(bal));
+    el.style.color = bal>=0 ? 'var(--green)' : 'var(--red)';
+  }
+
+  // KPIs
+  var kpiEl = document.getElementById('fin-rel-kpis');
+  if (kpiEl) {
+    var acGC = totIn>totOut?'var(--green)':'var(--red)';
+    kpiEl.innerHTML =
+      finRelKpi(sorted.length+'', 'var(--violet-light)', 'Lançamentos', '') +
+      finRelKpi('R$ '+fmtMoney(totIn), 'var(--green)', 'Total entradas', '') +
+      finRelKpi('R$ '+fmtMoney(totOut), 'var(--red)', 'Total saídas', '') +
+      finRelKpi((bal>=0?'+':'-')+'R$ '+fmtMoney(Math.abs(bal)), acGC, 'Saldo filtrado', '');
+  }
+}
+
+function finRelKpi(val, color, label, sub) {
+  return '<div style="background:var(--card);border:1px solid var(--border-soft);border-radius:10px;padding:10px 12px">' +
+    '<div style="font-size:16px;font-weight:800;color:'+color+';line-height:1">'+val+'</div>' +
+    '<div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:3px">'+label+'</div>' +
+  '</div>';
+}
+
+function finRelSortBy(field) {
+  finRelSort = field === finRelSort ? finRelSort : field;
+  finRelAsc  = field === finRelSort ? !finRelAsc : false;
+  finRelSort = field;
+  renderFinRelatorio();
+}
+
+function finRelClear() {
+  ['frel-ini','frel-fim','frel-tag','frel-obs'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  ['frel-tipo','frel-cat','frel-method'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.selectedIndex = 0;
+  });
+  finRelRender();
+}
+
+function finRelExportCSV() {
+  var data = finRelFiltered();
+  var header = ['Data','Descrição','Tipo','Categoria','Forma Pgto','Valor','Tags','Observação'];
+  var rows   = data.map(function(f){
+    return [f.date, f.desc, f.type==='entrada'?'Entrada':'Saída', f.category||'', f.method||'',
+            f.value.toFixed(2).replace('.',','), (f.tags||[]).join(';'), f.obs||''];
+  });
+  var csv = [header].concat(rows).map(function(r){
+    return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(',');
+  }).join('\n');
+  var a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+  a.download = 'relatorio-financeiro.csv';
+  a.click();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
