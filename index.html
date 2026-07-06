@@ -811,6 +811,34 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 @media(max-width:768px){.rel-filter-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.rel-filter-grid{grid-template-columns:1fr}}
 
+
+/* ══ JOGO — CARDS DE PARCELAMENTO REDESENHADOS ══ */
+.parc-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;transition:all .15s;border-left:4px solid var(--violet)}
+.parc-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.3);border-color:var(--violet)}
+.parc-card.parc-novo{border-left-color:var(--red)}
+.parc-card.parc-quase{border-left-color:var(--green)}
+.parc-card.parc-quitado{opacity:.6;border-left-color:var(--green)}
+.parc-card.parc-quitado .parc-card-nome{text-decoration:line-through;color:var(--muted)}
+.parc-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.parc-card-nome{font-size:14px;font-weight:700;color:var(--text);line-height:1.3}
+.parc-card-vmes{font-size:18px;font-weight:800;color:var(--red);line-height:1;text-align:right}
+.parc-card-vmes.quitado{color:var(--green)}
+.parc-card-vlabel{font-size:9px;color:var(--muted);text-align:right;margin-top:1px}
+.parc-card-metas{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.parc-meta{display:flex;flex-direction:column;gap:1px}
+.parc-meta-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+.parc-meta-val{font-size:12px;font-weight:600;color:var(--muted)}
+.parc-card-bar-wrap{flex:1;height:8px;background:var(--card);border-radius:4px;overflow:hidden}
+.parc-card-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--violet),var(--cyan));transition:width .4s}
+.parc-card-bar.hi{background:linear-gradient(90deg,var(--green),var(--cyan))}
+.parc-card-pct{font-size:13px;font-weight:800;color:var(--violet-light);min-width:42px;text-align:right}
+.parc-card-pct.hi{color:var(--green)}
+.parc-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:1px solid var(--border-soft)}
+.parc-card-restante{font-size:11px;color:var(--muted)}
+.parc-card-restante strong{color:var(--amber);font-weight:800}
+.parc-btn-pay{background:rgba(16,185,129,.15)!important;color:var(--green)!important;border:1px solid rgba(16,185,129,.3)!important}
+.parc-btn-pay:hover{background:var(--green)!important;color:#fff!important}
+
 </style>
 
   <!-- PWA -->
@@ -7590,43 +7618,85 @@ function renderJogo() {
   html += '<span>Restante: <strong style="color:var(--red)">'+fmtMoney(totalDivida)+'</strong></span>';
   html += '</div>';
 
-  // Parcelamentos
-  var parcFiltrados = jogoSearch
+  // Parcelamentos — separados em ativos e quitados
+  var parcTodos = jogoSearch
     ? parcelamentos.filter(function(p){ return (p.nome||'').toLowerCase().includes(jogoSearch) || (p.banco||'').toLowerCase().includes(jogoSearch); })
     : parcelamentos;
-  if (parcFiltrados.length) {
-    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin:12px 0 6px">⚔️ Parcelamentos' + (jogoSearch ? ' — ' + parcFiltrados.length + ' encontrado(s)' : ' ativos') + '</div>';
-    parcFiltrados.forEach(function(p) {
+  var parcAtivos   = parcTodos.filter(function(p){ return !p.quitado; });
+  var parcQuitados = parcTodos.filter(function(p){ return  p.quitado; });
+
+  // Ativos
+  if (parcAtivos.length) {
+    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin:12px 0 8px">⚔️ Parcelamentos ativos' + (jogoSearch ? ' (' + parcAtivos.length + ')' : '') + '</div>';
+    parcAtivos.forEach(function(p) {
       var qPct = p.parcelas_total > 0 ? Math.round(p.parcelas_pagas / p.parcelas_total * 100) : 0;
-      var emoji = jogo_parcelamentoEmoji(p);
-      var hpColor = jogo_hpColor(qPct);
-      html += '<div class="parc-item">';
-      html += '<div class="parc-emoji">'+emoji+'</div>';
-      html += '<div class="parc-info">';
-      html += '<div class="parc-name">'+escHtml(p.nome)+'</div>';
-      var bancoInfo = p.banco ? ' · ' + p.banco : '';
-      var dataInfo = p.data_inicio ? ' · desde ' + p.data_inicio.split('-').reverse().join('/') : '';
-      html += '<div class="parc-sub">'+(p.quitado?'✅ Quitado!':p.parcelas_restantes+' parcelas · '+fmtMoney(p.valor_parcela)+'/mês'+bancoInfo+dataInfo)+'</div>';
-      html += '<div class="parc-hp"><div class="parc-hp-bar"><div class="parc-hp-fill" style="width:'+qPct+'%;background:'+hpColor+'"></div></div>';
-      html += '<div class="parc-hp-pct">'+qPct+'% quitado</div></div>';
+      var isHi   = qPct >= 70;
+      var cardCls = qPct >= 70 ? 'parc-quase' : (qPct === 0 ? 'parc-novo' : '');
+      var totalVal = p.valor_parcela * p.parcelas_total;
+      var restVal  = p.valor_parcela * (p.parcelas_restantes || 0);
+      var dataFmt  = p.data_inicio ? p.data_inicio.split('-').reverse().join('/') : '—';
+      var parcLabel = (p.parcelas_pagas||0) + '/' + p.parcelas_total;
+
+      html += '<div class="parc-card '+cardCls+'">';
+      html += '<div class="parc-card-top">';
+      html += '<div class="parc-card-nome">'+escHtml(p.nome)+'</div>';
+      html += '<div><div class="parc-card-vmes">'+fmtMoney(p.valor_parcela)+'</div><div class="parc-card-vlabel">/mês</div></div>';
       html += '</div>';
-      html += '<div style="display:flex;gap:4px;flex-shrink:0">';
-      if (!p.quitado) {
-        html += '<button class="btn btn-ghost btn-sm" style="padding:3px 8px;font-size:10px" onclick="jogo_pagarParcela('+p.id+')">✓ Paguei</button>';
-        html += '<button class="btn btn-ghost btn-sm" style="padding:3px 6px;font-size:10px;color:var(--text-dim)" onclick="jogo_editarParcela('+p.id+')">✏️</button>';
-      }
-      html += '<button class="btn btn-ghost btn-sm" style="padding:3px 6px;font-size:10px;color:var(--red)" onclick="jogo_excluirParcela('+p.id+')" title="Excluir">✕</button>';
+      html += '<div class="parc-card-metas">';
+      html += '<div class="parc-meta"><span class="parc-meta-label">Parcelas</span><span class="parc-meta-val">'+parcLabel+'</span></div>';
+      if (p.banco) html += '<div class="parc-meta"><span class="parc-meta-label">Cartão</span><span class="parc-meta-val">'+escHtml(p.banco)+'</span></div>';
+      html += '<div class="parc-meta"><span class="parc-meta-label">Início</span><span class="parc-meta-val">'+dataFmt+'</span></div>';
+      html += '<div class="parc-meta"><span class="parc-meta-label">Total</span><span class="parc-meta-val">'+fmtMoney(totalVal)+'</span></div>';
+      html += '</div>';
+      html += '<div style="display:flex;align-items:center;gap:10px">';
+      html += '<div class="parc-card-bar-wrap"><div class="parc-card-bar'+(isHi?' hi':'')+'" style="width:'+qPct+'%"></div></div>';
+      html += '<span class="parc-card-pct'+(isHi?' hi':'')+'">'+qPct+'%</span>';
+      html += '</div>';
+      html += '<div class="parc-card-footer">';
+      html += '<span class="parc-card-restante">Faltam <strong>'+fmtMoney(restVal)+'</strong> · '+(p.parcelas_restantes||0)+' parcelas</span>';
+      html += '<div style="display:flex;gap:4px">';
+      html += '<button class="btn btn-ghost btn-sm parc-btn-pay" style="padding:4px 10px;font-size:10px" onclick="jogo_pagarParcela('+p.id+')">✓ Paguei</button>';
+      html += '<button class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:10px" onclick="jogo_editarParcela('+p.id+')">✏️</button>';
+      html += '<button class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:10px;color:var(--red)" onclick="jogo_excluirParcela('+p.id+')">✕</button>';
+      html += '</div>';
+      html += '</div>';
+      html += '</div>'; // parc-card
+    });
+  } else if (!jogoSearch) {
+    html += '<p style="font-size:12px;color:var(--text-muted);padding:12px 0;text-align:center">Clique em <strong>+ Parcelamento</strong> para cadastrar uma dívida</p>';
+  } else {
+    html += '<p style="font-size:12px;color:var(--text-muted);padding:12px 0;text-align:center">Nenhum parcelamento ativo encontrado</p>';
+  }
+
+  // Quitados
+  if (parcQuitados.length) {
+    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--green);margin:16px 0 8px">🎉 Quitados ('+parcQuitados.length+')</div>';
+    parcQuitados.forEach(function(p) {
+      var totalVal = p.valor_parcela * p.parcelas_total;
+      var dataFmt  = p.data_inicio ? p.data_inicio.split('-').reverse().join('/') : '—';
+      html += '<div class="parc-card parc-quitado">';
+      html += '<div class="parc-card-top">';
+      html += '<div class="parc-card-nome">'+escHtml(p.nome)+'</div>';
+      html += '<div><div class="parc-card-vmes quitado">'+fmtMoney(p.valor_parcela)+'</div><div class="parc-card-vlabel">/mês</div></div>';
+      html += '</div>';
+      html += '<div class="parc-card-metas">';
+      html += '<div class="parc-meta"><span class="parc-meta-label">Parcelas</span><span class="parc-meta-val">'+p.parcelas_total+'/'+p.parcelas_total+'</span></div>';
+      if (p.banco) html += '<div class="parc-meta"><span class="parc-meta-label">Cartão</span><span class="parc-meta-val">'+escHtml(p.banco)+'</span></div>';
+      html += '<div class="parc-meta"><span class="parc-meta-label">Total pago</span><span class="parc-meta-val" style="color:var(--green)">'+fmtMoney(totalVal)+'</span></div>';
+      html += '</div>';
+      html += '<div style="display:flex;align-items:center;gap:10px">';
+      html += '<div class="parc-card-bar-wrap"><div class="parc-card-bar hi" style="width:100%"></div></div>';
+      html += '<span class="parc-card-pct hi">100%</span>';
+      html += '</div>';
+      html += '<div class="parc-card-footer">';
+      html += '<span class="parc-card-restante" style="color:var(--green)">🎉 Quitado!</span>';
+      html += '<button class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:10px;color:var(--red)" onclick="jogo_excluirParcela('+p.id+')">✕ Remover</button>';
       html += '</div>';
       html += '</div>';
     });
-  } else {
-    if (jogoSearch) {
-      html += '<p style="font-size:12px;color:var(--text-muted);padding:12px 0;text-align:center">Nenhum parcelamento encontrado para <strong>"' + escHtml(window._jogoSearch||'') + '"</strong></p>';
-    } else {
-      html += '<p style="font-size:12px;color:var(--text-muted);padding:12px 0;text-align:center">Clique em <strong>+ Parcelamento</strong> para cadastrar uma dívida</p>';
-    }
   }
   html += '</div>';
+
 
   // ── SIMULADOR ──
   var parcAtivos = parcelamentos.filter(function(p){return !p.quitado;});
@@ -7675,6 +7745,8 @@ function renderJogo() {
         return (mes >= inicioMes && mes < fimMes) ? sum + p.valor_parcela : sum;
       }, 0);
     });
+
+
 
     var maxAcum = Math.max.apply(null, acumuladoMes) || 1;
     var totalCols = meses.length;
