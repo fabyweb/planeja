@@ -9376,7 +9376,8 @@ function finRelRender() {
 
   tbody.innerHTML = sorted.map(function(f) {
     var tags = (f.tags||[]).map(function(t){
-      return '<span style="display:inline-flex;align-items:center;padding:1px 6px;border-radius:8px;background:var(--violet-glow);border:1px solid rgba(124,58,237,.25);color:var(--violet-light);font-size:9px;font-weight:600;margin:1px">'+escHtml(t)+'</span>';
+      return '<span style="display:inline-flex;align-items:center;gap:2px;padding:1px 4px 1px 6px;border-radius:8px;background:var(--violet-glow);border:1px solid rgba(124,58,237,.25);color:var(--violet-light);font-size:9px;font-weight:600;margin:1px">'+escHtml(t)+
+        '<button onclick="event.stopPropagation();removeFinTag('+f.id+',&quot;'+escHtml(t).replace(/"/g,'&amp;quot;')+'&quot;)" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:9px;padding:0 1px;line-height:1">✕</button></span>';
     }).join(' ');
     var dateF = f.date ? new Date(f.date+'T00:00:00').toLocaleDateString('pt-BR') : '—';
     var valC  = f.type==='entrada' ? 'var(--green)' : 'var(--red)';
