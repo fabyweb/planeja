@@ -1497,9 +1497,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       </div>
       <div class="form-row">
         <label>🏷️ Tags <span style="font-size:10px;color:var(--text-dim);font-weight:400">(Enter ou vírgula para confirmar)</span></label>
-        <div class="fin-tag-wrap" id="fin-tag-wrap" onclick="document.getElementById('fin-tag-inp').focus()">
-          <input class="fin-tag-input" id="fin-tag-inp" placeholder="Adicionar tag…"
-            onkeydown="finTagKey(event)" oninput="finTagSuggest(this.value)">
+        <div style="display:flex;gap:6px;align-items:flex-start">
+          <div class="fin-tag-wrap" id="fin-tag-wrap" onclick="document.getElementById('fin-tag-inp').focus()" style="flex:1">
+            <input class="fin-tag-input" id="fin-tag-inp" placeholder="Digite e toque em +"
+              onkeydown="finTagKey(event)"
+              onblur="finTagConfirmBlur(this)"
+              oninput="finTagSuggest(this.value)">
+          </div>
+          <button type="button" onclick="finTagConfirmBtn()" 
+            style="flex-shrink:0;padding:6px 12px;border-radius:8px;border:1px solid rgba(124,58,237,.4);background:var(--violet-glow);color:var(--violet-light);cursor:pointer;font-size:13px;font-weight:700;line-height:1">+</button>
         </div>
         <div class="fin-tag-recent" id="fin-tag-recent" style="display:none"></div>
       </div>
@@ -1943,6 +1949,9 @@ function saveFinance() {
   const source   = document.getElementById('fin-source').value.trim();
   const obs      = document.getElementById('fin-obs').value.trim();
 
+  // Confirma tag digitada mas não fixada (usuário pode não ter pressionado +)
+  var finInp = document.getElementById('fin-tag-inp');
+  if (finInp && finInp.value.trim()) { finAddTagChip(finInp.value.trim()); finInp.value = ''; }
   const tags = finGetTags();
   finances.unshift({id: nextFinId++, desc, type, value:val, date, method, category, source, obs, tags});
   if (originId) removeFromBacklog(originId);
@@ -3421,10 +3430,19 @@ function editFinance(id) {
   updateFinCategorySelects();
   document.getElementById('fin-type').value     = f.type;
   document.getElementById('fin-category').value = f.category;
+  // Carrega tags existentes
+  var tw = document.getElementById('fin-tag-wrap');
+  if (tw) {
+    tw.querySelectorAll('.fin-tag-chip').forEach(function(ch){ ch.remove(); });
+    (f.tags || []).forEach(function(t){ finAddTagChip(t); });
+  }
   document.querySelector('#modal-fin .modal-title').textContent = 'Editar Lançamento';
   const saveBtn = document.querySelector('#modal-fin .btn-primary');
   saveBtn.textContent = 'Salvar alterações';
   saveBtn.onclick = () => {
+    // Confirma tag digitada mas não fixada ainda
+    var inp = document.getElementById('fin-tag-inp');
+    if (inp && inp.value.trim()) { finAddTagChip(inp.value.trim()); inp.value = ''; }
     f.desc     = document.getElementById('fin-desc').value.trim() || f.desc;
     f.value    = parseFloat(document.getElementById('fin-value').value) || f.value;
     f.date     = document.getElementById('fin-date').value;
@@ -3433,13 +3451,17 @@ function editFinance(id) {
     f.source   = document.getElementById('fin-source').value.trim();
     f.obs      = document.getElementById('fin-obs').value.trim();
     f.type     = document.getElementById('fin-type').value;
+    f.tags     = finGetTags(); // ← salva tags
     closeModal('modal-fin');
     resetFinModal();
     lsSave();
+    scheduleSave();
     renderFinance();
+    if (finRelOpen) renderFinRelatorio();
     showToast('✏️ Lançamento atualizado');
   };
   openModal('modal-fin');
+  setTimeout(finShowRecentTags, 100);
 }
 
 function deleteFinance(id) {
@@ -9971,15 +9993,31 @@ function finGetTags() {
 }
 
 function finTagKey(e) {
-  if (e.key === 'Enter' || e.key === ',') {
+  if (e.key === 'Enter' || e.key === ',' || e.key === 'Tab') {
     e.preventDefault();
-    var val = e.target.value.replace(/,$/, '').trim();
-    if (val) { finAddTagChip(val); e.target.value = ''; }
-    document.getElementById('fin-tag-recent').style.display = 'none';
+    finTagConfirmBtn();
   } else if (e.key === 'Backspace' && !e.target.value) {
     var chips = document.querySelectorAll('#fin-tag-wrap .fin-tag-chip');
     if (chips.length) chips[chips.length-1].remove();
   }
+}
+
+function finTagConfirmBtn() {
+  var inp = document.getElementById('fin-tag-inp');
+  if (!inp) return;
+  var val = inp.value.replace(/[,;]+$/, '').trim();
+  if (val) { finAddTagChip(val); inp.value = ''; }
+  var recent = document.getElementById('fin-tag-recent');
+  if (recent) recent.style.display = 'none';
+  inp.focus();
+}
+
+function finTagConfirmBlur(inp) {
+  // Pequeno delay para não conflitar com clique no botão + ou nas sugestões
+  setTimeout(function() {
+    var val = (inp.value || '').replace(/[,;]+$/, '').trim();
+    if (val) { finAddTagChip(val); inp.value = ''; }
+  }, 200);
 }
 
 function finTagSuggest(val) {
