@@ -2544,10 +2544,12 @@ function renderFinance() {
   const totalS = saidas.reduce((s,f)=>s+f.value,0);
   const saldo  = totalE - totalS;
 
-  document.getElementById('fin-saldo').textContent   = fmtMoney(saldo);
+  var elSaldo = document.getElementById('fin-saldo');
+  if (elSaldo) elSaldo.textContent = fmtMoney(saldo);
   document.getElementById('fin-entrada').textContent = fmtMoney(totalE);
   document.getElementById('fin-saida').textContent   = fmtMoney(totalS);
-  document.getElementById('fin-saldo-delta').textContent   = saldo>=0 ? `↑ saldo positivo` : '↓ saldo negativo';
+  var elSD = document.getElementById('fin-saldo-delta');
+  if (elSD) elSD.textContent = saldo>=0 ? '↑ saldo positivo' : '↓ saldo negativo';
   document.getElementById('fin-entrada-delta').textContent = `${entradas.length} lançamento${entradas.length!==1?'s':''}`;
   document.getElementById('fin-saida-delta').textContent   = `${saidas.length} lançamento${saidas.length!==1?'s':''}`;
 
