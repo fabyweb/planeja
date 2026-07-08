@@ -9466,7 +9466,7 @@ function renderFinRelatorio() {
           '<div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">🏷️ Tag</div>' +
             '<input class="form-input" list="frel-tag-list" style="font-size:11px" id="frel-tag" placeholder="Ex: IMPROS" oninput="finRelRender()">'+
             '<datalist id="frel-tag-list">'+tagOptList+'</datalist></div>' +
-          '<div style="grid-column:1/-1"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">📝 Buscar em descrição / observação</div>' +
+          '<div style="grid-column:1/-1"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">📝 Buscar em descrição / estabelecimento / observação</div>' +
             '<input class="form-input" style="font-size:11px;width:100%" id="frel-obs" placeholder="Palavra-chave..." oninput="finRelRender()"></div>' +
         '</div>' +
       '</div>' +
@@ -9520,7 +9520,7 @@ function finRelFiltered() {
     if (cat && f.category !== cat) return false;
     if (method && f.method !== method) return false;
     if (tag && !(f.tags||[]).some(function(t){ return t.toLowerCase().includes(tag); })) return false;
-    if (obs && !f.desc.toLowerCase().includes(obs) && !(f.obs||'').toLowerCase().includes(obs)) return false;
+    if (obs && !f.desc.toLowerCase().includes(obs) && !(f.obs||'').toLowerCase().includes(obs) && !(f.source||'').toLowerCase().includes(obs)) return false;
     return true;
   });
 }
