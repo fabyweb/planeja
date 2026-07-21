@@ -3509,9 +3509,9 @@ function editFinance(id) {
   document.getElementById('fin-method').value  = f.method;
   document.getElementById('fin-source').value  = f.source||'';
   document.getElementById('fin-obs').value     = f.obs||'';
+  document.getElementById('fin-type').value = f.type || 'saida';
   updateFinCategorySelects();
-  document.getElementById('fin-type').value     = f.type;
-  document.getElementById('fin-category').value = f.category;
+  document.getElementById('fin-category').value = f.category || '';
   // Carrega tags existentes
   var tw = document.getElementById('fin-tag-wrap');
   if (tw) {
@@ -9965,9 +9965,9 @@ function duplicateFinance(id) {
   document.getElementById('fin-method').value  = f.method  || '';
   document.getElementById('fin-source').value  = f.source  || '';
   document.getElementById('fin-obs').value     = f.obs     || '';
+  document.getElementById('fin-type').value = f.type || 'saida';
   updateFinCategorySelects();
-  document.getElementById('fin-type').value     = f.type;
-  document.getElementById('fin-category').value = f.category;
+  document.getElementById('fin-category').value = f.category || '';
 
   // Carrega as tags do original
   var tw = document.getElementById('fin-tag-wrap');
@@ -9977,7 +9977,7 @@ function duplicateFinance(id) {
   document.querySelector('#modal-fin .modal-title').textContent = 'Duplicar Lançamento';
   var saveBtn = document.querySelector('#modal-fin .btn-primary');
   saveBtn.textContent = 'Salvar cópia';
-  saveBtn.onclick = null; // usa o saveFinance padrão
+  saveBtn.onclick = function() { saveFinance(); }; // sempre chama saveFinance (novo lançamento)
 
   openModal('modal-fin');
   setTimeout(finShowRecentTags, 100);
