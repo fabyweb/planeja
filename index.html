@@ -1097,6 +1097,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <div style="display:flex;gap:8px">
           <button class="btn btn-ghost btn-sm" onclick="openFinModal(null,null)">+ Lançamento</button>
+          <button class="btn btn-ghost btn-sm" onclick="openFinParcelado(null)" style="color:var(--cyan);border-color:rgba(6,182,212,.3)">⊞ Parcelado</button>
           <button class="btn btn-ghost btn-sm" onclick="openManageCats()"><span class="ico" style="width:13px;height:13px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span> Categorias</button>
           <button class="btn btn-ghost btn-sm" onclick="toggleFinRelatorio(this)" id="btn-fin-relatorio">📊 Relatório</button>
         </div>
@@ -1604,6 +1605,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-fin')">Cancelar</button>
+      <button class="btn btn-ghost" id="btn-fin-parcelar" onclick="openFinParceladoFromEdit()" style="display:none;color:var(--cyan);border:1px solid rgba(6,182,212,.3)">⊞ Parcelar</button>
       <button class="btn btn-primary" onclick="saveFinance()">Registrar</button>
     </div>
   </div>
@@ -1989,6 +1991,9 @@ function saveEvent() {
 //  MODAL — FINANCEIRO
 // ══════════════════════════════════════════
 function openFinModal(originId, text) {
+  var btnParc = document.getElementById('btn-fin-parcelar');
+  if (btnParc) btnParc.style.display = 'none';
+  window._currentEditFinId = null;
   document.getElementById('fin-origin-id').value = originId || '';
   document.getElementById('fin-desc').value = text || '';
   document.getElementById('fin-value').value = '';
@@ -3502,6 +3507,10 @@ function cancelBacklogEdit(id) {
 function editFinance(id) {
   const f = finances.find(x=>x.id===id);
   if (!f) return;
+  window._currentEditFinId = id; // expõe para openFinParceladoFromEdit
+  // Mostra botão Parcelar no modal
+  var btnParc = document.getElementById('btn-fin-parcelar');
+  if (btnParc) btnParc.style.display = 'inline-flex';
   document.getElementById('fin-origin-id').value = '';
   document.getElementById('fin-desc').value    = f.desc;
   document.getElementById('fin-value').value   = f.value;
@@ -9984,6 +9993,233 @@ function duplicateFinance(id) {
   showToast('⎘ Duplicando — ajuste o que precisar e salve');
 }
 
+// ══ PARCELAMENTO FINANCEIRO ══
+var _fpOriginId = null; // ID do lançamento de origem (se convertendo)
+
+function openFinParcelado(originId) {
+  _fpOriginId = originId || null;
+
+  // Reseta o modal
+  ['fp-desc','fp-total','fp-num','fp-valor','fp-obs'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('fp-inicio').value = '1';
+  document.getElementById('fp-date').value   = new Date().toISOString().slice(0,10);
+  document.getElementById('fp-preview').style.display = 'none';
+
+  // Limpa tags
+  var tw = document.getElementById('fp-tag-wrap');
+  if (tw) { tw.querySelectorAll('.fin-tag-chip').forEach(function(ch){ch.remove();}); }
+
+  // Popula selects de categoria e método
+  fpPopulateSelects();
+
+  // Origem
+  var origemWrap = document.getElementById('fin-parc-origem-wrap');
+  if (originId) {
+    var f = finances.find(function(x){ return x.id === originId; });
+    if (f && origemWrap) {
+      origemWrap.style.display = 'block';
+      document.getElementById('fin-parc-origem-desc').textContent = f.desc + ' — ' + fmtMoney(f.value);
+      // Preenche com dados do lançamento
+      document.getElementById('fp-desc').value   = f.desc;
+      document.getElementById('fp-valor').value  = f.value;
+      document.getElementById('fp-date').value   = f.date || new Date().toISOString().slice(0,10);
+      document.getElementById('fp-obs').value    = f.obs || '';
+      // Categoria e método
+      fpPopulateSelects(f.category, f.method);
+      // Tags
+      (f.tags||[]).forEach(function(t){ fpAddTag(t); });
+    }
+  } else {
+    if (origemWrap) origemWrap.style.display = 'none';
+  }
+
+  document.querySelector('#modal-fin-parcelado .modal-title').textContent =
+    originId ? '⊞ Converter em Parcelamento' : '⊞ Novo Parcelamento';
+
+  fpUpdatePreview();
+  openModal('modal-fin-parcelado');
+}
+
+function openFinParceladoFromEdit() {
+  // Pega o ID atual do lançamento sendo editado
+  var editId = window._currentEditFinId || null;
+  closeModal('modal-fin');
+  setTimeout(function(){ openFinParcelado(editId); }, 200);
+}
+
+function fpPopulateSelects(selectedCat, selectedMethod) {
+  var catSel = document.getElementById('fp-category');
+  var methSel = document.getElementById('fp-method');
+  if (!catSel || !methSel) return;
+
+  // Categorias
+  catSel.innerHTML = '<option value="">Selecione...</option>';
+  (finCategories || []).forEach(function(cat) {
+    var o = document.createElement('option');
+    o.value = o.textContent = typeof cat === 'string' ? cat : cat.name;
+    catSel.appendChild(o);
+  });
+  if (selectedCat) catSel.value = selectedCat;
+
+  // Formas de pagamento (coleta das existentes)
+  var methods = {};
+  finances.forEach(function(f){ if (f.method) methods[f.method] = 1; });
+  methSel.innerHTML = '<option value="">Selecione...</option>';
+  ['Crédito','Débito','PIX','Dinheiro','TED'].forEach(function(m){ methods[m] = 1; });
+  Object.keys(methods).sort().forEach(function(m) {
+    var o = document.createElement('option');
+    o.value = o.textContent = m;
+    methSel.appendChild(o);
+  });
+  if (selectedMethod) methSel.value = selectedMethod;
+}
+
+function fpCalcParcela() {
+  var total = parseFloat(document.getElementById('fp-total').value) || 0;
+  var num   = parseInt(document.getElementById('fp-num').value)     || 0;
+  if (total > 0 && num > 0) {
+    document.getElementById('fp-valor').value = (total / num).toFixed(2);
+  }
+  fpUpdatePreview();
+}
+
+function fpCalcTotal() {
+  var valor = parseFloat(document.getElementById('fp-valor').value) || 0;
+  var num   = parseInt(document.getElementById('fp-num').value)     || 0;
+  if (valor > 0 && num > 0) {
+    document.getElementById('fp-total').value = (valor * num).toFixed(2);
+  }
+  fpUpdatePreview();
+}
+
+function fpGetDates() {
+  var dateStr = document.getElementById('fp-date').value;
+  var num     = parseInt(document.getElementById('fp-num').value)    || 0;
+  var inicio  = parseInt(document.getElementById('fp-inicio').value) || 1;
+  if (!dateStr || num < 1 || inicio < 1 || inicio > num) return [];
+
+  var dates = [];
+  var base  = new Date(dateStr + 'T00:00:00');
+  var offset = inicio - 1; // parcelas anteriores já pagas
+  var count  = num - inicio + 1; // quantas gerar
+
+  for (var i = 0; i < count; i++) {
+    var d = new Date(base.getFullYear(), base.getMonth() + i, base.getDate());
+    dates.push({
+      date: d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'),
+      label: d.toLocaleDateString('pt-BR', {day:'2-digit', month:'short'}),
+      parcNum: inicio + i,
+      total: num
+    });
+  }
+  return dates;
+}
+
+function fpUpdatePreview() {
+  var dates   = fpGetDates();
+  var preview = document.getElementById('fp-preview');
+  var datesEl = document.getElementById('fp-preview-dates');
+  var saveBtn = document.getElementById('fp-save-btn');
+
+  if (!dates.length) {
+    if (preview) preview.style.display = 'none';
+    if (saveBtn) saveBtn.textContent = 'Gerar lançamentos';
+    return;
+  }
+
+  if (preview) preview.style.display = 'block';
+  if (saveBtn) saveBtn.textContent = 'Gerar ' + dates.length + ' lançamento(s)';
+
+  if (datesEl) {
+    datesEl.innerHTML = dates.map(function(d) {
+      return '<span style="background:var(--violet-glow);border:1px solid rgba(124,58,237,.3);color:var(--violet-light);' +
+        'font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px">' +
+        d.parcNum + '/' + d.total + ' · ' + d.label + '</span>';
+    }).join('');
+  }
+}
+
+function fpTagKey(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    var val = e.target.value.replace(/,$/,'').trim();
+    if (val) { fpAddTag(val); e.target.value = ''; }
+  }
+}
+function fpTagBlur(inp) {
+  setTimeout(function(){
+    var val = (inp.value||'').trim();
+    if (val) { fpAddTag(val); inp.value = ''; }
+  }, 200);
+}
+function fpAddTag(txt) {
+  var wrap = document.getElementById('fp-tag-wrap');
+  var inp  = document.getElementById('fp-tag-inp');
+  if (!wrap || !txt.trim()) return;
+  var existing = Array.from(wrap.querySelectorAll('.fin-tag-chip')).map(function(c){ return c.dataset.tag; });
+  if (existing.indexOf(txt.trim()) !== -1) return;
+  var chip = document.createElement('span');
+  chip.className = 'fin-tag-chip';
+  chip.dataset.tag = txt.trim();
+  chip.innerHTML = escHtml(txt.trim()) + ' <button class="fin-tag-rm" onclick="this.parentElement.remove()">✕</button>';
+  wrap.insertBefore(chip, inp);
+}
+function fpGetTags() {
+  var wrap = document.getElementById('fp-tag-wrap');
+  if (!wrap) return [];
+  return Array.from(wrap.querySelectorAll('.fin-tag-chip')).map(function(c){ return c.dataset.tag; });
+}
+
+function saveFinParcelado() {
+  var desc     = (document.getElementById('fp-desc').value   || '').trim();
+  var valor    = parseFloat(document.getElementById('fp-valor').value)  || 0;
+  var category = document.getElementById('fp-category').value || '';
+  var method   = document.getElementById('fp-method').value   || '';
+  var obs      = (document.getElementById('fp-obs').value     || '').trim();
+  var tags     = fpGetTags();
+  var dates    = fpGetDates();
+
+  if (!desc)         { showToast('⚠️ Informe a descrição'); return; }
+  if (valor <= 0)    { showToast('⚠️ Informe o valor da parcela'); return; }
+  if (!dates.length) { showToast('⚠️ Informe nº de parcelas e data'); return; }
+
+  // Confirma tag digitada não fixada
+  var inp = document.getElementById('fp-tag-inp');
+  if (inp && inp.value.trim()) { fpAddTag(inp.value.trim()); inp.value = ''; }
+  tags = fpGetTags();
+
+  // Gera os lançamentos
+  dates.forEach(function(d) {
+    var label = desc + ' (' + d.parcNum + '/' + d.total + ')';
+    finances.unshift({
+      id: nextFinId++,
+      desc: label,
+      type: 'saida',
+      value: valor,
+      date: d.date,
+      method: method,
+      category: category,
+      source: '',
+      obs: obs,
+      tags: tags.slice()
+    });
+  });
+
+  // Remove o lançamento original se estiver convertendo
+  if (_fpOriginId) {
+    finances = finances.filter(function(f){ return f.id !== _fpOriginId; });
+    _fpOriginId = null;
+  }
+
+  lsSave();
+  scheduleSave();
+  closeModal('modal-fin-parcelado');
+  renderFinance();
+  showToast('✅ ' + dates.length + ' lançamento(s) gerado(s)!');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 
 // Calcula altura real da viewport (exclui barra do navegador em tablets)
@@ -10603,6 +10839,90 @@ function setAppHeight() {}
 
 <!-- ══ CONTAINER DE IMPRESSÃO ══ -->
 <div id="print-relatorio" style="display:none"></div>
+
+
+<!-- ══ MODAL — PARCELAMENTO FINANCEIRO ══ -->
+<div class="modal-overlay" id="modal-fin-parcelado">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <span class="modal-title">⊞ Novo Parcelamento</span>
+      <button class="modal-close" onclick="closeModal('modal-fin-parcelado')">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:12px">
+
+      <!-- Origem (lançamento convertido) -->
+      <div id="fin-parc-origem-wrap" style="display:none;background:var(--violet-glow);border:1px solid rgba(124,58,237,.3);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--violet-light)">
+        Convertendo lançamento: <strong id="fin-parc-origem-desc"></strong>
+      </div>
+
+      <div class="form-row">
+        <label>Descrição</label>
+        <input class="form-input" id="fp-desc" placeholder="Ex: Royal Caribbean">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div class="form-row">
+          <label>Valor total (R$)</label>
+          <input class="form-input" id="fp-total" type="number" step="0.01" placeholder="0,00" oninput="fpCalcParcela()">
+        </div>
+        <div class="form-row">
+          <label>Nº de parcelas</label>
+          <input class="form-input" id="fp-num" type="number" min="1" placeholder="Ex: 10" oninput="fpCalcParcela()">
+        </div>
+        <div class="form-row">
+          <label>Valor / parcela</label>
+          <input class="form-input" id="fp-valor" type="number" step="0.01" placeholder="0,00" oninput="fpCalcTotal()">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="form-row">
+          <label>A partir da parcela Nº</label>
+          <input class="form-input" id="fp-inicio" type="number" min="1" value="1" oninput="fpUpdatePreview()">
+        </div>
+        <div class="form-row">
+          <label>Data do 1º vencimento</label>
+          <input class="form-input" id="fp-date" type="date" oninput="fpUpdatePreview()">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="form-row">
+          <label>Categoria</label>
+          <select class="form-select" id="fp-category"></select>
+        </div>
+        <div class="form-row">
+          <label>Forma de pagamento</label>
+          <select class="form-select" id="fp-method"></select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label>Observação</label>
+        <input class="form-input" id="fp-obs" placeholder="Opcional">
+      </div>
+
+      <div class="form-row">
+        <label>Tags</label>
+        <div class="fin-tag-wrap" id="fp-tag-wrap" onclick="document.getElementById('fp-tag-inp').focus()" style="min-height:34px">
+          <input class="fin-tag-input" id="fp-tag-inp" placeholder="Tag + Enter"
+            onkeydown="fpTagKey(event)" onblur="fpTagBlur(this)">
+        </div>
+      </div>
+
+      <!-- Preview das datas -->
+      <div id="fp-preview" style="display:none;background:var(--card);border:1px solid var(--border-soft);border-radius:8px;padding:10px 12px">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Parcelas a gerar</div>
+        <div id="fp-preview-dates" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-fin-parcelado')">Cancelar</button>
+      <button class="btn btn-primary" id="fp-save-btn" onclick="saveFinParcelado()">Gerar lançamentos</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
