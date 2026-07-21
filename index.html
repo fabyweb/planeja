@@ -10023,7 +10023,8 @@ function openFinParcelado(originId) {
       document.getElementById('fin-parc-origem-desc').textContent = f.desc + ' — ' + fmtMoney(f.value);
       // Preenche com dados do lançamento
       document.getElementById('fp-desc').value   = f.desc;
-      document.getElementById('fp-valor').value  = f.value;
+      document.getElementById('fp-valor').value  = parseFloat(f.value).toFixed(2);
+      // fp-total fica vazio — será calculado quando usuário digitar nº de parcelas
       document.getElementById('fp-date').value   = f.date || new Date().toISOString().slice(0,10);
       document.getElementById('fp-obs').value    = f.obs || '';
       // Categoria e método
@@ -10077,14 +10078,16 @@ function fpPopulateSelects(selectedCat, selectedMethod) {
 }
 
 function fpCalcParcela() {
-  var total = parseFloat(document.getElementById('fp-total').value) || 0;
-  var valor = parseFloat(document.getElementById('fp-valor').value) || 0;
-  var num   = parseInt(document.getElementById('fp-num').value)     || 0;
+  var totalStr = document.getElementById('fp-total').value.replace(',','.');
+  var valorStr = document.getElementById('fp-valor').value.replace(',','.');
+  var total = parseFloat(totalStr) || 0;
+  var valor = parseFloat(valorStr) || 0;
+  var num   = parseInt(document.getElementById('fp-num').value) || 0;
   if (total > 0 && num > 0) {
     // Total preenchido → calcula valor da parcela
     document.getElementById('fp-valor').value = (total / num).toFixed(2);
   } else if (valor > 0 && num > 0) {
-    // Valor da parcela preenchido (ex: conversão) → calcula total
+    // Só valor da parcela preenchido → calcula total
     document.getElementById('fp-total').value = (valor * num).toFixed(2);
   }
   fpUpdatePreview();
