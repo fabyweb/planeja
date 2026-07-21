@@ -10001,7 +10001,8 @@ function openFinParcelado(originId) {
 
   // Reseta o modal
   ['fp-desc','fp-total','fp-num','fp-valor','fp-obs'].forEach(function(id){
-    var el = document.getElementById(id); if (el) el.value = '';
+    var el = document.getElementById(id);
+    if (el) { el.value = ''; el.readOnly = false; el.style.opacity = ''; el.title = ''; }
   });
   document.getElementById('fp-inicio').value = '1';
   document.getElementById('fp-date').value   = new Date().toISOString().slice(0,10);
@@ -10024,6 +10025,9 @@ function openFinParcelado(originId) {
       // Preenche com dados do lançamento
       document.getElementById('fp-desc').value   = f.desc;
       document.getElementById('fp-valor').value  = parseFloat(f.value).toFixed(2);
+      document.getElementById('fp-valor').readOnly = true;
+      document.getElementById('fp-valor').style.opacity = '0.7';
+      document.getElementById('fp-valor').title = 'Valor da parcela fixo (do lançamento original)';
       // fp-total fica vazio — será calculado quando usuário digitar nº de parcelas
       document.getElementById('fp-date').value   = f.date || new Date().toISOString().slice(0,10);
       document.getElementById('fp-obs').value    = f.obs || '';
@@ -10078,16 +10082,20 @@ function fpPopulateSelects(selectedCat, selectedMethod) {
 }
 
 function fpCalcParcela() {
-  var totalStr = document.getElementById('fp-total').value.replace(',','.');
   var valorStr = document.getElementById('fp-valor').value.replace(',','.');
-  var total = parseFloat(totalStr) || 0;
+  var totalStr = document.getElementById('fp-total').value.replace(',','.');
   var valor = parseFloat(valorStr) || 0;
+  var total = parseFloat(totalStr) || 0;
   var num   = parseInt(document.getElementById('fp-num').value) || 0;
-  if (total > 0 && num > 0) {
-    // Total preenchido → calcula valor da parcela
+
+  if (_fpOriginId && valor > 0 && num > 0) {
+    // MODO CONVERSÃO: valor da parcela é fixo, calcula total
+    document.getElementById('fp-total').value = (valor * num).toFixed(2);
+  } else if (total > 0 && num > 0) {
+    // MODO NOVO: total preenchido → calcula valor da parcela
     document.getElementById('fp-valor').value = (total / num).toFixed(2);
   } else if (valor > 0 && num > 0) {
-    // Só valor da parcela preenchido → calcula total
+    // MODO NOVO: só valor preenchido → calcula total
     document.getElementById('fp-total').value = (valor * num).toFixed(2);
   }
   fpUpdatePreview();
