@@ -3714,7 +3714,7 @@ function escJs(s)  { return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\
 function pad(n)    { return String(n).padStart(2,'0'); }
 function fmtDate(d){ if(!d)return'—'; const str = (typeof d === 'object' && d.date) ? d.date : d; if(typeof str !== 'string') return '—'; const [y,m,dd]=str.split('-'); return `${dd}/${m}`; }
 function fmtMoney(v){ return 'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function addDays(dateStr,n){ const d=new Date(dateStr); d.setDate(d.getDate()+n); return d.toISOString().split('T')[0]; }
+function addDays(dateStr,n){ const d=new Date(dateStr+'T12:00:00'); d.setDate(d.getDate()+n); return d.toISOString().split('T')[0]; }
 
 
 // ══════════════════════════════════════════
@@ -7822,7 +7822,7 @@ function renderJogo() {
   if (parcAtivosLT.length > 0) {
     // Calcula range de meses: do mais antigo ao mais recente término
     var hoje = new Date();
-    var minDate = new Date(Math.min.apply(null, parcAtivosLT.map(function(p){ return new Date(p.data_inicio); })));
+    var minDate = new Date(Math.min.apply(null, parcAtivosLT.map(function(p){ return new Date(p.data_inicio + 'T12:00:00'); })));
     var maxMeses = Math.max.apply(null, parcAtivosLT.map(function(p){ return p.parcelas_restantes; }));
     var maxDate = new Date(hoje.getFullYear(), hoje.getMonth() + maxMeses + 1, 1);
 
@@ -7838,7 +7838,7 @@ function renderJogo() {
     // Calcula total acumulado por mês
     var acumuladoMes = meses.map(function(m) {
       return parcAtivosLT.reduce(function(sum, p) {
-        var inicio = new Date(p.data_inicio);
+        var inicio = new Date(p.data_inicio + 'T12:00:00');
         var inicioMes = new Date(inicio.getFullYear(), inicio.getMonth(), 1);
         var fimMes = new Date(inicioMes.getFullYear(), inicioMes.getMonth() + p.parcelas_total, 1);
         var mes = new Date(m.getFullYear(), m.getMonth(), 1);
@@ -7873,7 +7873,7 @@ function renderJogo() {
 
     // Linhas de cada parcelamento
     parcAtivosLT.forEach(function(p) {
-      var inicio = new Date(p.data_inicio);
+      var inicio = new Date(p.data_inicio + 'T12:00:00');
       var inicioMes = new Date(inicio.getFullYear(), inicio.getMonth(), 1);
       var startIdx = meses.findIndex(function(m){ return m.getFullYear()===inicioMes.getFullYear()&&m.getMonth()===inicioMes.getMonth(); });
       if (startIdx < 0) startIdx = 0;
@@ -8019,7 +8019,7 @@ function gerarMissoes() {
   var hoje = new Date();
   var semInicio = new Date(hoje); semInicio.setDate(hoje.getDate() - hoje.getDay());
   var ecosSemana = economias.filter(function(e){
-    var d = new Date(e.data);
+    var d = new Date(e.data + 'T12:00:00');
     return d >= semInicio;
   });
   var totalEcoSemana = ecosSemana.reduce(function(s,e){ return s+e.valor; }, 0);
