@@ -321,6 +321,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .list-item-actions button:hover{background:var(--border);color:var(--text)}
 .list-item-actions .act-del:hover{background:rgba(239,68,68,0.15);color:var(--red)}
 
+/* tag inline — sempre visível, editável ao clicar */
+.list-item-tag-wrap{flex-shrink:0;margin-top:2px}
+.list-item-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;background:var(--violet-glow);color:var(--violet-light);border:1px solid rgba(124,58,237,0.25);white-space:nowrap;cursor:pointer;transition:background 0.12s;line-height:1.6}
+.list-item-tag:hover{background:rgba(124,58,237,0.25)}
+.list-item-tag.empty{background:transparent;color:var(--text-dim);border:1px dashed var(--border);font-style:italic}
+.list-item-tag.empty:hover{background:var(--card);border-color:var(--violet-light);color:var(--violet-light);font-style:normal}
+.tag-inline-input{font-size:10px;padding:2px 8px;border-radius:4px;background:var(--card);color:var(--violet-light);border:1px solid var(--violet-light);outline:none;width:90px;font-family:'Inter',sans-serif;line-height:1.6}
+
 /* botões de reordenar — também ocultos até hover */
 .list-item-reorder{display:flex;flex-direction:column;gap:0;flex-shrink:0;opacity:0;transition:opacity 0.15s;margin-top:2px}
 .list-item:hover .list-item-reorder{opacity:0.5}
@@ -2702,8 +2710,10 @@ function renderLists() {
             </div>
             <div class="check-box" onclick="toggleListItem('${list.id}',${item.id})">${item.done?'✓':''}</div>
             <span class="list-item-text" onclick="toggleListItem('${list.id}',${item.id})">${escHtml(item.text)}</span>
+            <div class="list-item-tag-wrap">
+              <span class="list-item-tag${item.tag?'':' empty'}" onclick="event.stopPropagation();startTagEdit(this,'${list.id}',${item.id})">${item.tag?escHtml(item.tag):'+ tag'}</span>
+            </div>
             <div class="list-item-actions">
-              ${item.tag?`<span class="list-item-tag" onclick="event.stopPropagation();editListItem('${list.id}',${item.id})" title="Editar tag">${escHtml(item.tag)}</span>`:`<button onclick="event.stopPropagation();editListItem('${list.id}',${item.id})" title="Adicionar tag" style="font-size:9px;padding:0 5px">+tag</button>`}
               <button onclick="event.stopPropagation();editListItem('${list.id}',${item.id})" title="Editar">✏️</button>
               <button onclick="event.stopPropagation();sendToBacklog('list-item',{listId:'${list.id}',itemId:${item.id}})" title="↩ Backlog">↩</button>
               <button class="act-del" onclick="event.stopPropagation();deleteListItem('${list.id}',${item.id})" title="Remover">✕</button>
@@ -3621,6 +3631,37 @@ function resetFinModal() {
 // ══════════════════════════════════════════
 //  EDIÇÃO — LISTA ITENS
 // ══════════════════════════════════════════
+
+// Edição inline da tag — substitui o span por um input
+function startTagEdit(spanEl, listId, itemId) {
+  const list = lists.find(l=>l.id===listId);
+  if (!list) return;
+  const item = list.items.find(i=>i.id===itemId);
+  if (!item) return;
+
+  const inp = document.createElement('input');
+  inp.className = 'tag-inline-input';
+  inp.value = item.tag || '';
+  inp.placeholder = 'tag…';
+  inp.maxLength = 24;
+  spanEl.replaceWith(inp);
+  inp.focus();
+  inp.select();
+
+  function commit() {
+    const val = inp.value.trim();
+    item.tag = val;
+    lsSave();
+    scheduleSave();
+    renderLists();
+  }
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); inp.blur(); }
+    if (e.key === 'Escape') { inp.removeEventListener('blur', commit); renderLists(); }
+  });
+}
+
 function editListItem(listId, itemId) {
   const list = lists.find(l=>l.id===listId);
   if (!list) return;
