@@ -288,23 +288,50 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 /* ═══════════════════════════
    LISTAS
 ═══════════════════════════ */
-.lists-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.list-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden}
-.list-head{padding:12px 14px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:8px}
-.list-icon{width:26px;height:26px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;font-size:13px}
-.list-name{font-size:13px;font-weight:600;color:var(--text);flex:1}
-.list-count{font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
-.list-items{padding:6px 0}
-.list-item{display:flex;align-items:center;gap:5px;padding:6px 10px;transition:background 0.12s;user-select:none}
-.list-item:hover{background:var(--card)}
-.check-box{width:15px;height:15px;border:1.5px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;flex-shrink:0;margin-top:2px;justify-content:center;transition:all 0.12s;font-size:9px}
+/* ── LISTAS — redesign legibilidade ── */
+.lists-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.list-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+.list-head{padding:14px 16px 12px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:10px}
+.list-icon{width:30px;height:30px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.list-name{font-size:14px;font-weight:600;color:var(--text);flex:1;letter-spacing:-0.01em}
+.list-count{font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;background:var(--bg);padding:2px 6px;border-radius:4px;border:1px solid var(--border-soft)}
+
+/* itens */
+.list-items{padding:4px 0;flex:1}
+.list-item{display:flex;align-items:flex-start;gap:10px;padding:9px 16px;transition:background 0.12s;user-select:none;position:relative}
+.list-item:hover{background:var(--card-hover)}
+.list-item:not(:last-child){border-bottom:1px solid var(--border-soft)}
+
+/* checkbox maior e mais clicável */
+.check-box{width:17px;height:17px;border:1.5px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;font-size:10px;margin-top:2px;cursor:pointer}
+.check-box:hover{border-color:var(--violet-light)}
 .list-item.done .check-box{background:var(--green);border-color:var(--green);color:#fff}
-.list-item-text{flex:1;font-size:13px;min-width:0;word-break:break-word;line-height:1.4;padding-top:1px}
+
+/* texto */
+.list-item-text{flex:1;font-size:14px;min-width:0;word-break:break-word;line-height:1.5;color:var(--text);cursor:pointer}
 .list-item.done .list-item-text{color:var(--text-dim);text-decoration:line-through}
-.list-item-tag{font-size:9px;padding:2px 5px;border-radius:3px;background:var(--bg);color:var(--text-dim);border:1px solid var(--border-soft);white-space:nowrap;flex-shrink:0}
-.list-footer{padding:8px 14px;border-top:1px solid var(--border-soft)}
-.list-add-input{width:100%;background:transparent;border:none;outline:none;font-size:12px;color:var(--text-muted);font-family:'Inter',sans-serif}
+
+/* tag */
+.list-item-tag{font-size:10px;padding:2px 7px;border-radius:4px;background:var(--violet-glow);color:var(--violet-light);border:1px solid rgba(124,58,237,0.25);white-space:nowrap;flex-shrink:0;margin-top:3px;cursor:pointer}
+
+/* ações — visíveis só no hover, agrupadas à direita */
+.list-item-actions{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity 0.15s;margin-top:1px}
+.list-item:hover .list-item-actions{opacity:1}
+.list-item-actions button{width:22px;height:22px;display:flex;align-items:center;justify-content:center;border:none;border-radius:4px;background:transparent;cursor:pointer;font-size:11px;color:var(--text-dim);transition:all 0.12s;padding:0}
+.list-item-actions button:hover{background:var(--border);color:var(--text)}
+.list-item-actions .act-del:hover{background:rgba(239,68,68,0.15);color:var(--red)}
+
+/* botões de reordenar — também ocultos até hover */
+.list-item-reorder{display:flex;flex-direction:column;gap:0;flex-shrink:0;opacity:0;transition:opacity 0.15s;margin-top:2px}
+.list-item:hover .list-item-reorder{opacity:0.5}
+.list-item-reorder button{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:7px;padding:1px 3px;line-height:1.2}
+.list-item-reorder button:hover{opacity:1;color:var(--text)}
+
+/* footer de adicionar */
+.list-footer{padding:10px 16px;border-top:1px solid var(--border-soft);background:var(--bg)}
+.list-add-input{width:100%;background:transparent;border:none;outline:none;font-size:13px;color:var(--text-muted);font-family:'Inter',sans-serif}
 .list-add-input::placeholder{color:var(--text-dim)}
+.list-add-input:focus{color:var(--text)}
 
 /* ── TOAST ── */
 .toast{position:fixed;bottom:24px;right:20px;background:var(--card);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:var(--radius-sm);font-size:13px;font-family:'Inter',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.5);animation:fadeUp 0.2s ease;z-index:1000;max-width:280px}
@@ -1723,7 +1750,7 @@ let lists = [
 let nextListItemId = 100;
 
 let calYear = 2026, calMonth = 5;
-let selectedDateKey = new Date().toISOString().split('T')[0];
+let selectedDateKey = todayLocal();
 let dragId = null;
 
 // ══════════════════════════════════════════
@@ -1961,7 +1988,7 @@ function openEventModal(originId, text) {
   document.getElementById('event-title').value = text || '';
   document.getElementById('event-location').value = '';
   document.getElementById('event-time').value = '';
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayLocal();
   document.getElementById('event-date').value = today;
   resetEventModal();
   openModal('modal-event');
@@ -2004,7 +2031,7 @@ function openFinModal(originId, text) {
   updateFinCategorySelects();
   document.getElementById('fin-category').value = 'Alimentação';
   resetFinModal();
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayLocal();
   document.getElementById('fin-date').value = today;
   updateFinMethodSelects();
   openModal('modal-fin');
@@ -2092,7 +2119,7 @@ function renderKanban() {
   const board = document.getElementById('kanban-board');
   board.innerHTML = kanbanCols.map(col => {
     const allColTasks = filteredTasks(); const cards = allColTasks.filter(t => t.col === col.id);
-    const today = new Date().toISOString().split('T')[0];
+    const today = todayLocal();
     return `
       <div class="kanban-col" id="col-${col.id}"
         ondragover="e=>e.preventDefault()" ondrop="dropCard(event,'${col.id}')">
@@ -2669,16 +2696,18 @@ function renderLists() {
       <div class="list-items">
         ${filteredListItems(list).map(item=>`
           <div class="list-item${item.done?' done':''}">
-            <div style="display:flex;flex-direction:column;gap:1px;flex-shrink:0;margin-right:2px;opacity:0.4">
-              <button onclick="event.stopPropagation();moveListItem('${list.id}',${item.id},-1)" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:8px;padding:0 3px;line-height:1.2" title="Subir">▲</button>
-              <button onclick="event.stopPropagation();moveListItem('${list.id}',${item.id},1)"  style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:8px;padding:0 3px;line-height:1.2" title="Descer">▼</button>
+            <div class="list-item-reorder">
+              <button onclick="event.stopPropagation();moveListItem('${list.id}',${item.id},-1)" title="Subir">▲</button>
+              <button onclick="event.stopPropagation();moveListItem('${list.id}',${item.id},1)" title="Descer">▼</button>
             </div>
             <div class="check-box" onclick="toggleListItem('${list.id}',${item.id})">${item.done?'✓':''}</div>
             <span class="list-item-text" onclick="toggleListItem('${list.id}',${item.id})">${escHtml(item.text)}</span>
-            ${item.tag?`<span class="list-item-tag" onclick="editListItem('${list.id}',${item.id})" style="cursor:pointer" title="Clique para editar">${escHtml(item.tag)}</span>`:`<span style="font-size:9px;color:var(--text-dim);cursor:pointer" onclick="editListItem('${list.id}',${item.id})" title="Adicionar tag">+tag</span>`}
-            <button class="btn btn-ghost btn-sm" style="padding:2px 4px;font-size:10px;flex-shrink:0;color:var(--text-dim)" onclick="event.stopPropagation();sendToBacklog('list-item',{listId:'${list.id}',itemId:${item.id}})" title="↩ Backlog">↩</button>
-            <button class="btn btn-ghost btn-sm" style="padding:2px 5px;font-size:10px;opacity:0.5;flex-shrink:0" onclick="event.stopPropagation();editListItem('${list.id}',${item.id})">✏️</button>
-            <button class="btn btn-danger btn-sm" style="padding:2px 5px;font-size:10px;flex-shrink:0" onclick="event.stopPropagation();deleteListItem('${list.id}',${item.id})">✕</button>
+            <div class="list-item-actions">
+              ${item.tag?`<span class="list-item-tag" onclick="event.stopPropagation();editListItem('${list.id}',${item.id})" title="Editar tag">${escHtml(item.tag)}</span>`:`<button onclick="event.stopPropagation();editListItem('${list.id}',${item.id})" title="Adicionar tag" style="font-size:9px;padding:0 5px">+tag</button>`}
+              <button onclick="event.stopPropagation();editListItem('${list.id}',${item.id})" title="Editar">✏️</button>
+              <button onclick="event.stopPropagation();sendToBacklog('list-item',{listId:'${list.id}',itemId:${item.id}})" title="↩ Backlog">↩</button>
+              <button class="act-del" onclick="event.stopPropagation();deleteListItem('${list.id}',${item.id})" title="Remover">✕</button>
+            </div>
           </div>`).join('')}
       </div>
       <div class="list-footer">
@@ -3714,7 +3743,18 @@ function escJs(s)  { return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\
 function pad(n)    { return String(n).padStart(2,'0'); }
 function fmtDate(d){ if(!d)return'—'; const str = (typeof d === 'object' && d.date) ? d.date : d; if(typeof str !== 'string') return '—'; const [y,m,dd]=str.split('-'); return `${dd}/${m}`; }
 function fmtMoney(v){ return 'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function addDays(dateStr,n){ const d=new Date(dateStr+'T12:00:00'); d.setDate(d.getDate()+n); return d.toISOString().split('T')[0]; }
+function dateToLocal(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function todayLocal() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function addDays(dateStr,n){
+  var parts = dateStr.split('-');
+  var d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2])+n);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
 
 
 // ══════════════════════════════════════════
@@ -4771,7 +4811,7 @@ function renderEstudos() {
 
 // ── Meta ring ──
 function updateMetaRing() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayLocal();
   const hojeMin = sessoes.filter(s => s.data === today).reduce((acc,s) => acc + s.durMin, 0);
   const hojeH = hojeMin / 60;
   const pct = Math.min(1, hojeH / META_DIARIA_H);
@@ -4793,9 +4833,9 @@ function updateStreak() {
   let streak = 0;
   const d = new Date();
   while (true) {
-    const key = d.toISOString().split('T')[0];
+    const key = dateToLocal(d);
     const studied = sessoes.some(s => s.data === key);
-    if (!studied && key !== new Date().toISOString().split('T')[0]) break;
+    if (!studied && key !== todayLocal()) break;
     if (studied) streak++;
     d.setDate(d.getDate() - 1);
     if (streak > 365) break;
@@ -4841,7 +4881,7 @@ function renderSemana() {
   const weekDates = dias.map((d, i) => {
     const dt = new Date(weekStart);
     dt.setDate(dt.getDate() + i);
-    return dt.toISOString().split('T')[0]; // YYYY-MM-DD
+    return dateToLocal(dt); // YYYY-MM-DD
   });
 
   el.innerHTML = dias.map((d, i) => {
@@ -5096,7 +5136,7 @@ function saveQuestao() {
   const tema   = document.getElementById('q-tema').value.trim();
   const revisao = document.getElementById('q-revisao').value === '1';
   const acerto  = total > 0 ? Math.round((certas/total)*100) : 0;
-  const today   = new Date().toISOString().split('T')[0];
+  const today   = todayLocal();
 
   if (!disc || total < 1) { showToast('⚠️ Preencha disciplina e questões'); return; }
 
@@ -5116,7 +5156,7 @@ function saveQuestao() {
       const base = new Date(today+'T12:00:00');
       [1,7,15,30].forEach(d => {
         const dt = new Date(base); dt.setDate(dt.getDate()+d);
-        revisoesPendentes.push({ id:nextRevId++, data:dt.toISOString().split('T')[0], tema: disc+(tema?' — '+tema:''), etapa:d });
+        revisoesPendentes.push({ id:nextRevId++, data:dateToLocal(dt), tema: disc+(tema?' — '+tema:''), etapa:d });
       });
       showToast('✅ Registrado + revisões agendadas');
     } else {
@@ -5207,7 +5247,7 @@ function curSetStatus(mid, idx, status) {
   if (status === 'estudado') {
     var existing = curTopicosData[mid+'_'+idx];
     if (!existing || typeof existing === 'string') {
-      curTopicosData[mid+'_'+idx] = new Date().toISOString().split('T')[0];
+      curTopicosData[mid+'_'+idx] = todayLocal();
     }
     // If object with historico, keep it as is
   }
@@ -5431,13 +5471,13 @@ function saveTopico() {
   if (curEditTopicoIdx !== null) {
     mat.topicos[curEditTopicoIdx] = nome;
     curTopicosStatus[mat.id + '_' + curEditTopicoIdx] = status;
-    if (status === 'estudado') curTopicosData[mat.id + '_' + curEditTopicoIdx] = new Date().toISOString().split('T')[0];
+    if (status === 'estudado') curTopicosData[mat.id + '_' + curEditTopicoIdx] = todayLocal();
     showToast('✏️ Tópico atualizado');
   } else {
     const newIdx = mat.topicos.length;
     mat.topicos.push(nome);
     curTopicosStatus[mat.id + '_' + newIdx] = status;
-    if (status === 'estudado') curTopicosData[mat.id + '_' + newIdx] = new Date().toISOString().split('T')[0];
+    if (status === 'estudado') curTopicosData[mat.id + '_' + newIdx] = todayLocal();
     showToast('✅ Tópico adicionado');
   }
   closeModal('modal-topico');
@@ -5952,7 +5992,7 @@ function exportData() {
   var blob = new Blob([data], {type:'application/json'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'painel-backup-' + new Date().toISOString().split('T')[0] + '.json';
+  a.download = 'painel-backup-' + todayLocal() + '.json';
   a.click();
   showToast('📤 Backup exportado!');
 }
@@ -6252,7 +6292,7 @@ function openRegistrarEstudo(mid, idx) {
   document.getElementById('reg-topico-nome').textContent = mat.nome + ' › ' + nome;
   document.getElementById('reg-mat-id').value = mid;
   document.getElementById('reg-topico-idx').value = idx;
-  document.getElementById('reg-data').value = new Date().toISOString().split('T')[0];
+  document.getElementById('reg-data').value = todayLocal();
   document.getElementById('reg-tempo').value = '';
   document.getElementById('reg-acerto').value = '';
   document.getElementById('reg-revisao').checked = false;
@@ -6305,7 +6345,7 @@ function saveRegistroEstudo() {
         matId: mid,
         topicoIdx: idx,
         nome: matNome + ' › ' + topicoNome,
-        dataRev: revDate.toISOString().split('T')[0],
+        dataRev: dateToLocal(revDate),
         dias: days,
         concluida: false,
       });
@@ -6458,7 +6498,7 @@ function planejarEstudo(id) {
   // Default to next occurrence of the item's stored dia, or today
   var today = new Date();
   var nextDate = new Date(today);
-  document.getElementById('plan-data').value = nextDate.toISOString().split('T')[0];
+  document.getElementById('plan-data').value = dateToLocal(nextDate);
   openModal('modal-planejar-estudo');
 }
 
@@ -6513,7 +6553,7 @@ function concluirEstudo(id) {
   document.getElementById('conc-questoes-feitas').value = '';
   document.getElementById('conc-acerto').value = '';
   document.getElementById('conc-revisao').checked = false;
-  document.getElementById('conc-data').value = new Date().toISOString().split('T')[0];
+  document.getElementById('conc-data').value = todayLocal();
   openModal('modal-concluir-estudo');
 }
 
@@ -6587,7 +6627,7 @@ function saveConclusao() {
         id: rid,
         matId: item.matId,
         nome: item.materia + ' — ' + item.topicos.join(', '),
-        dataRev: revDate.toISOString().split('T')[0],
+        dataRev: dateToLocal(revDate),
         dias: days,
         concluida: false,
       });
@@ -6803,7 +6843,7 @@ function editarConclusao(id) {
   document.getElementById('conc-questoes-certas').value = '';
   document.getElementById('conc-acerto').value = item.acerto != null ? item.acerto : '';
   document.getElementById('conc-revisao').checked = false;
-  document.getElementById('conc-data').value = item.concluidoEm || new Date().toISOString().split('T')[0];
+  document.getElementById('conc-data').value = item.concluidoEm || todayLocal();
   openModal('modal-concluir-estudo');
 }
 
@@ -6856,7 +6896,7 @@ function editSessao(id) {
   const s = sessoes.find(x => x.id === id);
   if (!s) return;
   const mins = s.durMin != null ? s.durMin : (s.duracao ? Math.round(s.duracao/60) : 0);
-  const dateStr = s.data || (s.inicio ? new Date(s.inicio).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]);
+  const dateStr = s.data || (s.inicio ? dateToLocal(new Date(s.inicio + 'T12:00:00')) : todayLocal());
   document.getElementById('sess-edit-id').value = id;
   const sessDiscEl = document.getElementById('sess-disc');
   if (sessDiscEl) {
@@ -7031,11 +7071,11 @@ function renderRevisoes() {
   const el = document.getElementById('revisoes-list');
   const cnt = document.getElementById('revisoes-count');
   if (!el) return;
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayLocal();
   const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
-  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+  const tomorrowStr = dateToLocal(tomorrow);
   const in3 = new Date(); in3.setDate(in3.getDate()+3);
-  const in3Str = in3.toISOString().split('T')[0];
+  const in3Str = dateToLocal(in3);
   const allPending = revisoesPendentes.map(function(r) {
     return { id:r.id, data:r.data||r.dataRev||'', tema:r.tema||r.nome||'', etapa:r.etapa||r.dias||0, concluida:r.concluida||false };
   }).filter(function(r) { return r.data >= today && !r.concluida; })
@@ -7624,7 +7664,7 @@ function renderJogo() {
   var calDays = [];
   var today = new Date();
   today.setHours(0,0,0,0);
-  var todayKey = today.toISOString().split('T')[0];
+  var todayKey = dateToLocal(today);
   // Data do gasto mais recente (data_inicio)
   var lastParcDate = null;
   var parcComData2 = parcelamentos.filter(function(p){ return p.data_inicio; });
@@ -7636,7 +7676,7 @@ function renderJogo() {
   for (var i = 20; i >= 0; i--) {
     var d = new Date(today.getTime() - i*86400000);
     d.setHours(0,0,0,0);
-    var key = d.toISOString().split('T')[0];
+    var key = dateToLocal(d);
     // Usa data_inicio (data real do gasto)
     var hasParc = parcelamentos.some(function(p){
       return p.data_inicio === key;
@@ -8807,13 +8847,13 @@ function renderConsistencia() {
 
   // ── KPIs ──
   var today = new Date();
-  var todayKey = today.toISOString().split('T')[0];
+  var todayKey = dateToLocal(today);
 
   // Streak: dias consecutivos até hoje
   var streak = 0;
   var d = new Date(today);
   while (true) {
-    var k = d.toISOString().split('T')[0];
+    var k = dateToLocal(d);
     if (byDay[k] && byDay[k].length) {
       streak++;
       d.setDate(d.getDate() - 1);
@@ -9970,7 +10010,7 @@ function duplicateFinance(id) {
   resetFinModal();
   document.getElementById('fin-desc').value    = f.desc;
   document.getElementById('fin-value').value   = f.value;
-  document.getElementById('fin-date').value    = new Date().toISOString().slice(0,10); // data de hoje
+  document.getElementById('fin-date').value    = todayLocal(); // data de hoje
   document.getElementById('fin-method').value  = f.method  || '';
   document.getElementById('fin-source').value  = f.source  || '';
   document.getElementById('fin-obs').value     = f.obs     || '';
@@ -10007,7 +10047,7 @@ function openFinParcelado(originId) {
     if (el) { el.value = ''; el.readOnly = false; el.style.opacity = ''; el.title = ''; }
   });
   document.getElementById('fp-inicio').value = '1';
-  document.getElementById('fp-date').value   = new Date().toISOString().slice(0,10);
+  document.getElementById('fp-date').value   = todayLocal();
   document.getElementById('fp-preview').style.display = 'none';
 
   // Limpa tags
@@ -10033,7 +10073,7 @@ function openFinParcelado(originId) {
       document.getElementById('fp-valor').style.opacity = '0.7';
       document.getElementById('fp-valor').title = 'Valor da parcela fixo (do lançamento original)';
       document.getElementById('fp-total').value = ''; // garante vazio
-      document.getElementById('fp-date').value   = f.date || new Date().toISOString().slice(0,10);
+      document.getElementById('fp-date').value   = f.date || todayLocal();
       document.getElementById('fp-obs').value    = f.obs || '';
       // Categoria e método
       fpPopulateSelects(f.category, f.method);
