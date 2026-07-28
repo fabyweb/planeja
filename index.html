@@ -220,7 +220,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 /* ═══════════════════════════
    FINANCEIRO
 ═══════════════════════════ */
-.fin-summary{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:18px}
+.fin-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px}
 .fin-card{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden}
 .fin-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
 .fin-card.saldo::after{background:var(--green)}
@@ -288,58 +288,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 /* ═══════════════════════════
    LISTAS
 ═══════════════════════════ */
-/* ── LISTAS — redesign legibilidade ── */
-.lists-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-.list-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
-.list-head{padding:14px 16px 12px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:10px}
-.list-icon{width:30px;height:30px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.list-name{font-size:14px;font-weight:600;color:var(--text);flex:1;letter-spacing:-0.01em}
-.list-count{font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;background:var(--bg);padding:2px 6px;border-radius:4px;border:1px solid var(--border-soft)}
-
-/* itens */
-.list-items{padding:4px 0;flex:1}
-.list-item{display:flex;align-items:flex-start;gap:10px;padding:9px 16px;transition:background 0.12s;user-select:none;position:relative}
-.list-item:hover{background:var(--card-hover)}
-.list-item:not(:last-child){border-bottom:1px solid var(--border-soft)}
-
-/* checkbox maior e mais clicável */
-.check-box{width:17px;height:17px;border:1.5px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;font-size:10px;margin-top:2px;cursor:pointer}
-.check-box:hover{border-color:var(--violet-light)}
+.lists-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.list-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden}
+.list-head{padding:12px 14px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:8px}
+.list-icon{width:26px;height:26px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;font-size:13px}
+.list-name{font-size:13px;font-weight:600;color:var(--text);flex:1}
+.list-count{font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
+.list-items{padding:6px 0}
+.list-item{display:flex;align-items:center;gap:5px;padding:6px 10px;transition:background 0.12s;user-select:none}
+.list-item:hover{background:var(--card)}
+.check-box{width:15px;height:15px;border:1.5px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;flex-shrink:0;margin-top:2px;justify-content:center;transition:all 0.12s;font-size:9px}
 .list-item.done .check-box{background:var(--green);border-color:var(--green);color:#fff}
-
-/* texto */
-.list-item-text{flex:1;font-size:14px;min-width:0;word-break:break-word;line-height:1.5;color:var(--text);cursor:pointer}
+.list-item-text{flex:1;font-size:13px;min-width:0;word-break:break-word;line-height:1.4;padding-top:1px}
 .list-item.done .list-item-text{color:var(--text-dim);text-decoration:line-through}
-
-/* tag */
-.list-item-tag{font-size:10px;padding:2px 7px;border-radius:4px;background:var(--violet-glow);color:var(--violet-light);border:1px solid rgba(124,58,237,0.25);white-space:nowrap;flex-shrink:0;margin-top:3px;cursor:pointer}
-
-/* ações — visíveis só no hover, agrupadas à direita */
-.list-item-actions{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity 0.15s;margin-top:1px}
-.list-item:hover .list-item-actions{opacity:1}
-.list-item-actions button{width:22px;height:22px;display:flex;align-items:center;justify-content:center;border:none;border-radius:4px;background:transparent;cursor:pointer;font-size:11px;color:var(--text-dim);transition:all 0.12s;padding:0}
-.list-item-actions button:hover{background:var(--border);color:var(--text)}
-.list-item-actions .act-del:hover{background:rgba(239,68,68,0.15);color:var(--red)}
-
-/* tag inline — sempre visível, editável ao clicar */
-.list-item-tag-wrap{flex-shrink:0;margin-top:2px}
-.list-item-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;background:var(--tag-bg,rgba(124,58,237,0.15));color:var(--tag-color,#a78bfa);border:1px solid var(--tag-border,rgba(124,58,237,0.25));white-space:nowrap;cursor:pointer;transition:filter 0.12s;line-height:1.6}
-.list-item-tag:hover{filter:brightness(1.15)}
-.list-item-tag.empty{background:transparent;color:var(--text-dim);border:1px dashed var(--border);font-style:italic;--tag-bg:transparent}
-.list-item-tag.empty:hover{background:var(--card);border-color:var(--text-dim);color:var(--text-muted);font-style:normal;filter:none}
-.tag-inline-input{font-size:10px;padding:2px 8px;border-radius:4px;background:var(--card);color:var(--text);border:1px solid var(--border);outline:none;width:90px;font-family:'Inter',sans-serif;line-height:1.6}
-
-/* botões de reordenar — também ocultos até hover */
-.list-item-reorder{display:flex;flex-direction:column;gap:0;flex-shrink:0;opacity:0;transition:opacity 0.15s;margin-top:2px}
-.list-item:hover .list-item-reorder{opacity:0.5}
-.list-item-reorder button{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:7px;padding:1px 3px;line-height:1.2}
-.list-item-reorder button:hover{opacity:1;color:var(--text)}
-
-/* footer de adicionar */
-.list-footer{padding:10px 16px;border-top:1px solid var(--border-soft);background:var(--bg)}
-.list-add-input{width:100%;background:transparent;border:none;outline:none;font-size:13px;color:var(--text-muted);font-family:'Inter',sans-serif}
+.list-item-tag{font-size:9px;padding:2px 5px;border-radius:3px;background:var(--bg);color:var(--text-dim);border:1px solid var(--border-soft);white-space:nowrap;flex-shrink:0}
+.list-footer{padding:8px 14px;border-top:1px solid var(--border-soft)}
+.list-add-input{width:100%;background:transparent;border:none;outline:none;font-size:12px;color:var(--text-muted);font-family:'Inter',sans-serif}
 .list-add-input::placeholder{color:var(--text-dim)}
-.list-add-input:focus{color:var(--text)}
 
 /* ── TOAST ── */
 .toast{position:fixed;bottom:24px;right:20px;background:var(--card);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:var(--radius-sm);font-size:13px;font-family:'Inter',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.5);animation:fadeUp 0.2s ease;z-index:1000;max-width:280px}
@@ -931,6 +896,29 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   #print-table tr { page-break-inside: avoid; }
 }
 
+
+/* ══ STATUS DE LANÇAMENTO ══ */
+.status-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 7px;border-radius:10px;font-size:9px;font-weight:700;cursor:pointer;transition:all .15s;border:1px solid transparent;white-space:nowrap}
+.status-pago    {background:rgba(16,185,129,.12);color:var(--green);border-color:rgba(16,185,129,.25)}
+.status-pago:hover{background:rgba(16,185,129,.25)}
+.status-pendente{background:rgba(245,158,11,.12);color:var(--amber);border-color:rgba(245,158,11,.3)}
+.status-pendente:hover{background:rgba(245,158,11,.25)}
+.status-parcela {background:rgba(6,182,212,.12);color:var(--cyan);border-color:rgba(6,182,212,.25)}
+.status-parcela:hover{background:rgba(6,182,212,.25)}
+.tx-row.tx-pendente{opacity:.78}
+.tx-row.tx-pendente .tx-name{color:var(--muted)}
+.tx-row.tx-pendente{border-left:3px solid var(--amber);padding-left:11px}
+/* Saldos duplos */
+.fin-saldo-duplo{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fin-saldo-duplo .fin-card{border-top:2px solid transparent}
+.fin-saldo-duplo .fin-card.saldo-pago{border-top-color:var(--green)}
+.fin-saldo-duplo .fin-card.saldo-proj{border-top-color:var(--amber)}
+
+.fin-status-opt{padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;font-size:11px;font-weight:600;transition:all .15s;opacity:.6}
+.fin-status-opt.active{opacity:1}
+.fin-status-opt.active.status-pago{background:rgba(16,185,129,.15);color:var(--green);border-color:rgba(16,185,129,.4)}
+.fin-status-opt.active.status-pendente{background:rgba(245,158,11,.15);color:var(--amber);border-color:rgba(245,158,11,.4)}
+.fin-status-opt.active.status-parcela{background:rgba(6,182,212,.15);color:var(--cyan);border-color:rgba(6,182,212,.4)}
 </style>
 
   <!-- PWA -->
@@ -1140,15 +1128,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       <div id="fin-relatorio-section" style="display:none"></div>
       <div id="fin-main-section">
       <div class="fin-summary">
-        <div class="fin-card saldo" style="padding:10px 12px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-            <span class="fin-label" style="margin:0">Receitas e Despesas</span>
-            <div style="display:flex;gap:10px;font-size:9px;color:var(--text-muted)">
-              <span><span style="display:inline-block;width:12px;height:2px;background:#A78BFA;vertical-align:middle;margin-right:3px;border-radius:1px"></span>Receita</span>
-              <span><span style="display:inline-block;width:12px;height:2px;background:#EC4899;vertical-align:middle;margin-right:3px;border-radius:1px"></span>Despesa</span>
-            </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="fin-card saldo saldo-pago" style="padding:10px 12px;flex:1">
+            <div class="fin-label" style="margin-bottom:2px">💰 Saldo atual</div>
+            <div class="fin-value" id="fin-saldo" style="font-size:16px">R$&nbsp;0</div>
+            <div class="fin-delta" id="fin-saldo-delta" style="font-size:9px">apenas pagos</div>
           </div>
-          <canvas id="fin-area-chart" style="width:100%"></canvas>
+          <div class="fin-card saldo saldo-proj" style="padding:10px 12px;flex:1">
+            <div class="fin-label" style="margin-bottom:2px">📊 Projetado</div>
+            <div class="fin-value" id="fin-saldo-proj" style="font-size:16px">R$&nbsp;0</div>
+            <div class="fin-delta" id="fin-saldo-proj-delta" style="font-size:9px">inclui pendentes</div>
+          </div>
         </div>
         <div class="fin-card entrada">
           <div class="fin-label">Entradas</div>
@@ -1624,6 +1614,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
         <input class="form-input" id="fin-obs" placeholder="Opcional…">
       </div>
       <div class="form-row">
+        <label>Status</label>
+        <div style="display:flex;gap:6px">
+          <button type="button" class="fin-status-opt status-pago" onclick="finSetStatus('pago')" data-status="pago">✅ Pago</button>
+          <button type="button" class="fin-status-opt status-pendente" onclick="finSetStatus('pendente')" data-status="pendente">⏳ Pendente</button>
+          <button type="button" class="fin-status-opt status-parcela" onclick="finSetStatus('parcela')" data-status="parcela">📋 Parcela</button>
+        </div>
+        <input type="hidden" id="fin-status" value="pago">
+      </div>
+      <div class="form-row">
         <label>🏷️ Tags <span style="font-size:10px;color:var(--text-dim);font-weight:400">(Enter ou vírgula para confirmar)</span></label>
         <div style="display:flex;gap:6px;align-items:flex-start">
           <div class="fin-tag-wrap" id="fin-tag-wrap" onclick="document.getElementById('fin-tag-inp').focus()" style="flex:1">
@@ -2068,8 +2067,12 @@ function saveFinance() {
   // Confirma tag digitada mas não fixada (usuário pode não ter pressionado +)
   var finInp = document.getElementById('fin-tag-inp');
   if (finInp && finInp.value.trim()) { finAddTagChip(finInp.value.trim()); finInp.value = ''; }
-  const tags = finGetTags();
-  finances.unshift({id: nextFinId++, desc, type, value:val, date, method, category, source, obs, tags});
+  // Confirma tag digitada mas não fixada
+  var finInp = document.getElementById('fin-tag-inp');
+  if (finInp && finInp.value.trim()) { finAddTagChip(finInp.value.trim()); finInp.value = ''; }
+  const tags   = finGetTags();
+  const status = document.getElementById('fin-status') ? document.getElementById('fin-status').value : 'pago';
+  finances.unshift({id: nextFinId++, desc, type, value:val, date, method, category, source, obs, tags, status});
   if (originId) removeFromBacklog(originId);
   closeModal('modal-fin');
   lsSave();
@@ -2638,12 +2641,30 @@ function renderFinance() {
   const totalS = saidas.reduce((s,f)=>s+f.value,0);
   const saldo  = totalE - totalS;
 
+  // Saldo pago (só lançamentos com status pago)
+  const entradasPagas = entradas.filter(f=>!f.status||f.status==='pago');
+  const saidasPagas   = saidas.filter(f=>!f.status||f.status==='pago');
+  const totalEP = entradasPagas.reduce((s,f)=>s+f.value,0);
+  const totalSP = saidasPagas.reduce((s,f)=>s+f.value,0);
+  const saldoPago = totalEP - totalSP;
+  // Saldo projetado (todos)
+  const saldoProj = totalE - totalS;
+  const pendentesVal = Math.abs(saldoProj - saldoPago);
+
   var elSaldo = document.getElementById('fin-saldo');
-  if (elSaldo) elSaldo.textContent = fmtMoney(saldo);
+  if (elSaldo) elSaldo.textContent = (saldoPago>=0?'+':'') + fmtMoney(Math.abs(saldoPago));
+  if (elSaldo) elSaldo.style.color = saldoPago>=0?'var(--green)':'var(--red)';
+  var elSD = document.getElementById('fin-saldo-delta');
+  if (elSD) elSD.textContent = 'apenas pagos';
+
+  var elProj = document.getElementById('fin-saldo-proj');
+  if (elProj) elProj.textContent = (saldoProj>=0?'+':'') + fmtMoney(Math.abs(saldoProj));
+  if (elProj) elProj.style.color = saldoProj>=0?'var(--green)':'var(--amber)';
+  var elProjD = document.getElementById('fin-saldo-proj-delta');
+  if (elProjD) elProjD.textContent = pendentesVal>0?'inclui R$ '+fmtMoney(pendentesVal)+' pendentes':'sem pendentes';
+
   document.getElementById('fin-entrada').textContent = fmtMoney(totalE);
   document.getElementById('fin-saida').textContent   = fmtMoney(totalS);
-  var elSD = document.getElementById('fin-saldo-delta');
-  if (elSD) elSD.textContent = saldo>=0 ? '↑ saldo positivo' : '↓ saldo negativo';
   document.getElementById('fin-entrada-delta').textContent = `${entradas.length} lançamento${entradas.length!==1?'s':''}`;
   document.getElementById('fin-saida-delta').textContent   = `${saidas.length} lançamento${saidas.length!==1?'s':''}`;
 
@@ -2651,11 +2672,14 @@ function renderFinance() {
   const filtFin = filteredFinances();
   document.getElementById('fin-tx-list').innerHTML = activeFiltersPillsHtml() + (filtFin.length
     ? filtFin.map(f=>`
-      <div class="tx-row" onclick="editFinance(${f.id})">
+      <div class="tx-row${f.status==='pendente'?' tx-pendente':''}" onclick="editFinance(${f.id})">
         <div class="tx-meta-m">${f.date?fmtDate(f.date):'—'}${f.method?' · '+escHtml(f.method):''}${f.category?' · '+escHtml(f.category):''}</div>
         <div>
           <div class="tx-name">${escHtml(f.desc)}</div>
-          <div class="tx-cat">${escHtml(f.category)}${f.source?' · '+escHtml(f.source):''}</div>
+          <div class="tx-cat" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            ${escHtml(f.category)}${f.source?' · '+escHtml(f.source):''}
+            <span class="status-badge status-${f.status||'pago'}" onclick="event.stopPropagation();toggleFinStatus(${f.id})" title="Clique para alternar status">${f.status==='pendente'?'⏳ Pendente':f.status==='parcela'?'📋 Parcela':'✅ Pago'}</span>
+          </div>
           ${f.tags&&f.tags.length?'<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:3px" onclick="event.stopPropagation()">'+f.tags.map(t=>'<span style="font-size:9px;padding:1px 5px 1px 6px;border-radius:7px;background:var(--violet-glow);border:1px solid rgba(124,58,237,.25);color:var(--violet-light);font-weight:600;display:inline-flex;align-items:center;gap:2px">'+escHtml(t)+'<button onclick="removeFinTag('+f.id+',\''+escHtml(t).replace(/'/g,"\\'")+'\')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:9px;padding:0 1px;line-height:1">✕</button></span>').join('')+'</div>':''}
         </div>
         <span class="tx-date">${f.date?fmtDate(f.date):'—'}</span>
@@ -2704,20 +2728,16 @@ function renderLists() {
       <div class="list-items">
         ${filteredListItems(list).map(item=>`
           <div class="list-item${item.done?' done':''}">
-            <div class="list-item-reorder">
-              <button onclick="event.stopPropagation();moveListItem('${list.id}',${item.id},-1)" title="Subir">▲</button>
-              <button onclick="event.stopPropagation();moveListItem('${list.id}',${item.id},1)" title="Descer">▼</button>
+            <div style="display:flex;flex-direction:column;gap:1px;flex-shrink:0;margin-right:2px;opacity:0.4">
+              <button onclick="event.stopPropagation();moveListItem('${list.id}',${item.id},-1)" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:8px;padding:0 3px;line-height:1.2" title="Subir">▲</button>
+              <button onclick="event.stopPropagation();moveListItem('${list.id}',${item.id},1)"  style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:8px;padding:0 3px;line-height:1.2" title="Descer">▼</button>
             </div>
             <div class="check-box" onclick="toggleListItem('${list.id}',${item.id})">${item.done?'✓':''}</div>
             <span class="list-item-text" onclick="toggleListItem('${list.id}',${item.id})">${escHtml(item.text)}</span>
-            <div class="list-item-tag-wrap">
-              <span class="list-item-tag${item.tag?'':' empty'}" ${item.tag?tagColorStyle(item.tag):''} onclick="event.stopPropagation();startTagEdit(this,'${list.id}',${item.id})">${item.tag?escHtml(item.tag):'+ tag'}</span>
-            </div>
-            <div class="list-item-actions">
-              <button onclick="event.stopPropagation();editListItem('${list.id}',${item.id})" title="Editar">✏️</button>
-              <button onclick="event.stopPropagation();sendToBacklog('list-item',{listId:'${list.id}',itemId:${item.id}})" title="↩ Backlog">↩</button>
-              <button class="act-del" onclick="event.stopPropagation();deleteListItem('${list.id}',${item.id})" title="Remover">✕</button>
-            </div>
+            ${item.tag?`<span class="list-item-tag" onclick="editListItem('${list.id}',${item.id})" style="cursor:pointer" title="Clique para editar">${escHtml(item.tag)}</span>`:`<span style="font-size:9px;color:var(--text-dim);cursor:pointer" onclick="editListItem('${list.id}',${item.id})" title="Adicionar tag">+tag</span>`}
+            <button class="btn btn-ghost btn-sm" style="padding:2px 4px;font-size:10px;flex-shrink:0;color:var(--text-dim)" onclick="event.stopPropagation();sendToBacklog('list-item',{listId:'${list.id}',itemId:${item.id}})" title="↩ Backlog">↩</button>
+            <button class="btn btn-ghost btn-sm" style="padding:2px 5px;font-size:10px;opacity:0.5;flex-shrink:0" onclick="event.stopPropagation();editListItem('${list.id}',${item.id})">✏️</button>
+            <button class="btn btn-danger btn-sm" style="padding:2px 5px;font-size:10px;flex-shrink:0" onclick="event.stopPropagation();deleteListItem('${list.id}',${item.id})">✕</button>
           </div>`).join('')}
       </div>
       <div class="list-footer">
@@ -3581,7 +3601,8 @@ function editFinance(id) {
     f.source   = document.getElementById('fin-source').value.trim();
     f.obs      = document.getElementById('fin-obs').value.trim();
     f.type     = document.getElementById('fin-type').value;
-    f.tags     = finGetTags(); // ← salva tags
+    f.tags     = finGetTags();
+    f.status   = document.getElementById('fin-status') ? document.getElementById('fin-status').value : (f.status || 'pago');
     closeModal('modal-fin');
     resetFinModal();
     lsSave();
@@ -3616,6 +3637,8 @@ function resetFinModal() {
   const btn = document.querySelector('#modal-fin .btn-primary');
   btn.textContent = 'Registrar';
   btn.onclick = saveFinance;
+  // Reset status para pago
+  finSetStatus('pago');
   // Limpa tags
   var wrap = document.getElementById('fin-tag-wrap');
   if (wrap) {
@@ -3631,60 +3654,6 @@ function resetFinModal() {
 // ══════════════════════════════════════════
 //  EDIÇÃO — LISTA ITENS
 // ══════════════════════════════════════════
-
-// Paleta de cores para tags — hash do nome → cor consistente
-function tagColor(name) {
-  const palette = [
-    {bg:'rgba(124,58,237,0.15)',  color:'#a78bfa', border:'rgba(124,58,237,0.3)'},  // violeta
-    {bg:'rgba(6,182,212,0.15)',   color:'#22d3ee', border:'rgba(6,182,212,0.3)'},   // ciano
-    {bg:'rgba(245,158,11,0.15)',  color:'#fbbf24', border:'rgba(245,158,11,0.3)'},  // âmbar
-    {bg:'rgba(16,185,129,0.15)',  color:'#34d399', border:'rgba(16,185,129,0.3)'},  // verde
-    {bg:'rgba(239,68,68,0.15)',   color:'#f87171', border:'rgba(239,68,68,0.3)'},   // vermelho
-    {bg:'rgba(59,130,246,0.15)',  color:'#60a5fa', border:'rgba(59,130,246,0.3)'},  // azul
-    {bg:'rgba(236,72,153,0.15)',  color:'#f472b6', border:'rgba(236,72,153,0.3)'},  // rosa
-    {bg:'rgba(251,146,60,0.15)',  color:'#fb923c', border:'rgba(251,146,60,0.3)'},  // laranja
-  ];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
-  return palette[hash % palette.length];
-}
-
-function tagColorStyle(name) {
-  if (!name) return '';
-  const c = tagColor(name);
-  return `style="--tag-bg:${c.bg};--tag-color:${c.color};--tag-border:${c.border}"`;
-}
-
-// Edição inline da tag — substitui o span por um input
-function startTagEdit(spanEl, listId, itemId) {
-  const list = lists.find(l=>l.id===listId);
-  if (!list) return;
-  const item = list.items.find(i=>i.id===itemId);
-  if (!item) return;
-
-  const inp = document.createElement('input');
-  inp.className = 'tag-inline-input';
-  inp.value = item.tag || '';
-  inp.placeholder = 'tag…';
-  inp.maxLength = 24;
-  spanEl.replaceWith(inp);
-  inp.focus();
-  inp.select();
-
-  function commit() {
-    const val = inp.value.trim();
-    item.tag = val;
-    lsSave();
-    scheduleSave();
-    renderLists();
-  }
-  inp.addEventListener('blur', commit);
-  inp.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); inp.blur(); }
-    if (e.key === 'Escape') { inp.removeEventListener('blur', commit); renderLists(); }
-  });
-}
-
 function editListItem(listId, itemId) {
   const list = lists.find(l=>l.id===listId);
   if (!list) return;
@@ -9664,6 +9633,7 @@ function finRelRender() {
       '<td style="font-family:monospace;color:var(--text-muted);font-size:10px;white-space:nowrap">'+dateF+'</td>' +
       '<td style="font-weight:600;max-width:200px">'+escHtml(f.desc)+(f.source?'<div style="font-size:9px;color:var(--dim)">'+escHtml(f.source)+'</div>':'')+'</td>' +
       '<td>'+badge+'</td>' +
+      '<td><span class="status-badge status-'+(f.status||'pago')+'" onclick="event.stopPropagation();toggleFinStatus('+f.id+');finRelRender()" style="cursor:pointer">'+(f.status==='pendente'?'⏳ Pendente':f.status==='parcela'?'📋 Parcela':'✅ Pago')+'</span></td>' +
       '<td><span style="font-size:10px;background:var(--border-soft);padding:2px 7px;border-radius:6px;color:var(--muted)">'+escHtml(f.category||'')+'</span></td>' +
       '<td style="color:var(--text-muted);font-size:11px;white-space:nowrap">'+escHtml(f.method||'')+'</td>' +
       '<td style="font-weight:800;color:'+valC+';font-size:12px;white-space:nowrap">'+(f.type==='entrada'?'+':'-')+fmtMoney(f.value)+'</td>' +
@@ -10082,9 +10052,10 @@ function duplicateFinance(id) {
   updateFinCategorySelects();
   document.getElementById('fin-category').value = f.category || '';
 
-  // Carrega as tags do original
+  // Carrega as tags e status do original
   var tw = document.getElementById('fin-tag-wrap');
   if (tw) (f.tags||[]).forEach(function(t){ finAddTagChip(t); });
+  finSetStatus(f.status || 'pago');
 
   // Ajusta o título e o botão do modal
   document.querySelector('#modal-fin .modal-title').textContent = 'Duplicar Lançamento';
@@ -10346,7 +10317,47 @@ function saveFinParcelado() {
   showToast('✅ ' + dates.length + ' lançamento(s) gerado(s)!');
 }
 
+// ══ STATUS DE LANÇAMENTO ══
+function finSetStatus(status) {
+  var inp = document.getElementById('fin-status');
+  if (inp) inp.value = status || 'pago';
+  document.querySelectorAll('.fin-status-opt').forEach(function(btn) {
+    btn.classList.remove('active');
+    if (btn.dataset.status === (status || 'pago')) btn.classList.add('active');
+  });
+}
+
+function toggleFinStatus(id) {
+  var f = finances.find(function(x){ return x.id === id; });
+  if (!f) return;
+  var cycle = ['pago','pendente','parcela'];
+  var cur   = cycle.indexOf(f.status || 'pago');
+  f.status  = cycle[(cur + 1) % cycle.length];
+  lsSave(); scheduleSave();
+  renderFinance();
+  if (finRelOpen) finRelRender();
+  showToast('Status: ' + (f.status === 'pago' ? '✅ Pago' : f.status === 'pendente' ? '⏳ Pendente' : '📋 Parcela'));
+}
+
+// ══ CATEGORIAS PADRÃO ══
+function ensureDefaultCategories() {
+  var needed = [
+    {id:'Poupança/Reserva', label:'Poupança/Reserva', type:'saida'},
+    {id:'Investimento',     label:'Investimento',     type:'saida'},
+  ];
+  needed.forEach(function(nc) {
+    var exists = (finCategories||[]).some(function(c) {
+      return (typeof c==='string'?c:c.id) === nc.id;
+    });
+    if (!exists) {
+      finCategories = finCategories || [];
+      finCategories.push(nc);
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+  ensureDefaultCategories();
 
 // Calcula altura real da viewport (exclui barra do navegador em tablets)
 // setAppHeight desativado — usando height:100% puro que funciona melhor em PWA
