@@ -1040,6 +1040,20 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .btn-act:hover{border-color:var(--violet);color:var(--violet-light)}
 .btn-del{color:var(--red)!important;border-color:rgba(239,68,68,.2)}
 .btn-del:hover{background:rgba(239,68,68,.1)!important}
+
+/* ══ SELETOR DE STATUS INLINE ══ */
+.status-selector{display:inline-flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:2px}
+.status-opt{padding:2px 7px;border-radius:6px;font-size:9px;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .15s;white-space:nowrap}
+.status-opt:hover{color:var(--text)}
+.status-opt.active-pago    {background:rgba(16,185,129,.18);color:var(--green)}
+.status-opt.active-pendente{background:rgba(245,158,11,.18);color:var(--amber)}
+.status-opt.active-parcela {background:rgba(6,182,212,.18);color:var(--cyan)}
+.venc-badge{display:inline-flex;align-items:center;gap:3px;font-size:8px;color:var(--amber);margin-top:3px;font-weight:600}
+.venc-badge.urgente{color:var(--red)}
+/* Mini-modal vencimento */
+.venc-modal-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;max-width:320px;width:100%}
+.venc-modal-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.venc-modal-sub{font-size:11px;color:var(--muted);margin-bottom:14px}
 </style>
 
   <!-- PWA -->
@@ -2872,9 +2886,19 @@ function renderFinList() {
         <td class="col-data">${f.date?fmtDate(f.date):'—'}</td>
         <td class="col-forma">${escHtml(f.method||'—')}</td>
         <td class="col-status" onclick="event.stopPropagation()">
-          <span class="status-badge status-${f.status||'pago'}" onclick="toggleFinStatus(${f.id})" title="Clique para alternar">
-            ${f.type==='entrada'?(f.status==='pendente'?'⏳ A receber':'✅ Recebido'):(f.status==='pendente'?'⏳ Pendente':f.status==='parcela'?'📋 Parcela':'✅ Pago')}
-          </span>
+          ${f.type==='entrada'
+            ?`<div class="status-selector">
+              <button class="status-opt ${f.status!=='pendente'?'active-pago':''}" onclick="finSetStatusInline(${f.id},'pago')">✅ Recebido</button>
+              <button class="status-opt ${f.status==='pendente'?'active-pendente':''}" onclick="finSetStatusInline(${f.id},'pendente')">⏳ A receber</button>
+            </div>`
+            :`<div class="status-selector">
+              <button class="status-opt ${(!f.status||f.status==='pago')?'active-pago':''}" onclick="finSetStatusInline(${f.id},'pago')">✅ Pago</button>
+              <button class="status-opt ${f.status==='pendente'?'active-pendente':''}" onclick="finSetStatusInline(${f.id},'pendente')">⏳ Pendente</button>
+              <button class="status-opt ${f.status==='parcela'?'active-parcela':''}" onclick="finSetStatusInline(${f.id},'parcela')">📋 Parcela</button>
+            </div>
+            ${f.due_date?`<div class="venc-badge${(new Date(f.due_date+'T12:00:00')-new Date())<=3*86400000?' urgente':''}">
+              ${(new Date(f.due_date+'T12:00:00')-new Date())<=3*86400000?'⚠️':'📅'} vence ${new Date(f.due_date+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})}
+            </div>`:''}`}
         </td>
         <td class="col-valor ${f.type==='entrada'?'pos':'neg'}">${f.type==='entrada'?'+':'-'}${fmtMoney(f.value)}</td>
         <td class="col-acts" onclick="event.stopPropagation()">
@@ -2903,21 +2927,27 @@ function renderFinance() {
   const totalEP = entradasPagas.reduce((s,f)=>s+f.value,0);
   const totalSP = saidasPagas.reduce((s,f)=>s+f.value,0);
   const saldoPago = totalEP - totalSP;
-  // Saldo projetado (todos)
-  const saldoProj = totalE - totalS;
-  const pendentesVal = Math.abs(saldoProj - saldoPago);
-
+  // Card 1 — Total pago no mês
   var elSaldo = document.getElementById('fin-saldo');
-  if (elSaldo) elSaldo.textContent = (saldoPago>=0?'+':'') + fmtMoney(Math.abs(saldoPago));
-  if (elSaldo) elSaldo.style.color = saldoPago>=0?'var(--green)':'var(--red)';
+  if (elSaldo) elSaldo.textContent = '-' + fmtMoney(totalSP);
+  if (elSaldo) elSaldo.style.color = totalSP>0?'var(--red)':'var(--muted)';
   var elSD = document.getElementById('fin-saldo-delta');
-  if (elSD) elSD.textContent = 'apenas pagos';
+  if (elSD) elSD.textContent = saidasPagas.length + ' pagamento(s) no mês';
 
+  // Card 2 — Comprometimento: pendentes/parcelas com due_date ou date no mês
+  var mesFiltro = finCalYear + '-' + String(finCalMonth+1).padStart(2,'0');
+  var saidasPendentes = finances.filter(function(f) {
+    if (f.type !== 'saida') return false;
+    if (f.status !== 'pendente' && f.status !== 'parcela') return false;
+    var dataRef = f.due_date || f.date || '';
+    return dataRef.startsWith(mesFiltro);
+  });
+  var comprometido = saidasPendentes.reduce(function(s,f){ return s+f.value; }, 0);
   var elProj = document.getElementById('fin-saldo-proj');
-  if (elProj) elProj.textContent = (saldoProj>=0?'+':'') + fmtMoney(Math.abs(saldoProj));
-  if (elProj) elProj.style.color = saldoProj>=0?'var(--green)':'var(--amber)';
+  if (elProj) elProj.textContent = comprometido > 0 ? '-' + fmtMoney(comprometido) : fmtMoney(0);
+  if (elProj) elProj.style.color = comprometido>0?'var(--amber)':'var(--muted)';
   var elProjD = document.getElementById('fin-saldo-proj-delta');
-  if (elProjD) elProjD.textContent = pendentesVal>0?'inclui R$ '+fmtMoney(pendentesVal)+' pendentes':'sem pendentes';
+  if (elProjD) elProjD.textContent = saidasPendentes.length>0 ? saidasPendentes.length+' lançamento(s) a pagar' : 'nada pendente ✅';
 
   document.getElementById('fin-entrada').textContent = fmtMoney(totalE);
   document.getElementById('fin-saida').textContent   = fmtMoney(totalS);
@@ -11372,6 +11402,53 @@ function salvarCatsEssenciais() {
   showToast('✅ Categorias essenciais salvas (' + indCatsEssenciais.length + ')');
 }
 
+// ══ SELETOR DE STATUS INLINE ══
+var _vencFinId = null; // ID do lançamento aguardando data de vencimento
+
+function finSetStatusInline(id, status) {
+  if (status === 'pendente') {
+    // Abre mini-modal para pedir data de vencimento
+    _vencFinId = id;
+    var f = finances.find(function(x){ return x.id === id; });
+    var desc = f ? f.desc : '';
+    var el = document.getElementById('venc-modal-desc');
+    if (el) el.textContent = '"' + desc + '" — informe a data de vencimento';
+    // Pré-preenche com due_date existente ou vazio
+    var inp = document.getElementById('venc-date');
+    if (inp) inp.value = (f && f.due_date) ? f.due_date : '';
+    openModal('modal-vencimento');
+    return;
+  }
+  // Pago ou Parcela — muda direto, limpa due_date
+  var f = finances.find(function(x){ return x.id === id; });
+  if (!f) return;
+  f.status = status;
+  if (status === 'pago') f.due_date = null;
+  lsSave(); scheduleSave();
+  renderFinList();
+  renderFinance();
+}
+
+function cancelarVenc() {
+  closeModal('modal-vencimento');
+  _vencFinId = null;
+}
+
+function confirmarVenc() {
+  var date = document.getElementById('venc-date').value;
+  if (!date) { showToast('⚠️ Informe a data de vencimento'); return; }
+  var f = finances.find(function(x){ return x.id === _vencFinId; });
+  if (!f) return;
+  f.status   = 'pendente';
+  f.due_date = date;
+  closeModal('modal-vencimento');
+  _vencFinId = null;
+  lsSave(); scheduleSave();
+  renderFinList();
+  renderFinance();
+  showToast('⏳ Vencimento: ' + new Date(date+'T12:00:00').toLocaleDateString('pt-BR'));
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   ensureDefaultCategories();
   setTimeout(checkRecorrentesDoMes, 3000);
@@ -12150,6 +12227,21 @@ function setAppHeight() {}
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-cats-essenciais')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarCatsEssenciais()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ MINI-MODAL VENCIMENTO ══ -->
+<div class="modal-overlay" id="modal-vencimento">
+  <div class="venc-modal-box">
+    <div class="venc-modal-title">⏳ Marcar como Pendente</div>
+    <div class="venc-modal-sub" id="venc-modal-desc">Informe a data de vencimento</div>
+    <input type="date" class="form-input" id="venc-date" style="width:100%;margin-bottom:8px">
+    <div style="font-size:10px;color:var(--dim);margin-bottom:14px">O comprometimento será contabilizado no mês do vencimento</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="cancelarVenc()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarVenc()">Confirmar</button>
     </div>
   </div>
 </div>
