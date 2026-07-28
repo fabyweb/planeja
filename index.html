@@ -3617,16 +3617,12 @@ function deleteFinCategory(idx) {
 
 
 function getPayMethods() {
-  var defaults = ['PIX','Débito','Crédito','Dinheiro','TED','Outro'];
-  // Coleta formas dos lançamentos existentes
-  var fromFinances = {};
-  (typeof finances !== 'undefined' ? finances : []).forEach(function(f) {
-    if (f.method) fromFinances[f.method] = true;
-  });
-  // Merge: padrões + dos lançamentos + customizadas manualmente
+  var builtin = [
+    'Boleto','Cartão C6','Cartão Santander','Cartão Zaffari',
+    'Crédito','DDA','Débito','Dinheiro','Outro','PIX','TED','Transferência'
+  ];
   var all = {};
-  defaults.forEach(function(m){ all[m] = true; });
-  Object.keys(fromFinances).forEach(function(m){ all[m] = true; });
+  builtin.forEach(function(m){ all[m] = true; });
   customPayMethods.forEach(function(m){ all[m] = true; });
   return Object.keys(all).sort(function(a,b){
     return a.localeCompare(b,'pt-BR',{sensitivity:'base'});
