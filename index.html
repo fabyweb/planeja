@@ -1293,12 +1293,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       <div class="fin-summary">
         <div style="display:flex;flex-direction:column;gap:8px">
           <div class="fin-card saldo saldo-pago" style="padding:10px 12px;flex:1">
-            <div class="fin-label" style="margin-bottom:2px">💰 Saldo atual</div>
+            <div class="fin-label" style="margin-bottom:2px">💰 Total pago</div>
             <div class="fin-value" id="fin-saldo" style="font-size:16px">R$&nbsp;0</div>
             <div class="fin-delta" id="fin-saldo-delta" style="font-size:9px">apenas pagos</div>
           </div>
           <div class="fin-card saldo saldo-proj" style="padding:10px 12px;flex:1">
-            <div class="fin-label" style="margin-bottom:2px">📊 Projetado</div>
+            <div class="fin-label" style="margin-bottom:2px">📋 Comprometimento</div>
             <div class="fin-value" id="fin-saldo-proj" style="font-size:16px">R$&nbsp;0</div>
             <div class="fin-delta" id="fin-saldo-proj-delta" style="font-size:9px">inclui pendentes</div>
           </div>
@@ -9866,7 +9866,7 @@ function finRelRender() {
       '<td style="font-family:monospace;color:var(--text-muted);font-size:10px;white-space:nowrap">'+dateF+'</td>' +
       '<td style="font-weight:600;max-width:200px">'+escHtml(f.desc)+(f.source?'<div style="font-size:9px;color:var(--dim)">'+escHtml(f.source)+'</div>':'')+'</td>' +
       '<td>'+badge+'</td>' +
-      '<td><span class="status-badge status-'+(f.status||'pago')+'" onclick="event.stopPropagation();toggleFinStatus('+f.id+');finRelRender()" style="cursor:pointer">'+(f.status==='pendente'?'⏳ Pendente':f.status==='parcela'?'📋 Parcela':'✅ Pago')+'</span></td>' +
+      '<td><span class="status-badge status-'+(f.status||'pago')+'" onclick="event.stopPropagation();toggleFinStatus('+f.id+');finRelRender()" style="cursor:pointer">'+(f.type==='entrada'?(f.status==='pendente'?'⏳ A receber':'✅ Recebido'):(f.status==='pendente'?'⏳ Pendente':f.status==='parcela'?'📋 Parcela':'✅ Pago'))+'</span></td>' +
       '<td><span style="font-size:10px;background:var(--border-soft);padding:2px 7px;border-radius:6px;color:var(--muted)">'+escHtml(f.category||'')+'</span></td>' +
       '<td style="color:var(--text-muted);font-size:11px;white-space:nowrap">'+escHtml(f.method||'')+'</td>' +
       '<td style="font-weight:800;color:'+valC+';font-size:12px;white-space:nowrap">'+(f.type==='entrada'?'+':'-')+fmtMoney(f.value)+'</td>' +
