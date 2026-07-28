@@ -3860,6 +3860,7 @@ function editFinance(id) {
   document.getElementById('fin-desc').value    = f.desc;
   document.getElementById('fin-value').value   = f.value;
   document.getElementById('fin-date').value    = f.date;
+  updateFinMethodSelects(); // popula o select com todas as formas ANTES de setar o valor
   document.getElementById('fin-method').value  = f.method;
   document.getElementById('fin-source').value  = f.source||'';
   document.getElementById('fin-obs').value     = f.obs||'';
