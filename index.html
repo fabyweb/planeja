@@ -2852,6 +2852,38 @@ function finCalNav(dir) {
   renderFinCalendar();
   renderIndicadores();
   renderFinCatChart();
+  renderFinList();
+}
+
+function renderFinList() {
+  var el = document.getElementById('fin-tx-list');
+  if (!el) return;
+  var filtFin = filteredFinances();
+  el.innerHTML = filtFin.length
+    ? filtFin.map(f=>`
+      <tr class="${f.status==='pendente'?'tx-pendente':''}" onclick="editFinance(${f.id})">
+        <td class="col-desc">
+          <div class="tx-nome">${escHtml(f.desc)}</div>
+          <div class="tx-sub">
+            <span>${escHtml(f.category||'')}${f.source?' · '+escHtml(f.source):''}</span>
+            ${f.tags&&f.tags.length?f.tags.map(t=>'<span class="tag-chip">'+escHtml(t)+'</span>').join(''):''}
+          </div>
+        </td>
+        <td class="col-data">${f.date?fmtDate(f.date):'—'}</td>
+        <td class="col-forma">${escHtml(f.method||'—')}</td>
+        <td class="col-status" onclick="event.stopPropagation()">
+          <span class="status-badge status-${f.status||'pago'}" onclick="toggleFinStatus(${f.id})" title="Clique para alternar">
+            ${f.type==='entrada'?(f.status==='pendente'?'⏳ A receber':'✅ Recebido'):(f.status==='pendente'?'⏳ Pendente':f.status==='parcela'?'📋 Parcela':'✅ Pago')}
+          </span>
+        </td>
+        <td class="col-valor ${f.type==='entrada'?'pos':'neg'}">${f.type==='entrada'?'+':'-'}${fmtMoney(f.value)}</td>
+        <td class="col-acts" onclick="event.stopPropagation()">
+          <button class="btn-act" onclick="finToBacklog(${f.id})" title="Backlog">↩</button>
+          <button class="btn-act" onclick="duplicateFinance(${f.id})" title="Duplicar" style="color:var(--cyan)">⎘</button>
+          <button class="btn-act btn-del" onclick="deleteFinance(${f.id})">✕</button>
+        </td>
+      </tr>`).join('')
+    : '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--dim);font-size:12px">Nenhum lançamento neste mês.</td></tr>';
 }
 
 function renderFinance() {
@@ -2889,32 +2921,7 @@ function renderFinance() {
   document.getElementById('fin-saida-delta').textContent   = `${saidas.length} lançamento${saidas.length!==1?'s':''}`;
 
   // Transactions
-  const filtFin = filteredFinances();
-  document.getElementById('fin-tx-list').innerHTML = activeFiltersPillsHtml() + (filtFin.length
-    ? filtFin.map(f=>`
-      <tr class="${f.status==='pendente'?'tx-pendente':''}" onclick="editFinance(${f.id})">
-        <td class="col-desc">
-          <div class="tx-nome">${escHtml(f.desc)}</div>
-          <div class="tx-sub">
-            <span>${escHtml(f.category||'')}${f.source?' · '+escHtml(f.source):''}</span>
-            ${f.tags&&f.tags.length?f.tags.map(t=>'<span class="tag-chip">'+escHtml(t)+'</span>').join(''):''}
-          </div>
-        </td>
-        <td class="col-data">${f.date?fmtDate(f.date):'—'}</td>
-        <td class="col-forma">${escHtml(f.method||'—')}</td>
-        <td class="col-status" onclick="event.stopPropagation()">
-          <span class="status-badge status-${f.status||'pago'}" onclick="toggleFinStatus(${f.id})" title="Clique para alternar">
-            ${f.type==='entrada'?(f.status==='pendente'?'⏳ A receber':'✅ Recebido'):(f.status==='pendente'?'⏳ Pendente':f.status==='parcela'?'📋 Parcela':'✅ Pago')}
-          </span>
-        </td>
-        <td class="col-valor ${f.type==='entrada'?'pos':'neg'}">${f.type==='entrada'?'+':'-'}${fmtMoney(f.value)}</td>
-        <td class="col-acts" onclick="event.stopPropagation()">
-          <button class="btn-act" onclick="finToBacklog(${f.id})" title="Backlog">↩</button>
-          <button class="btn-act" onclick="duplicateFinance(${f.id})" title="Duplicar" style="color:var(--cyan)">⎘</button>
-          <button class="btn-act btn-del" onclick="deleteFinance(${f.id})">✕</button>
-        </td>
-      </tr>`).join('')
-    : '<p style="color:var(--text-dim);font-size:13px;padding:16px">Nenhum lançamento ainda.</p>');
+    renderFinList();
 
   renderFinCalendar();
   renderFinCatPanel();
