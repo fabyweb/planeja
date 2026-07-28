@@ -254,7 +254,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .fin-cal-stat-val{font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace}
 @media(max-width:1024px){.fin-cal-cell{min-height:40px;padding:3px}.fin-cal-val{font-size:8px}.fin-cal-day{font-size:9px}.fin-cal-stat-val{font-size:12px}}
 .fin-transactions{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden}
-.table-header{display:grid;grid-template-columns:1fr 80px 80px 70px;padding:9px 14px;background:var(--bg);border-bottom:1px solid var(--border-soft)}
+.table-header{display:grid;grid-template-columns:1fr 80px 80px auto;padding:9px 14px;background:var(--bg);border-bottom:1px solid var(--border-soft)}
 @media(max-width:1024px){
 .table-header{display:none!important}
 .tx-row{display:grid!important;grid-template-columns:1fr auto!important;grid-template-areas:"meta meta" "info acts"!important;padding:11px 14px!important;gap:3px 8px!important;align-items:unset!important}
@@ -1330,6 +1330,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
             <span class="th">Data</span>
             <span class="th">Forma</span>
             <span class="th right">Valor</span>
+            <span class="th"></span>
           </div>
           <div id="fin-tx-list"></div>
         </div>
@@ -9754,7 +9755,7 @@ function renderFinRelatorio() {
       '<div style="overflow-x:auto">' +
         '<table class="rel-table">' +
           '<thead><tr>' +
-            th('date','Data') + th('desc','Descrição') + th('type','Tipo') +
+            th('date','Data') + th('desc','Descrição') + th('type','Tipo') + '<th>Status</th>' +
             th('category','Categoria') + th('method','Forma') + th('value','Valor') +
             '<th>Tags</th><th>Obs.</th>' +
           '</tr></thead>' +
