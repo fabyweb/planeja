@@ -1054,6 +1054,21 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .venc-modal-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;max-width:320px;width:100%}
 .venc-modal-title{font-size:13px;font-weight:700;margin-bottom:4px}
 .venc-modal-sub{font-size:11px;color:var(--muted);margin-bottom:14px}
+
+/* ══ GERENCIADOR FORMAS DE PAGAMENTO ══ */
+.field-with-gear{display:flex;gap:6px;align-items:center}
+.field-with-gear .form-select,.field-with-gear select{flex:1}
+.btn-gear{padding:7px 9px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;font-size:13px;transition:all .15s;flex-shrink:0;line-height:1}
+.btn-gear:hover{border-color:var(--violet);color:var(--violet-light)}
+.pay-list{display:flex;flex-direction:column;gap:4px}
+.pay-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--card);border:1px solid var(--border-soft);border-radius:8px}
+.pay-item-name{flex:1;font-size:12px;font-weight:600;color:var(--text)}
+.pay-item-tag{font-size:9px;padding:1px 7px;border-radius:8px;background:var(--violet-glow);color:var(--violet-light);font-weight:600}
+.pay-item-del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;padding:3px 6px;border-radius:5px;transition:all .15s}
+.pay-item-del:hover{color:var(--red);background:rgba(239,68,68,.1)}
+.pay-add-row{display:flex;gap:6px}
+.pay-add-row input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:12px}
+.pay-add-row input:focus{outline:none;border-color:var(--violet)}
 </style>
 
   <!-- PWA -->
@@ -1805,6 +1820,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
         </div>
         <div class="form-row">
           <label>Forma de pagamento</label>
+          <div class="field-with-gear">
           <select class="form-select" id="fin-method">
             <option value="PIX">PIX</option>
             <option value="Débito">Débito</option>
@@ -1813,6 +1829,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
             <option value="TED">TED</option>
             <option value="Outro">Outro</option>
           </select>
+          <button type="button" class="btn-gear" onclick="openPayMethods()" title="Gerenciar formas de pagamento">⚙️</button>
+        </div>
         </div>
       </div>
       <div class="form-row">
@@ -5907,6 +5925,7 @@ function lsLoad() {
     if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
     if (d.finances)         { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
     if (d.customPayMethods) { customPayMethods = d.customPayMethods; localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods)); }
+    syncPayMethodsFromFinances();
     if (d.recorrentes)     { recorrentes = d.recorrentes; saveRecorrentes(); }
     if (d.finCategories)    { finCategories = d.finCategories; }
     if (d.lists)            { lists = d.lists; nextListId = d.nextListId || nextListId; nextListItemId = d.nextListItemId || nextListItemId; }
@@ -6097,6 +6116,7 @@ async function cloudLoad(forceLoad) {
     if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
     if (d.finances)         { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
     if (d.customPayMethods) { customPayMethods = d.customPayMethods; localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods)); }
+    syncPayMethodsFromFinances();
     if (d.recorrentes)     { recorrentes = d.recorrentes; saveRecorrentes(); }
     if (d.finCategories)    { finCategories = d.finCategories; }
     if (d.lists)            { lists = d.lists; nextListId = d.nextListId || nextListId; nextListItemId = d.nextListItemId || nextListItemId; }
@@ -6185,6 +6205,7 @@ async function fbCloudLoad(forceLoad) {
     }
     if (d.finances)          { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
     if (d.customPayMethods)  { customPayMethods = d.customPayMethods; localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods)); }
+    syncPayMethodsFromFinances();
     if (d.recorrentes)      { recorrentes = d.recorrentes; saveRecorrentes(); }
     if (d.finCategories)     { finCategories = d.finCategories; }
     if (d.lists)             { lists = d.lists; nextListId = d.nextListId||nextListId; nextListItemId = d.nextListItemId||nextListItemId; }
@@ -11449,8 +11470,81 @@ function confirmarVenc() {
   showToast('⏳ Vencimento: ' + new Date(date+'T12:00:00').toLocaleDateString('pt-BR'));
 }
 
+// ══ SINCRONIZA FORMAS DE PAGAMENTO DOS LANÇAMENTOS ══
+function syncPayMethodsFromFinances() {
+  var defaults = ['PIX','Débito','Crédito','Dinheiro','TED','Outro'];
+  var found = {};
+  finances.forEach(function(f) {
+    if (f.method && !defaults.includes(f.method)) found[f.method] = true;
+  });
+  var extras = Object.keys(found).sort();
+  // Adiciona os que ainda não estão em customPayMethods
+  extras.forEach(function(m) {
+    if (!customPayMethods.includes(m)) customPayMethods.push(m);
+  });
+  if (extras.length > 0) {
+    localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods));
+  }
+}
+
+// ══ GERENCIADOR DE FORMAS DE PAGAMENTO ══
+var PAY_DEFAULTS = ['PIX','Débito','Crédito','Dinheiro','TED','Outro'];
+
+function openPayMethods() {
+  renderPayMethodList();
+  openModal('modal-pay-methods');
+  setTimeout(function(){ var i = document.getElementById('nova-pay-input'); if(i) i.focus(); }, 200);
+}
+
+function renderPayMethodList() {
+  var list = document.getElementById('pay-method-list');
+  if (!list) return;
+  var html = '';
+  // Padrões (não removíveis)
+  PAY_DEFAULTS.forEach(function(m) {
+    html += '<div class="pay-item"><span class="pay-item-name">'+escHtml(m)+'</span><span class="pay-item-tag">padrão</span></div>';
+  });
+  // Customizadas (removíveis)
+  customPayMethods.forEach(function(m, i) {
+    html += '<div class="pay-item"><span class="pay-item-name">'+escHtml(m)+'</span>'+
+      '<button class="pay-item-del" onclick="removePayMethod('+i+')" title="Remover">✕</button></div>';
+  });
+  if (!customPayMethods.length) {
+    html += '<div style="font-size:11px;color:var(--dim);padding:6px 0">Nenhuma forma customizada cadastrada</div>';
+  }
+  list.innerHTML = html;
+}
+
+function addPayMethod() {
+  var inp = document.getElementById('nova-pay-input');
+  var val = (inp ? inp.value : '').trim();
+  if (!val) { showToast('⚠️ Informe o nome da forma de pagamento'); return; }
+  if (PAY_DEFAULTS.includes(val) || customPayMethods.includes(val)) {
+    showToast('⚠️ "' + val + '" já existe'); return;
+  }
+  customPayMethods.push(val);
+  localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods));
+  lsSave(); scheduleSave();
+  if (inp) inp.value = '';
+  renderPayMethodList();
+  updateFinMethodSelects();
+  showToast('✅ "' + val + '" adicionado');
+}
+
+function removePayMethod(idx) {
+  var nome = customPayMethods[idx];
+  if (!confirm('Remover "' + nome + '"?')) return;
+  customPayMethods.splice(idx, 1);
+  localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods));
+  lsSave(); scheduleSave();
+  renderPayMethodList();
+  updateFinMethodSelects();
+  showToast('🗑️ "' + nome + '" removido');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   ensureDefaultCategories();
+  syncPayMethodsFromFinances();
   setTimeout(checkRecorrentesDoMes, 3000);
 
 // Calcula altura real da viewport (exclui barra do navegador em tablets)
@@ -12242,6 +12336,34 @@ function setAppHeight() {}
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-ghost" onclick="cancelarVenc()">Cancelar</button>
       <button class="btn btn-primary" onclick="confirmarVenc()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ MODAL — GERENCIAR FORMAS DE PAGAMENTO ══ -->
+<div class="modal-overlay" id="modal-pay-methods">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <span class="modal-title">⚙️ Formas de Pagamento</span>
+      <button class="modal-close" onclick="closeModal('modal-pay-methods')">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Nova forma</div>
+        <div class="pay-add-row">
+          <input id="nova-pay-input" placeholder="Ex: Cartão Nubank"
+            onkeydown="if(event.key==='Enter')addPayMethod()">
+          <button class="btn btn-primary" onclick="addPayMethod()" style="white-space:nowrap;font-size:11px">+ Adicionar</button>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Cadastradas</div>
+        <div class="pay-list" id="pay-method-list"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-pay-methods')">Fechar</button>
     </div>
   </div>
 </div>
