@@ -919,6 +919,32 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .fin-status-opt.active.status-pago{background:rgba(16,185,129,.15);color:var(--green);border-color:rgba(16,185,129,.4)}
 .fin-status-opt.active.status-pendente{background:rgba(245,158,11,.15);color:var(--amber);border-color:rgba(245,158,11,.4)}
 .fin-status-opt.active.status-parcela{background:rgba(6,182,212,.15);color:var(--cyan);border-color:rgba(6,182,212,.4)}
+
+/* ══ INDICADORES FINANCEIROS ══ */
+.ind-wrap{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.ind-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:0}
+.ind-header-title{font-size:11px;font-weight:700;color:var(--text)}
+.ind-header-toggle{font-size:10px;color:var(--dim)}
+.ind-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+@media(max-width:700px){.ind-grid{grid-template-columns:1fr}}
+.ind-card{background:var(--card);border:1px solid var(--border-soft);border-radius:10px;padding:12px 14px}
+.ind-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
+.ind-nome{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;line-height:1.4}
+.ind-icon{font-size:16px}
+.ind-val{font-size:20px;font-weight:800;line-height:1;margin-bottom:2px}
+.ind-meta{font-size:9px;color:var(--dim);margin-bottom:7px}
+.ind-bar-wrap{height:5px;background:var(--border-soft);border-radius:3px;overflow:hidden;margin-bottom:5px;position:relative}
+.ind-bar-zone{position:absolute;top:0;bottom:0;background:rgba(16,185,129,.18);border-radius:3px}
+.ind-bar{height:100%;border-radius:3px;transition:width .5s ease}
+.ind-legenda{display:flex;justify-content:space-between;font-size:8px;color:var(--dim);margin-bottom:7px}
+.ind-detalhe{font-size:10px;color:var(--muted);padding-top:7px;border-top:1px solid var(--border-soft)}
+.ind-detalhe-row{display:flex;justify-content:space-between;margin-bottom:3px}
+.ind-hint{font-size:9px;color:var(--dim);margin-top:3px;display:flex;align-items:center;gap:3px}
+.ind-status{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700;margin-top:6px}
+.ind-ok  {background:rgba(16,185,129,.15);color:var(--green)}
+.ind-warn{background:rgba(245,158,11,.15);color:var(--amber)}
+.ind-bad {background:rgba(239,68,68,.12);color:var(--red)}
+.ind-footer{margin-top:10px;font-size:9px;color:var(--dim);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 </style>
 
   <!-- PWA -->
@@ -1127,6 +1153,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       </div>
       <div id="fin-relatorio-section" style="display:none"></div>
       <div id="fin-main-section">
+        <!-- ── Indicadores Financeiros ── -->
+        <div class="ind-wrap" id="ind-wrap">
+          <div class="ind-header" onclick="indToggle()">
+            <span class="ind-header-title">📊 Indicadores — <span id="ind-mes-label">mês atual</span></span>
+            <span class="ind-header-toggle" id="ind-toggle-lbl">▲</span>
+          </div>
+          <div id="ind-body" class="ind-grid">
+            <div class="ind-card" id="ind-card-divida"></div>
+            <div class="ind-card" id="ind-card-poupanca"></div>
+            <div class="ind-card" id="ind-card-custo"></div>
+          </div>
+          <div class="ind-footer" id="ind-footer"></div>
+        </div>
       <div class="fin-summary">
         <div style="display:flex;flex-direction:column;gap:8px">
           <div class="fin-card saldo saldo-pago" style="padding:10px 12px;flex:1">
@@ -2048,6 +2087,22 @@ function openFinModal(originId, text) {
 function updateFinType() {
   const t = document.getElementById('fin-type').value;
   document.getElementById('fin-category').value = t === 'entrada' ? 'Renda fixa' : 'Alimentação';
+  // Adapta botões de status conforme tipo
+  var btnPago     = document.querySelector('.fin-status-opt[data-status="pago"]');
+  var btnPendente = document.querySelector('.fin-status-opt[data-status="pendente"]');
+  var btnParcela  = document.querySelector('.fin-status-opt[data-status="parcela"]');
+  if (t === 'entrada') {
+    if (btnPago)     btnPago.textContent     = '✅ Recebido';
+    if (btnPendente) btnPendente.textContent = '⏳ A receber';
+    if (btnParcela)  btnParcela.style.display = 'none';
+    // Se estava em parcela, volta para pago
+    var statusInp = document.getElementById('fin-status');
+    if (statusInp && statusInp.value === 'parcela') finSetStatus('pago');
+  } else {
+    if (btnPago)     btnPago.textContent     = '✅ Pago';
+    if (btnPendente) btnPendente.textContent = '⏳ Pendente';
+    if (btnParcela)  btnParcela.style.display = '';
+  }
 }
 
 function saveFinance() {
@@ -2678,7 +2733,7 @@ function renderFinance() {
           <div class="tx-name">${escHtml(f.desc)}</div>
           <div class="tx-cat" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
             ${escHtml(f.category)}${f.source?' · '+escHtml(f.source):''}
-            <span class="status-badge status-${f.status||'pago'}" onclick="event.stopPropagation();toggleFinStatus(${f.id})" title="Clique para alternar status">${f.status==='pendente'?'⏳ Pendente':f.status==='parcela'?'📋 Parcela':'✅ Pago'}</span>
+            <span class="status-badge status-${f.status||'pago'}" onclick="event.stopPropagation();toggleFinStatus(${f.id})" title="Clique para alternar status">${f.type==='entrada'?(f.status==='pendente'?'⏳ A receber':'✅ Recebido'):(f.status==='pendente'?'⏳ Pendente':f.status==='parcela'?'📋 Parcela':'✅ Pago')}</span>
           </div>
           ${f.tags&&f.tags.length?'<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:3px" onclick="event.stopPropagation()">'+f.tags.map(t=>'<span style="font-size:9px;padding:1px 5px 1px 6px;border-radius:7px;background:var(--violet-glow);border:1px solid rgba(124,58,237,.25);color:var(--violet-light);font-weight:600;display:inline-flex;align-items:center;gap:2px">'+escHtml(t)+'<button onclick="removeFinTag('+f.id+',\''+escHtml(t).replace(/'/g,"\\'")+'\')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:9px;padding:0 1px;line-height:1">✕</button></span>').join('')+'</div>':''}
         </div>
@@ -2711,6 +2766,7 @@ function renderFinance() {
 
   setTimeout(renderFinAreaChart, 50);
   renderFinTreemap(cats);
+  renderIndicadores();
 }
 
 // ══════════════════════════════════════════
@@ -3579,6 +3635,7 @@ function editFinance(id) {
   document.getElementById('fin-obs').value     = f.obs||'';
   document.getElementById('fin-type').value = f.type || 'saida';
   updateFinCategorySelects();
+  updateFinType(); // adapta labels/visibilidade dos botões de status
   document.getElementById('fin-category').value = f.category || '';
   // Carrega tags existentes
   var tw = document.getElementById('fin-tag-wrap');
@@ -5582,7 +5639,7 @@ function lsSave() {
       backlog: backlogSemFoto, nextBacklogId,
       tasks, nextTaskId,
       kanbanCols, nextColId,
-      finances, nextFinId, finCategories,
+      finances, nextFinId, finCategories, customPayMethods,
       lists, nextListId, nextListItemId,
       notes, nextNoteId, noteFolders,
       curriculo,
@@ -5647,6 +5704,7 @@ function lsLoad() {
     if (d.tasks)            { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
     if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
     if (d.finances)         { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
+    if (d.customPayMethods) { customPayMethods = d.customPayMethods; localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods)); }
     if (d.finCategories)    { finCategories = d.finCategories; }
     if (d.lists)            { lists = d.lists; nextListId = d.nextListId || nextListId; nextListItemId = d.nextListItemId || nextListItemId; }
     if (d.notes)            { notes = d.notes; nextNoteId = d.nextNoteId || nextNoteId; }
@@ -5734,7 +5792,8 @@ async function fbCloudSave() {
       backlog: (typeof backlog!=='undefined'?backlog:[]).map(function(i){ return i.photo ? Object.assign({},i,{photo:'__local__'}) : i; }), nextBacklogId: typeof nextBacklogId!=='undefined'?nextBacklogId:8,
       tasks: typeof tasks!=='undefined'?tasks:[], nextTaskId: typeof nextTaskId!=='undefined'?nextTaskId:200,
       kanbanCols: typeof kanbanCols!=='undefined'?kanbanCols:[], nextColId: typeof nextColId!=='undefined'?nextColId:10,
-      finances: typeof finances!=='undefined'?finances:[], nextFinId: typeof nextFinId!=='undefined'?nextFinId:400,
+      finances: typeof finances!=='undefined'?finances:[],
+      customPayMethods: typeof customPayMethods!=='undefined'?customPayMethods:[], nextFinId: typeof nextFinId!=='undefined'?nextFinId:400,
       finCategories: typeof finCategories!=='undefined'?finCategories:[],
       lists: typeof lists!=='undefined'?lists:[], nextListId: typeof nextListId!=='undefined'?nextListId:10,
       nextListItemId: typeof nextListItemId!=='undefined'?nextListItemId:100,
@@ -5833,6 +5892,7 @@ async function cloudLoad(forceLoad) {
     if (d.tasks)            { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
     if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
     if (d.finances)         { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
+    if (d.customPayMethods) { customPayMethods = d.customPayMethods; localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods)); }
     if (d.finCategories)    { finCategories = d.finCategories; }
     if (d.lists)            { lists = d.lists; nextListId = d.nextListId || nextListId; nextListItemId = d.nextListItemId || nextListItemId; }
     if (d.notes)            { notes = d.notes; nextNoteId = d.nextNoteId || nextNoteId; }
@@ -5919,6 +5979,7 @@ async function fbCloudLoad(forceLoad) {
       try { localStorage.setItem('painel_finances_backup', JSON.stringify({ts: Date.now(), data: finances, nextFinId: nextFinId})); } catch(e) {}
     }
     if (d.finances)          { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
+    if (d.customPayMethods)  { customPayMethods = d.customPayMethods; localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods)); }
     if (d.finCategories)     { finCategories = d.finCategories; }
     if (d.lists)             { lists = d.lists; nextListId = d.nextListId||nextListId; nextListItemId = d.nextListItemId||nextListItemId; }
     if (d.notes) {
@@ -10050,6 +10111,7 @@ function duplicateFinance(id) {
   document.getElementById('fin-obs').value     = f.obs     || '';
   document.getElementById('fin-type').value = f.type || 'saida';
   updateFinCategorySelects();
+  updateFinType(); // adapta labels/visibilidade dos botões de status
   document.getElementById('fin-category').value = f.category || '';
 
   // Carrega as tags e status do original
@@ -10151,8 +10213,8 @@ function fpPopulateSelects(selectedCat, selectedMethod) {
   var methods = {};
   finances.forEach(function(f){ if (f.method) methods[f.method] = 1; });
   methSel.innerHTML = '<option value="">Selecione...</option>';
-  ['Crédito','Débito','PIX','Dinheiro','TED'].forEach(function(m){ methods[m] = 1; });
-  Object.keys(methods).sort().forEach(function(m) {
+  // Usa getPayMethods() para incluir formas customizadas
+  getPayMethods().forEach(function(m) {
     var o = document.createElement('option');
     o.value = o.textContent = m;
     methSel.appendChild(o);
@@ -10330,13 +10392,17 @@ function finSetStatus(status) {
 function toggleFinStatus(id) {
   var f = finances.find(function(x){ return x.id === id; });
   if (!f) return;
-  var cycle = ['pago','pendente','parcela'];
+  var cycle = f.type === 'entrada' ? ['pago','pendente'] : ['pago','pendente','parcela'];
   var cur   = cycle.indexOf(f.status || 'pago');
+  if (cur === -1) cur = 0;
   f.status  = cycle[(cur + 1) % cycle.length];
   lsSave(); scheduleSave();
   renderFinance();
   if (finRelOpen) finRelRender();
-  showToast('Status: ' + (f.status === 'pago' ? '✅ Pago' : f.status === 'pendente' ? '⏳ Pendente' : '📋 Parcela'));
+  var label = f.type === 'entrada'
+    ? (f.status === 'pendente' ? '⏳ A receber' : '✅ Recebido')
+    : (f.status === 'pago' ? '✅ Pago' : f.status === 'pendente' ? '⏳ Pendente' : '📋 Parcela');
+  showToast('Status: ' + label);
 }
 
 // ══ CATEGORIAS PADRÃO ══
@@ -10354,6 +10420,124 @@ function ensureDefaultCategories() {
       finCategories.push(nc);
     }
   });
+}
+
+// ══ INDICADORES FINANCEIROS ══
+var indOpen = true;
+
+// Categorias consideradas essenciais (configurável via localStorage)
+var indCatsEssenciais = JSON.parse(localStorage.getItem('painel_cats_essenciais') || 'null') || [
+  'Alimentação/Mercado/Fruteira','Alimentação/Restaurante',
+  'Concessionárias (Água/Luz/TV/Telefone)','Casa/Manut/Limpeza/Segurança',
+  'Saúde','Transporte/UBER','PET','Estacionamento/Pedágio'
+];
+
+function indToggle() {
+  indOpen = !indOpen;
+  var body = document.getElementById('ind-body');
+  var footer = document.getElementById('ind-footer');
+  var lbl  = document.getElementById('ind-toggle-lbl');
+  if (body) body.style.display = indOpen ? '' : 'none';
+  if (footer) footer.style.display = indOpen ? '' : 'none';
+  if (lbl) lbl.textContent = indOpen ? '▲' : '▼';
+}
+
+function indCard(icon, nome, pct, val, metaLow, metaHigh, detalhe, hint, status) {
+  var cor = status === 'ok' ? 'var(--green)' : status === 'warn' ? 'var(--amber)' : 'var(--red)';
+  var statusLabel = status === 'ok' ? '✅ Saudável' : status === 'warn' ? '⚠️ Atenção' : '❌ Crítico';
+  var statusCls   = status === 'ok' ? 'ind-ok' : status === 'warn' ? 'ind-warn' : 'ind-bad';
+  var barW = Math.min(pct, 100).toFixed(1);
+  // Zona ideal: de metaLow% a metaHigh%
+  var zoneLeft  = metaLow.toFixed(1);
+  var zoneWidth = (metaHigh - metaLow).toFixed(1);
+  return '<div class="ind-card-top">' +
+    '<div class="ind-nome">' + nome + '</div>' +
+    '<div class="ind-icon">' + icon + '</div>' +
+  '</div>' +
+  '<div class="ind-val" style="color:' + cor + '">' + pct.toFixed(1).replace('.',',') + '%</div>' +
+  '<div class="ind-meta">' + detalhe + '</div>' +
+  '<div class="ind-bar-wrap">' +
+    '<div class="ind-bar-zone" style="left:' + zoneLeft + '%;width:' + zoneWidth + '%"></div>' +
+    '<div class="ind-bar" style="width:' + barW + '%;background:' + cor + '"></div>' +
+  '</div>' +
+  '<div class="ind-legenda"><span>0%</span><span style="color:var(--green)">meta ' +
+    (metaLow > 0 ? metaLow + '–' : '&lt;') + metaHigh + '%</span><span>100%</span></div>' +
+  '<div class="ind-detalhe">' +
+    '<div class="ind-detalhe-row"><span>' + detalhe + '</span><strong>' + fmtMoney(val) + '</strong></div>' +
+    '<div class="ind-hint">' + hint + '</div>' +
+  '</div>' +
+  '<span class="ind-status ' + statusCls + '">' + statusLabel + '</span>';
+}
+
+function renderIndicadores() {
+  var now = new Date();
+  var mes = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  var mesFin = finances.filter(function(f){ return f.date && f.date.startsWith(mes); });
+  var entradas = mesFin.filter(function(f){ return f.type === 'entrada'; });
+  var saidas   = mesFin.filter(function(f){ return f.type === 'saida'; });
+  var renda    = entradas.reduce(function(s,f){ return s+f.value; }, 0);
+  var totalS   = saidas.reduce(function(s,f){ return s+f.value; }, 0);
+
+  // Label do mês
+  var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+               'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var lbl = document.getElementById('ind-mes-label');
+  if (lbl) lbl.textContent = meses[now.getMonth()] + '/' + now.getFullYear();
+
+  if (renda === 0) {
+    // Sem renda lançada — aviso
+    ['ind-card-divida','ind-card-poupanca','ind-card-custo'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.innerHTML = '<div style="font-size:10px;color:var(--dim);padding:8px 0">⚠️ Lance receitas do mês para calcular os indicadores</div>';
+    });
+    return;
+  }
+
+  // 1. Taxa de Endividamento — saídas com status 'parcela'
+  var parcelas = saidas.filter(function(f){ return f.status === 'parcela'; });
+  var valParcelas = parcelas.reduce(function(s,f){ return s+f.value; }, 0);
+  var pctDivida = valParcelas / renda * 100;
+  var statusDivida = pctDivida <= 20 ? 'ok' : pctDivida <= 35 ? 'warn' : 'bad';
+  var hintDivida = parcelas.length === 0
+    ? '💡 Marque lançamentos como "📋 Parcela" para calcular'
+    : '📋 ' + parcelas.length + ' lançamento(s) marcados como parcela';
+
+  var elD = document.getElementById('ind-card-divida');
+  if (elD) elD.innerHTML = indCard('💳','Taxa de<br>Endividamento',
+    pctDivida, valParcelas, 0, 20, 'parcelas do mês', hintDivida, statusDivida);
+
+  // 2. Taxa de Poupança — saídas em Poupança/Reserva ou Investimento
+  var poupSaidas = saidas.filter(function(f){
+    return f.category === 'Poupança/Reserva' || f.category === 'Investimento';
+  });
+  var valPoup = poupSaidas.reduce(function(s,f){ return s+f.value; }, 0);
+  var pctPoup = valPoup / renda * 100;
+  var statusPoup = pctPoup >= 20 ? 'ok' : pctPoup >= 10 ? 'warn' : 'bad';
+  var hintPoup = valPoup === 0
+    ? '💡 Lance em "Poupança/Reserva" ou "Investimento"'
+    : '💚 ' + poupSaidas.length + ' lançamento(s) de poupança/investimento';
+
+  var elP = document.getElementById('ind-card-poupanca');
+  if (elP) elP.innerHTML = indCard('💚','Taxa de<br>Poupança',
+    pctPoup, valPoup, 10, 20, 'poupança/investimento', hintPoup, statusPoup);
+
+  // 3. Custo de Vida Essencial
+  var essenc = saidas.filter(function(f){ return indCatsEssenciais.indexOf(f.category) !== -1; });
+  var valEss = essenc.reduce(function(s,f){ return s+f.value; }, 0);
+  var pctEss = valEss / renda * 100;
+  var statusEss = pctEss <= 50 ? 'ok' : pctEss <= 60 ? 'warn' : 'bad';
+  var hintEss = '🏠 ' + essenc.length + ' lançamentos em ' + indCatsEssenciais.length + ' categorias essenciais';
+
+  var elC = document.getElementById('ind-card-custo');
+  if (elC) elC.innerHTML = indCard('🏠','Custo de Vida<br>Essencial',
+    pctEss, valEss, 0, 60, 'gastos essenciais', hintEss, statusEss);
+
+  // Footer
+  var footer = document.getElementById('ind-footer');
+  if (footer) {
+    footer.innerHTML = '<span>🏠 Essenciais:</span>' +
+      indCatsEssenciais.map(function(c){ return '<span style="color:var(--muted)">'+escHtml(c)+'</span>'; }).join('<span style="color:var(--dim)">&nbsp;·&nbsp;</span>');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
