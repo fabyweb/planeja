@@ -3471,10 +3471,15 @@ function filterFinDay(dateKey) {
   renderFinance();
 }
 function filteredFinances() {
-  let f = [...finances];
+  // Filtra pelo mês do calendário
+  var mes = finCalYear + '-' + String(finCalMonth+1).padStart(2,'0');
+  let f = finances.filter(x => x.date && x.date.startsWith(mes));
+  // Filtros adicionais
   if (activeFilters.finType) f = f.filter(x=>x.type===activeFilters.finType);
   if (activeFilters.finCat)  f = f.filter(x=>x.category===activeFilters.finCat);
   if (activeFilters.finDate) f = f.filter(x=>x.date===activeFilters.finDate);
+  // Ordena: mais recentes primeiro
+  f.sort((a,b) => (b.date||'') > (a.date||'') ? 1 : (b.date||'') < (a.date||'') ? -1 : b.id - a.id);
   return f;
 }
 
