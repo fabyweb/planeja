@@ -2687,6 +2687,7 @@ function finCalNav(dir) {
     if (finCalMonth > 11) { finCalMonth = 0; finCalYear++; }
   }
   renderFinCalendar();
+  renderIndicadores();
 }
 
 function renderFinance() {
@@ -10470,8 +10471,10 @@ function indCard(icon, nome, pct, val, metaLow, metaHigh, detalhe, hint, status)
 }
 
 function renderIndicadores() {
-  var now = new Date();
-  var mes = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  // Usa o mês do calendário financeiro (sincronizado com finCalNav)
+  var ano = typeof finCalYear  !== 'undefined' ? finCalYear  : new Date().getFullYear();
+  var mes_num = typeof finCalMonth !== 'undefined' ? finCalMonth : new Date().getMonth();
+  var mes = ano + '-' + String(mes_num + 1).padStart(2,'0');
   var mesFin = finances.filter(function(f){ return f.date && f.date.startsWith(mes); });
   var entradas = mesFin.filter(function(f){ return f.type === 'entrada'; });
   var saidas   = mesFin.filter(function(f){ return f.type === 'saida'; });
@@ -10482,7 +10485,7 @@ function renderIndicadores() {
   var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   var lbl = document.getElementById('ind-mes-label');
-  if (lbl) lbl.textContent = meses[now.getMonth()] + '/' + now.getFullYear();
+  if (lbl) lbl.textContent = meses[mes_num] + '/' + ano;
 
   if (renda === 0) {
     // Sem renda lançada — aviso
