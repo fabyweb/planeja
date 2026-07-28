@@ -11228,10 +11228,13 @@ function renderFinCatPanel() {
   if (catPeriodo === 0) {
     saidas = finances.filter(function(f){ return f.type === 'saida'; });
   } else {
+    // início: N meses atrás, fim: último dia do mês atual
     var desde = new Date(now.getFullYear(), now.getMonth() - catPeriodo + 1, 1);
+    var ate   = new Date(now.getFullYear(), now.getMonth() + 1, 0); // último dia do mês atual
     var desdeStr = dateToLocal(desde);
+    var ateStr   = dateToLocal(ate);
     saidas = finances.filter(function(f){
-      return f.type === 'saida' && f.date && f.date >= desdeStr;
+      return f.type === 'saida' && f.date && f.date >= desdeStr && f.date <= ateStr;
     });
   }
 
