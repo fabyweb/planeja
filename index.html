@@ -2887,8 +2887,12 @@ function renderFinList() {
 }
 
 function renderFinance() {
-  const entradas = finances.filter(f=>f.type==='entrada');
-  const saidas   = finances.filter(f=>f.type==='saida');
+  // Filtra pelo mês do calendário
+  const mesFin = finances.filter(f => f.date && f.date.startsWith(
+    finCalYear + '-' + String(finCalMonth+1).padStart(2,'0')
+  ));
+  const entradas = mesFin.filter(f=>f.type==='entrada');
+  const saidas   = mesFin.filter(f=>f.type==='saida');
   const totalE = entradas.reduce((s,f)=>s+f.value,0);
   const totalS = saidas.reduce((s,f)=>s+f.value,0);
   const saldo  = totalE - totalS;
