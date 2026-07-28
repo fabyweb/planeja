@@ -3617,7 +3617,8 @@ function deleteFinCategory(idx) {
 
 
 function getPayMethods() {
-  return ['PIX','Débito','Crédito','Dinheiro','TED','Outro'].concat(customPayMethods);
+  var all = ['PIX','Débito','Crédito','Dinheiro','TED','Outro'].concat(customPayMethods);
+  return all.sort(function(a,b){ return a.localeCompare(b,'pt-BR',{sensitivity:'base'}); });
 }
 
 function updateFinMethodSelects() {
