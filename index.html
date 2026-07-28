@@ -1008,6 +1008,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .recor-sug-title{font-size:11px;font-weight:700;color:var(--green);margin-bottom:8px}
 .recor-sug-item{display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--card);border-radius:7px;margin-bottom:4px;border:1px solid var(--border-soft)}
 .recor-sug-item:last-child{margin-bottom:0}
+
+/* ══ FILTRO CATEGORIAS E ESSENCIAIS ══ */
+.cat-periodo-btns{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.cat-periodo-btn{padding:3px 9px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;font-size:9px;font-weight:600;transition:all .15s}
+.cat-periodo-btn.active{background:var(--violet-glow);color:var(--violet-light);border-color:rgba(124,58,237,.4)}
 </style>
 
   <!-- PWA -->
@@ -2877,24 +2882,10 @@ function renderFinance() {
       </div>`).join('')
     : '<p style="color:var(--text-dim);font-size:13px;padding:16px">Nenhum lançamento ainda.</p>');
 
-  // Categories
-  const catMap = {};
-  saidas.forEach(f=>{ catMap[f.category] = (catMap[f.category]||0)+f.value; });
-  const cats = Object.entries(catMap).sort((a,b)=>b[1]-a[1]);
-  const maxCat = cats[0]?.[1] || 1;
-  const catColors = ['var(--violet)','var(--amber)','var(--cyan)','var(--blue)','var(--green)','var(--red)'];
   renderFinCalendar();
-  document.getElementById('fin-cats-panel').innerHTML = `
-    <div class="section-header" style="margin-bottom:14px"><span class="section-title">Por categoria (saídas)</span></div>
-    ${cats.map((c,i)=>`
-      <div class="cat-item">
-        <div class="cat-row"><span class="cat-name">${c[0]}</span><span class="cat-val">${fmtMoney(c[1])}</span></div>
-        <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:${(c[1]/maxCat*100).toFixed(0)}%;background:${catColors[i%catColors.length]}"></div></div>
-      </div>`).join('')}
-    ${!cats.length?'<p style="color:var(--text-dim);font-size:12px">Nenhuma saída registrada.</p>':''}`;
+  renderFinCatPanel();
 
   renderAllCharts();
-  renderFinTreemap(cats);
   renderIndicadores();
   renderCompromissos();
   renderTimeline();
@@ -10267,6 +10258,7 @@ function duplicateFinance(id) {
 
 // ══ PARCELAMENTO FINANCEIRO ══
 var _fpOriginId    = null;  // ID do lançamento de origem (se convertendo)
+var catPeriodo     = 1;     // Período do painel de categorias: 1=mês atual, 3, 6, 12, 0=tudo
 var _fpValorParc   = null;  // Valor da parcela fixo no modo conversão
 
 function openFinParcelado(originId) {
@@ -10669,11 +10661,12 @@ function renderIndicadores() {
   if (elC) elC.innerHTML = indCard('🏠','Custo de Vida<br>Essencial',
     pctEss, valEss, 0, 60, 'gastos essenciais', hintEss, statusEss);
 
-  // Footer
+  // Footer com botão de configuração
   var footer = document.getElementById('ind-footer');
   if (footer) {
     footer.innerHTML = '<span>🏠 Essenciais:</span>' +
-      indCatsEssenciais.map(function(c){ return '<span style="color:var(--muted)">'+escHtml(c)+'</span>'; }).join('<span style="color:var(--dim)">&nbsp;·&nbsp;</span>');
+      indCatsEssenciais.map(function(c){ return '<span style="color:var(--muted)">'+escHtml(c)+'</span>'; }).join('<span style="color:var(--dim)">&nbsp;·&nbsp;</span>') +
+      '<button onclick="openCatsEssenciais()" style="margin-left:auto;font-size:9px;padding:2px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer">⚙️ configurar</button>';
   }
 }
 
@@ -11222,6 +11215,108 @@ function renderAllCharts() {
     renderFinSaldoChart();
     renderFinCashflowChart();
   }, 60);
+}
+
+// ══ PAINEL DE CATEGORIAS COM FILTRO DE PERÍODO ══
+function renderFinCatPanel() {
+  var panel = document.getElementById('fin-cats-panel');
+  if (!panel) return;
+
+  // Filtra saídas pelo período selecionado
+  var now = new Date();
+  var saidas;
+  if (catPeriodo === 0) {
+    saidas = finances.filter(function(f){ return f.type === 'saida'; });
+  } else {
+    var desde = new Date(now.getFullYear(), now.getMonth() - catPeriodo + 1, 1);
+    var desdeStr = dateToLocal(desde);
+    saidas = finances.filter(function(f){
+      return f.type === 'saida' && f.date && f.date >= desdeStr;
+    });
+  }
+
+  var catMap = {};
+  saidas.forEach(function(f){ catMap[f.category||'?'] = (catMap[f.category||'?']||0) + f.value; });
+  var cats = Object.entries(catMap).sort(function(a,b){ return b[1]-a[1]; });
+  var maxCat = cats.length ? cats[0][1] : 1;
+  var catColors = ['var(--violet)','var(--amber)','var(--cyan)','var(--green)','var(--red)','var(--violet-light)'];
+
+  var periodos = [
+    {v:1,  l:'Mês'},
+    {v:3,  l:'3M'},
+    {v:6,  l:'6M'},
+    {v:12, l:'12M'},
+    {v:0,  l:'Tudo'},
+  ];
+
+  var btns = periodos.map(function(p){
+    var active = catPeriodo === p.v ? ' active' : '';
+    return '<button class="cat-periodo-btn'+active+'" onclick="setCatPeriodo('+p.v+')">'+p.l+'</button>';
+  }).join('');
+
+  var catItems = cats.map(function(cat, i){
+    var pct = (cat[1]/maxCat*100).toFixed(0);
+    return '<div class="cat-item">' +
+      '<div class="cat-row"><span class="cat-name">'+escHtml(cat[0])+'</span><span class="cat-val">'+fmtMoney(cat[1])+'</span></div>' +
+      '<div class="cat-bar-bg"><div class="cat-bar-fill" style="width:'+pct+'%;background:'+catColors[i%catColors.length]+'"></div></div>' +
+    '</div>';
+  }).join('');
+
+  var labelPeriodo = catPeriodo === 0 ? 'todo o período' :
+    catPeriodo === 1 ? 'mês atual' :
+    'últimos ' + catPeriodo + ' meses';
+
+  panel.innerHTML =
+    '<div class="section-header" style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">' +
+      '<span class="section-title">Por categoria (saídas)</span>' +
+    '</div>' +
+    '<div class="cat-periodo-btns">' + btns + '</div>' +
+    (cats.length ? catItems : '<p style="color:var(--text-dim);font-size:12px">Nenhuma saída registrada.</p>');
+}
+
+function setCatPeriodo(p) {
+  catPeriodo = p;
+  renderFinCatPanel();
+}
+
+// ══ CONFIGURAÇÃO DE CATEGORIAS ESSENCIAIS ══
+function openCatsEssenciais() {
+  var lista = document.getElementById('modal-ess-lista');
+  if (!lista) return;
+
+  // Coleta todas as categorias usadas nas saídas
+  var todasCats = {};
+  finances.filter(function(f){ return f.type === 'saida'; })
+    .forEach(function(f){ if (f.category) todasCats[f.category] = true; });
+  // Adiciona categorias do cadastro
+  (finCategories||[]).forEach(function(c){
+    var nome = typeof c === 'string' ? c : (c.label||c.id||'');
+    if (nome) todasCats[nome] = true;
+  });
+
+  var cats = Object.keys(todasCats).sort();
+
+  lista.innerHTML = cats.map(function(cat) {
+    var isEss = indCatsEssenciais.indexOf(cat) !== -1;
+    return '<label style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--card);border-radius:8px;cursor:pointer;border:1px solid '+(isEss?'rgba(16,185,129,.3)':'var(--border-soft)')+'">' +
+      '<input type="checkbox" value="'+escHtml(cat)+'" '+(isEss?'checked':'')+' style="accent-color:var(--green);width:16px;height:16px">' +
+      '<span style="font-size:11px;font-weight:'+(isEss?'700':'400')+';color:'+(isEss?'var(--text)':'var(--muted)')+'">'+escHtml(cat)+'</span>' +
+    '</label>';
+  }).join('');
+
+  openModal('modal-cats-essenciais');
+}
+
+function salvarCatsEssenciais() {
+  var checks = document.querySelectorAll('#modal-ess-lista input[type="checkbox"]');
+  indCatsEssenciais = [];
+  checks.forEach(function(ch){
+    if (ch.checked) indCatsEssenciais.push(ch.value);
+  });
+  localStorage.setItem('painel_cats_essenciais', JSON.stringify(indCatsEssenciais));
+  closeModal('modal-cats-essenciais');
+  renderIndicadores();
+  showToast('✅ Categorias essenciais salvas (' + indCatsEssenciais.length + ')');
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -11983,6 +12078,25 @@ function setAppHeight() {}
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-recorrentes')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ MODAL — CATEGORIAS ESSENCIAIS ══ -->
+<div class="modal-overlay" id="modal-cats-essenciais">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <span class="modal-title">🏠 Categorias Essenciais</span>
+      <button class="modal-close" onclick="closeModal('modal-cats-essenciais')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Marque as categorias que considera gastos essenciais. Elas compõem o indicador <strong style="color:var(--text)">Custo de Vida Essencial</strong>.</div>
+      <div id="modal-ess-lista" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cats-essenciais')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarCatsEssenciais()">Salvar</button>
     </div>
   </div>
 </div>
