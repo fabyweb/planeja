@@ -945,6 +945,69 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .ind-warn{background:rgba(245,158,11,.15);color:var(--amber)}
 .ind-bad {background:rgba(239,68,68,.12);color:var(--red)}
 .ind-footer{margin-top:10px;font-size:9px;color:var(--dim);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+
+/* ══ FASE 3 — COMPROMISSOS E LINHA DO TEMPO ══ */
+.comp-wrap{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.comp-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.comp-title{font-size:11px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.comp-badge{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.3);font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px}
+.comp-list{display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto;margin-top:10px}
+.comp-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--card);border-radius:8px;border:1px solid var(--border-soft);transition:border-color .15s}
+.comp-item:hover{border-color:var(--amber)}
+.comp-data{font-size:10px;font-weight:700;color:var(--muted);min-width:44px;font-family:monospace}
+.comp-data.urgente{color:var(--amber)}
+.comp-data.hoje{color:var(--red)}
+.comp-desc{flex:1;min-width:0}
+.comp-desc-nome{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.comp-desc-cat{font-size:9px;color:var(--dim)}
+.comp-val{font-size:11px;font-weight:800;color:var(--red);white-space:nowrap}
+.comp-stbadge{font-size:8px;padding:1px 5px;border-radius:6px;border:1px solid transparent;white-space:nowrap}
+.comp-total{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:1px solid var(--border-soft);font-size:11px;color:var(--muted)}
+.comp-total strong{color:var(--red);font-size:13px;font-weight:800}
+
+/* Linha do tempo */
+.tl-wrap{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.tl-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:0}
+.tl-title{font-size:11px;font-weight:700;color:var(--text)}
+.tl-grid{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.tl-mes{background:var(--card);border:1px solid var(--border-soft);border-radius:10px;padding:11px 13px}
+.tl-mes.atual{border-color:var(--violet);border-width:1.5px}
+.tl-mes-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.tl-mes-label{font-size:11px;font-weight:700;color:var(--text)}
+.tl-mes-saldo{font-size:12px;font-weight:800}
+.tl-bars{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.tl-bar-wrap{display:flex;flex-direction:column;gap:3px}
+.tl-bar-label{font-size:9px;color:var(--muted);display:flex;justify-content:space-between}
+.tl-bar-bg{height:5px;background:var(--border-soft);border-radius:3px;overflow:hidden}
+.tl-bar-fill{height:100%;border-radius:3px}
+.tl-aviso{font-size:9px;padding:4px 8px;border-radius:6px;display:flex;align-items:center;gap:4px}
+.tl-aviso.sem-receita{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.tl-aviso.ok{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+.tl-aviso.deficit{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.tl-deficit{margin-top:10px;padding:10px 13px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:10px}
+.tl-deficit strong{color:var(--red);font-weight:700}
+
+/* Badge nav */
+.fin-nav-badge{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.3);font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:4px;display:inline-block}
+
+/* ══ FASE 4 — RECEITAS RECORRENTES ══ */
+.recor-wrap{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.recor-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.recor-title{font-size:11px;font-weight:700;color:var(--text)}
+.recor-list{display:flex;flex-direction:column;gap:6px}
+.recor-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--card);border:1px solid var(--border-soft);border-radius:8px;border-left:3px solid var(--green)}
+.recor-item-info{flex:1;min-width:0}
+.recor-item-desc{font-size:12px;font-weight:700;color:var(--text)}
+.recor-item-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.recor-item-val{font-size:13px;font-weight:800;color:var(--green);white-space:nowrap}
+.recor-item-acts{display:flex;gap:4px}
+.recor-empty{font-size:11px;color:var(--dim);padding:8px 0;text-align:center}
+
+/* Sugestão de lançar receita */
+.recor-sugestao{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.recor-sug-title{font-size:11px;font-weight:700;color:var(--green);margin-bottom:8px}
+.recor-sug-item{display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--card);border-radius:7px;margin-bottom:4px;border:1px solid var(--border-soft)}
+.recor-sug-item:last-child{margin-bottom:0}
 </style>
 
   <!-- PWA -->
@@ -1147,6 +1210,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
         <div style="display:flex;gap:8px">
           <button class="btn btn-ghost btn-sm" onclick="openFinModal(null,null)">+ Lançamento</button>
           <button class="btn btn-ghost btn-sm" onclick="openFinParcelado(null)" style="color:var(--cyan);border-color:rgba(6,182,212,.3)">⊞ Parcelado</button>
+          <button class="btn btn-ghost btn-sm" onclick="openRecorrentes()" style="color:var(--green);border-color:rgba(16,185,129,.3)">↻ Recorrentes</button>
           <button class="btn btn-ghost btn-sm" onclick="openManageCats()"><span class="ico" style="width:13px;height:13px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span> Categorias</button>
           <button class="btn btn-ghost btn-sm" onclick="toggleFinRelatorio(this)" id="btn-fin-relatorio">📊 Relatório</button>
         </div>
@@ -1166,6 +1230,34 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
           </div>
           <div class="ind-footer" id="ind-footer"></div>
         </div>
+
+        <!-- ── Compromissos próximos 30 dias ── -->
+        <div class="comp-wrap" id="comp-wrap">
+          <div class="comp-header" onclick="compToggle()">
+            <div class="comp-title">
+              📋 Próximos 30 dias
+              <span class="comp-badge" id="comp-badge">carregando...</span>
+            </div>
+            <span style="font-size:10px;color:var(--dim)" id="comp-toggle-lbl">▲</span>
+          </div>
+          <div id="comp-body">
+            <div class="comp-list" id="comp-list"></div>
+            <div class="comp-total" id="comp-total"></div>
+          </div>
+        </div>
+
+        <!-- ── Linha do tempo ── -->
+        <div class="tl-wrap" id="tl-wrap">
+          <div class="tl-header" onclick="tlToggle()">
+            <span class="tl-title">📅 Projeção por mês</span>
+            <span style="font-size:10px;color:var(--dim)" id="tl-toggle-lbl">▲</span>
+          </div>
+          <div id="tl-body">
+            <div class="tl-grid" id="tl-grid"></div>
+            <div id="tl-deficit"></div>
+          </div>
+        </div>
+
       <div class="fin-summary">
         <div style="display:flex;flex-direction:column;gap:8px">
           <div class="fin-card saldo saldo-pago" style="padding:10px 12px;flex:1">
@@ -2768,6 +2860,8 @@ function renderFinance() {
   setTimeout(renderFinAreaChart, 50);
   renderFinTreemap(cats);
   renderIndicadores();
+  renderCompromissos();
+  renderTimeline();
 }
 
 // ══════════════════════════════════════════
@@ -5640,7 +5734,7 @@ function lsSave() {
       backlog: backlogSemFoto, nextBacklogId,
       tasks, nextTaskId,
       kanbanCols, nextColId,
-      finances, nextFinId, finCategories, customPayMethods,
+      finances, nextFinId, finCategories, customPayMethods, recorrentes,
       lists, nextListId, nextListItemId,
       notes, nextNoteId, noteFolders,
       curriculo,
@@ -5706,6 +5800,7 @@ function lsLoad() {
     if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
     if (d.finances)         { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
     if (d.customPayMethods) { customPayMethods = d.customPayMethods; localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods)); }
+    if (d.recorrentes)     { recorrentes = d.recorrentes; saveRecorrentes(); }
     if (d.finCategories)    { finCategories = d.finCategories; }
     if (d.lists)            { lists = d.lists; nextListId = d.nextListId || nextListId; nextListItemId = d.nextListItemId || nextListItemId; }
     if (d.notes)            { notes = d.notes; nextNoteId = d.nextNoteId || nextNoteId; }
@@ -5794,7 +5889,8 @@ async function fbCloudSave() {
       tasks: typeof tasks!=='undefined'?tasks:[], nextTaskId: typeof nextTaskId!=='undefined'?nextTaskId:200,
       kanbanCols: typeof kanbanCols!=='undefined'?kanbanCols:[], nextColId: typeof nextColId!=='undefined'?nextColId:10,
       finances: typeof finances!=='undefined'?finances:[],
-      customPayMethods: typeof customPayMethods!=='undefined'?customPayMethods:[], nextFinId: typeof nextFinId!=='undefined'?nextFinId:400,
+      customPayMethods: typeof customPayMethods!=='undefined'?customPayMethods:[],
+      recorrentes: typeof recorrentes!=='undefined'?recorrentes:[], nextFinId: typeof nextFinId!=='undefined'?nextFinId:400,
       finCategories: typeof finCategories!=='undefined'?finCategories:[],
       lists: typeof lists!=='undefined'?lists:[], nextListId: typeof nextListId!=='undefined'?nextListId:10,
       nextListItemId: typeof nextListItemId!=='undefined'?nextListItemId:100,
@@ -5894,6 +5990,7 @@ async function cloudLoad(forceLoad) {
     if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
     if (d.finances)         { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
     if (d.customPayMethods) { customPayMethods = d.customPayMethods; localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods)); }
+    if (d.recorrentes)     { recorrentes = d.recorrentes; saveRecorrentes(); }
     if (d.finCategories)    { finCategories = d.finCategories; }
     if (d.lists)            { lists = d.lists; nextListId = d.nextListId || nextListId; nextListItemId = d.nextListItemId || nextListItemId; }
     if (d.notes)            { notes = d.notes; nextNoteId = d.nextNoteId || nextNoteId; }
@@ -5981,6 +6078,7 @@ async function fbCloudLoad(forceLoad) {
     }
     if (d.finances)          { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
     if (d.customPayMethods)  { customPayMethods = d.customPayMethods; localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods)); }
+    if (d.recorrentes)      { recorrentes = d.recorrentes; saveRecorrentes(); }
     if (d.finCategories)     { finCategories = d.finCategories; }
     if (d.lists)             { lists = d.lists; nextListId = d.nextListId||nextListId; nextListItemId = d.nextListItemId||nextListItemId; }
     if (d.notes) {
@@ -10543,8 +10641,348 @@ function renderIndicadores() {
   }
 }
 
+// ══ FASE 3 — COMPROMISSOS E LINHA DO TEMPO ══
+var compOpen = true;
+var tlOpen   = true;
+var MESES_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+var MESES_CURTO = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+function compToggle() {
+  compOpen = !compOpen;
+  var el = document.getElementById('comp-body');
+  var lbl = document.getElementById('comp-toggle-lbl');
+  if (el)  el.style.display  = compOpen ? '' : 'none';
+  if (lbl) lbl.textContent   = compOpen ? '▲' : '▼';
+}
+
+function tlToggle() {
+  tlOpen = !tlOpen;
+  var el  = document.getElementById('tl-body');
+  var lbl = document.getElementById('tl-toggle-lbl');
+  if (el)  el.style.display  = tlOpen ? '' : 'none';
+  if (lbl) lbl.textContent   = tlOpen ? '▲' : '▼';
+}
+
+function renderCompromissos() {
+  var hoje = new Date();
+  var hojeStr = todayLocal();
+  var fim30 = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 30);
+  var fim30Str = fim30.getFullYear() + '-' +
+    String(fim30.getMonth()+1).padStart(2,'0') + '-' +
+    String(fim30.getDate()).padStart(2,'0');
+
+  // Saídas nos próximos 30 dias (data >= hoje e <= hoje+30)
+  var pending = finances.filter(function(f) {
+    return f.type === 'saida' && f.date && f.date >= hojeStr && f.date <= fim30Str;
+  }).sort(function(a,b){ return a.date < b.date ? -1 : 1; });
+
+  var total = pending.reduce(function(s,f){ return s+f.value; }, 0);
+
+  // Badge
+  var badge = document.getElementById('comp-badge');
+  if (badge) {
+    if (pending.length === 0) {
+      badge.textContent = 'nenhum compromisso';
+      badge.style.background = 'rgba(16,185,129,.15)';
+      badge.style.color = 'var(--green)';
+      badge.style.borderColor = 'rgba(16,185,129,.3)';
+    } else {
+      badge.textContent = pending.length + ' saídas · ' + fmtMoney(total);
+      badge.style.background = '';
+      badge.style.color = '';
+      badge.style.borderColor = '';
+    }
+  }
+
+  // Lista
+  var list = document.getElementById('comp-list');
+  if (!list) return;
+
+  var statusLabel = function(f) {
+    if (f.status === 'parcela')  return '<span class="comp-stbadge" style="background:rgba(6,182,212,.12);color:var(--cyan);border-color:rgba(6,182,212,.25)">📋 Parcela</span>';
+    if (f.status === 'pendente') return '<span class="comp-stbadge" style="background:rgba(245,158,11,.12);color:var(--amber);border-color:rgba(245,158,11,.3)">⏳ Pendente</span>';
+    return '<span class="comp-stbadge" style="background:rgba(16,185,129,.12);color:var(--green);border-color:rgba(16,185,129,.25)">✅ Pago</span>';
+  };
+
+  var dateCls = function(d) {
+    if (d === hojeStr) return 'hoje';
+    var diff = (new Date(d+'T12:00:00') - hoje) / 86400000;
+    return diff <= 7 ? 'urgente' : '';
+  };
+
+  var fmtDia = function(d) {
+    var p = d.split('-');
+    return p[2] + '/' + MESES_CURTO[parseInt(p[1])-1];
+  };
+
+  if (pending.length === 0) {
+    list.innerHTML = '<div style="font-size:11px;color:var(--dim);padding:8px 0;text-align:center">✅ Nenhuma saída nos próximos 30 dias</div>';
+  } else {
+    list.innerHTML = pending.map(function(f) {
+      var cls = dateCls(f.date);
+      return '<div class="comp-item" onclick="editFinance('+f.id+')">' +
+        '<span class="comp-data '+cls+'">'+fmtDia(f.date)+'</span>' +
+        '<div class="comp-desc">' +
+          '<div class="comp-desc-nome">'+escHtml(f.desc)+'</div>' +
+          '<div class="comp-desc-cat">'+escHtml(f.category||'')+(f.method?' · '+escHtml(f.method):'')+'</div>' +
+        '</div>' +
+        '<span class="comp-val">-'+fmtMoney(f.value)+'</span>' +
+        statusLabel(f) +
+      '</div>';
+    }).join('');
+  }
+
+  // Total
+  var totEl = document.getElementById('comp-total');
+  if (totEl && pending.length > 0) {
+    totEl.innerHTML = '<span>Total comprometido em 30 dias</span><strong>-'+fmtMoney(total)+'</strong>';
+  } else if (totEl) {
+    totEl.innerHTML = '';
+  }
+
+  // Badge na barra de navegação
+  renderFinNavBadge(pending.length, total);
+}
+
+function renderFinNavBadge(count, total) {
+  // Procura o botão de navegação do Financeiro
+  var navBtns = document.querySelectorAll('.nav-btn');
+  navBtns.forEach(function(btn) {
+    if (btn.title && btn.title.toLowerCase().includes('financeiro')) {
+      var existing = btn.querySelector('.fin-nav-badge');
+      if (existing) existing.remove();
+      if (count > 0) {
+        var badge = document.createElement('span');
+        badge.className = 'fin-nav-badge';
+        badge.textContent = fmtMoney(total);
+        btn.appendChild(badge);
+      }
+    }
+  });
+}
+
+function renderTimeline() {
+  var grid   = document.getElementById('tl-grid');
+  var defEl  = document.getElementById('tl-deficit');
+  if (!grid) return;
+
+  var hoje = new Date();
+  var meses = [];
+  for (var i = 0; i < 6; i++) {
+    var d = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
+    meses.push({
+      ano: d.getFullYear(),
+      mes: d.getMonth(),
+      key: d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'),
+      label: MESES_PT[d.getMonth()] + ' ' + d.getFullYear(),
+      atual: i === 0
+    });
+  }
+
+  // Calcula max para escala das barras
+  var maxVal = 1;
+  meses.forEach(function(m) {
+    var fin = finances.filter(function(f){ return f.date && f.date.startsWith(m.key); });
+    var e = fin.filter(function(f){return f.type==='entrada';}).reduce(function(s,f){return s+f.value;},0);
+    var s = fin.filter(function(f){return f.type==='saida';}).reduce(function(s,f){return s+f.value;},0);
+    maxVal = Math.max(maxVal, e, s);
+  });
+
+  var acumuladoDeficit = 0;
+
+  grid.innerHTML = meses.map(function(m) {
+    var fin      = finances.filter(function(f){ return f.date && f.date.startsWith(m.key); });
+    var entradas = fin.filter(function(f){return f.type==='entrada';}).reduce(function(s,f){return s+f.value;},0);
+    var saidas   = fin.filter(function(f){return f.type==='saida';}).reduce(function(s,f){return s+f.value;},0);
+    var saldo    = entradas - saidas;
+
+    if (!m.atual && saldo < 0) acumuladoDeficit += saldo;
+
+    var saldoCor = saldo >= 0 ? 'var(--green)' : 'var(--red)';
+    var barE = (entradas / maxVal * 100).toFixed(1);
+    var barS = (saidas   / maxVal * 100).toFixed(1);
+
+    var aviso = '';
+    if (entradas === 0 && saidas > 0) {
+      aviso = '<div class="tl-aviso sem-receita">⚠️ Sem receitas lançadas — adicione salário/honorários</div>';
+    } else if (saldo < 0) {
+      aviso = '<div class="tl-aviso deficit">❌ Deficit de '+fmtMoney(Math.abs(saldo))+'</div>';
+    } else if (entradas > 0) {
+      aviso = '<div class="tl-aviso ok">✅ Mês equilibrado</div>';
+    }
+
+    var saldoStr = (saldo >= 0 ? '+' : '') + fmtMoney(Math.abs(saldo));
+
+    return '<div class="tl-mes'+(m.atual?' atual':'')+'">'+
+      '<div class="tl-mes-header">'+
+        '<span class="tl-mes-label">'+m.label+(m.atual?' <span style="font-size:9px;color:var(--violet-light);font-weight:400">● atual</span>':'')+'</span>'+
+        '<span class="tl-mes-saldo" style="color:'+saldoCor+'">'+(saldo>=0?'+':'-')+fmtMoney(Math.abs(saldo))+'</span>'+
+      '</div>'+
+      '<div class="tl-bars">'+
+        '<div class="tl-bar-wrap">'+
+          '<div class="tl-bar-label"><span style="color:var(--green)">↑ Entradas</span><span>'+fmtMoney(entradas)+'</span></div>'+
+          '<div class="tl-bar-bg"><div class="tl-bar-fill" style="width:'+barE+'%;background:var(--green)"></div></div>'+
+        '</div>'+
+        '<div class="tl-bar-wrap">'+
+          '<div class="tl-bar-label"><span style="color:var(--red)">↓ Saídas</span><span>'+fmtMoney(saidas)+'</span></div>'+
+          '<div class="tl-bar-bg"><div class="tl-bar-fill" style="width:'+barS+'%;background:var(--red)"></div></div>'+
+        '</div>'+
+      '</div>'+
+      aviso+
+    '</div>';
+  }).join('');
+
+  // Acumulado de deficit
+  if (defEl) {
+    if (acumuladoDeficit < 0) {
+      defEl.innerHTML = '<div class="tl-deficit"><strong>⚠️ Déficit acumulado projetado (próx. 5 meses): -'+fmtMoney(Math.abs(acumuladoDeficit))+'</strong><br>'+
+        '<span style="color:var(--muted)">Baseado apenas nos lançamentos já cadastrados. Lance as receitas futuras para ver o cenário real.</span></div>';
+    } else {
+      defEl.innerHTML = '';
+    }
+  }
+}
+
+// ══ FASE 4 — RECEITAS RECORRENTES ══
+var recorrentes = JSON.parse(localStorage.getItem('painel_recorrentes') || '[]');
+
+function saveRecorrentes() {
+  localStorage.setItem('painel_recorrentes', JSON.stringify(recorrentes));
+}
+
+function openRecorrentes() {
+  // Popula select de método
+  var methSel = document.getElementById('recor-method');
+  if (methSel) {
+    methSel.innerHTML = '';
+    getPayMethods().forEach(function(m) {
+      var o = document.createElement('option');
+      o.value = o.textContent = m;
+      methSel.appendChild(o);
+    });
+  }
+  renderRecorLista();
+  openModal('modal-recorrentes');
+}
+
+function renderRecorLista() {
+  var el = document.getElementById('recor-lista');
+  if (!el) return;
+  if (!recorrentes.length) {
+    el.innerHTML = '<div class="recor-empty">Nenhuma receita recorrente cadastrada</div>';
+    return;
+  }
+  el.innerHTML = recorrentes.map(function(r, i) {
+    return '<div class="recor-item">' +
+      '<div class="recor-item-info">' +
+        '<div class="recor-item-desc">'+escHtml(r.desc)+'</div>' +
+        '<div class="recor-item-sub">Todo dia '+r.dia+' · '+escHtml(r.category)+' · '+escHtml(r.method)+'</div>' +
+      '</div>' +
+      '<span class="recor-item-val">+'+fmtMoney(r.valor)+'</span>' +
+      '<div class="recor-item-acts">' +
+        '<button class="btn btn-ghost btn-sm" style="padding:3px 6px;font-size:10px" onclick="lancarRecorrente('+i+')">↓ Lançar</button>' +
+        '<button class="btn btn-ghost btn-sm" style="padding:3px 6px;font-size:10px;color:var(--red)" onclick="excluirRecorrente('+i+')">✕</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function salvarRecorrente() {
+  var desc  = (document.getElementById('recor-desc').value || '').trim();
+  var valor = parseFloat(document.getElementById('recor-valor').value) || 0;
+  var dia   = parseInt(document.getElementById('recor-dia').value) || 0;
+  var cat   = document.getElementById('recor-category').value || 'Renda fixa';
+  var meth  = document.getElementById('recor-method').value || 'TED';
+
+  if (!desc)         { showToast('⚠️ Informe a descrição'); return; }
+  if (valor <= 0)    { showToast('⚠️ Informe o valor'); return; }
+  if (dia < 1 || dia > 31) { showToast('⚠️ Dia inválido (1–31)'); return; }
+
+  recorrentes.push({id: Date.now(), desc, valor, dia, category: cat, method: meth});
+  saveRecorrentes();
+
+  // Limpa campos
+  ['recor-desc','recor-valor','recor-dia'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+
+  renderRecorLista();
+  showToast('✅ Receita recorrente cadastrada!');
+}
+
+function excluirRecorrente(idx) {
+  if (!confirm('Excluir "' + recorrentes[idx].desc + '"?')) return;
+  recorrentes.splice(idx, 1);
+  saveRecorrentes();
+  renderRecorLista();
+}
+
+function lancarRecorrente(idx) {
+  var r = recorrentes[idx];
+  if (!r) return;
+  // Monta data com o dia da recorrente no mês atual
+  var now = new Date();
+  var dia = String(r.dia).padStart(2,'0');
+  var mes = String(now.getMonth()+1).padStart(2,'0');
+  var ano = now.getFullYear();
+  // Se o dia já passou no mês, lança no mês atual mesmo
+  var dateStr = ano + '-' + mes + '-' + dia;
+
+  finances.unshift({
+    id: nextFinId++,
+    desc: r.desc,
+    type: 'entrada',
+    value: r.valor,
+    date: dateStr,
+    method: r.method,
+    category: r.category,
+    source: '',
+    obs: 'Lançamento automático — receita recorrente',
+    tags: [],
+    status: 'pago'
+  });
+  lsSave();
+  scheduleSave();
+  renderFinance();
+  closeModal('modal-recorrentes');
+  showToast('✅ ' + r.desc + ' lançado: +' + fmtMoney(r.valor));
+}
+
+// Sugestão de lançar receitas recorrentes no início do mês
+function checkRecorrentesDoMes() {
+  if (!recorrentes.length) return;
+  var now = new Date();
+  var mes = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  var sugestoes = [];
+
+  recorrentes.forEach(function(r) {
+    // Verifica se já foi lançada este mês
+    var jaLancada = finances.some(function(f) {
+      return f.date && f.date.startsWith(mes) &&
+             f.type === 'entrada' &&
+             f.desc === r.desc &&
+             Math.abs(f.value - r.valor) < 0.01;
+    });
+    if (!jaLancada) sugestoes.push(r);
+  });
+
+  if (!sugestoes.length) return;
+
+  // Mostra sugestão apenas se estivermos nos primeiros 10 dias do mês
+  if (now.getDate() > 10) return;
+
+  var nomes = sugestoes.map(function(r){ return r.desc; }).join(', ');
+  var total = sugestoes.reduce(function(s,r){ return s+r.valor; }, 0);
+  showToast('💚 Lançar receitas do mês? ' + nomes + ' (' + fmtMoney(total) + ') — acesse ↻ Recorrentes');
+}
+
+// Inclui recorrentes no lsSave/lsLoad/Firebase
+
 document.addEventListener('DOMContentLoaded', function() {
   ensureDefaultCategories();
+  setTimeout(checkRecorrentesDoMes, 3000);
 
 // Calcula altura real da viewport (exclui barra do navegador em tablets)
 // setAppHeight desativado — usando height:100% puro que funciona melhor em PWA
@@ -11244,6 +11682,63 @@ function setAppHeight() {}
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-fin-parcelado')">Cancelar</button>
       <button class="btn btn-primary" id="fp-save-btn" onclick="saveFinParcelado()">Gerar lançamentos</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ MODAL — RECEITAS RECORRENTES ══ -->
+<div class="modal-overlay" id="modal-recorrentes">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <span class="modal-title">💚 Receitas Recorrentes</span>
+      <button class="modal-close" onclick="closeModal('modal-recorrentes')">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:12px">
+
+      <!-- Lista de recorrentes cadastradas -->
+      <div id="recor-lista-wrap">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Cadastradas</div>
+        <div id="recor-lista"></div>
+      </div>
+
+      <!-- Formulário nova recorrente -->
+      <div style="background:var(--card);border:1px solid var(--border-soft);border-radius:10px;padding:12px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">+ Nova receita recorrente</div>
+        <div class="form-row">
+          <label>Descrição</label>
+          <input class="form-input" id="recor-desc" placeholder="Ex: Salário SPGG">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="form-row">
+            <label>Valor (R$)</label>
+            <input class="form-input" id="recor-valor" type="number" step="0.01" placeholder="0,00">
+          </div>
+          <div class="form-row">
+            <label>Dia do mês</label>
+            <input class="form-input" id="recor-dia" type="number" min="1" max="31" placeholder="Ex: 1">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="form-row">
+            <label>Categoria</label>
+            <select class="form-select" id="recor-category">
+              <option value="Renda fixa">Renda fixa</option>
+              <option value="IMPROS">IMPROS</option>
+              <option value="Renda variável">Renda variável</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Forma de pagamento</label>
+            <select class="form-select" id="recor-method"></select>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="salvarRecorrente()">Salvar receita recorrente</button>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-recorrentes')">Fechar</button>
     </div>
   </div>
 </div>
