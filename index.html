@@ -3617,8 +3617,20 @@ function deleteFinCategory(idx) {
 
 
 function getPayMethods() {
-  var all = ['PIX','Débito','Crédito','Dinheiro','TED','Outro'].concat(customPayMethods);
-  return all.sort(function(a,b){ return a.localeCompare(b,'pt-BR',{sensitivity:'base'}); });
+  var defaults = ['PIX','Débito','Crédito','Dinheiro','TED','Outro'];
+  // Coleta formas dos lançamentos existentes
+  var fromFinances = {};
+  (typeof finances !== 'undefined' ? finances : []).forEach(function(f) {
+    if (f.method) fromFinances[f.method] = true;
+  });
+  // Merge: padrões + dos lançamentos + customizadas manualmente
+  var all = {};
+  defaults.forEach(function(m){ all[m] = true; });
+  Object.keys(fromFinances).forEach(function(m){ all[m] = true; });
+  customPayMethods.forEach(function(m){ all[m] = true; });
+  return Object.keys(all).sort(function(a,b){
+    return a.localeCompare(b,'pt-BR',{sensitivity:'base'});
+  });
 }
 
 function updateFinMethodSelects() {
@@ -5927,7 +5939,6 @@ function lsLoad() {
     if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
     if (d.finances)         { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
     if (d.customPayMethods) { customPayMethods = d.customPayMethods; localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods)); }
-    syncPayMethodsFromFinances();
     if (d.recorrentes)     { recorrentes = d.recorrentes; saveRecorrentes(); }
     if (d.finCategories)    { finCategories = d.finCategories; }
     if (d.lists)            { lists = d.lists; nextListId = d.nextListId || nextListId; nextListItemId = d.nextListItemId || nextListItemId; }
@@ -6118,7 +6129,6 @@ async function cloudLoad(forceLoad) {
     if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
     if (d.finances)         { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
     if (d.customPayMethods) { customPayMethods = d.customPayMethods; localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods)); }
-    syncPayMethodsFromFinances();
     if (d.recorrentes)     { recorrentes = d.recorrentes; saveRecorrentes(); }
     if (d.finCategories)    { finCategories = d.finCategories; }
     if (d.lists)            { lists = d.lists; nextListId = d.nextListId || nextListId; nextListItemId = d.nextListItemId || nextListItemId; }
@@ -6207,7 +6217,6 @@ async function fbCloudLoad(forceLoad) {
     }
     if (d.finances)          { finances = d.finances; nextFinId = d.nextFinId || nextFinId; }
     if (d.customPayMethods)  { customPayMethods = d.customPayMethods; localStorage.setItem('painel_pay_methods', JSON.stringify(customPayMethods)); }
-    syncPayMethodsFromFinances();
     if (d.recorrentes)      { recorrentes = d.recorrentes; saveRecorrentes(); }
     if (d.finCategories)     { finCategories = d.finCategories; }
     if (d.lists)             { lists = d.lists; nextListId = d.nextListId||nextListId; nextListItemId = d.nextListItemId||nextListItemId; }
@@ -10335,7 +10344,6 @@ function duplicateFinance(id) {
   document.getElementById('fin-desc').value    = f.desc;
   document.getElementById('fin-value').value   = f.value;
   document.getElementById('fin-date').value    = todayLocal(); // data de hoje
-  syncPayMethodsFromFinances();
   updateFinMethodSelects();
   document.getElementById('fin-method').value  = f.method  || '';
   document.getElementById('fin-source').value  = f.source  || '';
@@ -11548,7 +11556,6 @@ function removePayMethod(idx) {
 
 document.addEventListener('DOMContentLoaded', function() {
   ensureDefaultCategories();
-  syncPayMethodsFromFinances();
   setTimeout(checkRecorrentesDoMes, 3000);
 
 // Calcula altura real da viewport (exclui barra do navegador em tablets)
