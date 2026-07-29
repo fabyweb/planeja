@@ -11987,25 +11987,39 @@ function orcVerNoRelatorio() {
   // Vai para aba de Lançamentos
   finSwitchTab('lancamentos');
 
-  // Abre o relatório com filtros do orçamento
   setTimeout(function() {
-    // Abre o relatório
-    if (!finRelOpen) finRelToggle();
+    // Abre o relatório se estiver fechado
+    if (!finRelOpen) {
+      var btn = document.getElementById('btn-fin-relatorio');
+      if (btn) toggleFinRelatorio(btn);
+    }
 
-    // Aplica filtros de período
-    var ini = document.getElementById('frel-ini');
-    var fim = document.getElementById('frel-fim');
-    if (ini) ini.value = o.inicio;
-    if (fim) fim.value = o.fim;
+    // Aguarda o relatório renderizar e aplica filtros
+    setTimeout(function() {
+      // Limpa filtros anteriores
+      ['frel-ini','frel-fim','frel-tipo','frel-cat','frel-method','frel-tag','frel-obs'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.value = '';
+      });
 
-    // Aplica filtro de tipo (categoria ou forma)
-    var catSel  = document.getElementById('frel-cat');
-    var methSel = document.getElementById('frel-method');
-    if (o.tipo === 'category' && catSel)  catSel.value  = o.filtro;
-    if (o.tipo === 'method'   && methSel) methSel.value = o.filtro;
+      // Aplica período do orçamento
+      var ini = document.getElementById('frel-ini');
+      var fim = document.getElementById('frel-fim');
+      if (ini) ini.value = o.inicio;
+      if (fim) fim.value = o.fim;
 
-    finRelRender();
-    showToast('📊 Mostrando lançamentos de ' + o.nome);
+      // Aplica filtro de categoria ou forma
+      if (o.tipo === 'category') {
+        var cat = document.getElementById('frel-cat');
+        if (cat) cat.value = o.filtro;
+      } else {
+        var meth = document.getElementById('frel-method');
+        if (meth) meth.value = o.filtro;
+      }
+
+      renderFinRelatorio();
+      showToast('📊 Mostrando lançamentos de ' + o.nome);
+    }, 150);
   }, 300);
 }
 
