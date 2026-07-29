@@ -1416,7 +1416,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
           </div>
           <canvas id="fin-area-chart" style="width:100%;display:block"></canvas>
         </div>
-        <!-- ④ Cashflow mensal -->
+        <!-- ② Cashflow mensal -->
         <div class="fin-card" style="padding:14px 16px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
             <span style="font-size:10px;font-weight:700;color:var(--muted)">Cashflow Mensal</span>
@@ -1427,23 +1427,21 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
           </div>
           <canvas id="fin-cashflow-chart" style="width:100%;display:block"></canvas>
         </div>
-        <!-- ② Categorias do mês -->
+        <!-- ③ Saídas por Categoria -->
         <div class="fin-card" style="padding:14px 16px">
           <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px">Saídas por Categoria</div>
           <canvas id="fin-cat-chart" style="width:100%;display:block"></canvas>
         </div>
-        <!-- ② Comprometimento por Forma -->
+        <!-- ④ Evolução por Forma de Pagamento -->
+        <div class="fin-card" style="padding:14px 16px">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px">Evolução por Forma de Pagamento</div>
+          <div id="fin-method-legend" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px;min-height:14px"></div>
+          <canvas id="fin-method-chart" style="width:100%;display:block"></canvas>
+        </div>
+        <!-- ⑤ Status do Mês — largura total -->
         <div class="fin-card" style="padding:14px 16px;grid-column:1/-1">
-          <div style="display:flex;gap:16px">
-            <div style="flex:1;min-width:0">
-              <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px">Comprometimento por Forma de Pagamento</div>
-              <canvas id="fin-method-chart" style="width:100%;display:block"></canvas>
-            </div>
-            <div style="width:220px;flex-shrink:0">
-              <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px">Status do Mês</div>
-              <canvas id="fin-status-chart" style="width:100%;display:block"></canvas>
-            </div>
-          </div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px">Status do Mês</div>
+          <canvas id="fin-status-chart" style="width:100%;display:block"></canvas>
         </div>
       </div>
       <div class="fin-cal" id="fin-calendar"></div>
@@ -12123,66 +12121,127 @@ function orcVerNoRelatorio() {
   }, 300);
 }
 
-// ══ GRÁFICO — COMPROMETIMENTO POR FORMA DE PAGAMENTO ══
+// ══ GRÁFICO — EVOLUÇÃO POR FORMA DE PAGAMENTO (linhas, 6 meses) ══
 function renderFinMethodChart() {
   var canvas = document.getElementById('fin-method-chart');
   if (!canvas) return;
-  var mes = finCalYear + '-' + String(finCalMonth+1).padStart(2,'0');
-  var saidas = finances.filter(function(f){
-    return f.type==='saida' && f.date && f.date.startsWith(mes);
-  });
 
-  // Agrupa por método
-  var grupos = {};
-  saidas.forEach(function(f){
-    var m = f.method || 'Outro';
-    grupos[m] = (grupos[m]||0) + f.value;
+  // Gera os últimos 6 meses
+  var meses = [];
+  for (var i = 5; i >= 0; i--) {
+    var d = new Date(finCalYear, finCalMonth - i, 1);
+    var key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    var lbl = d.toLocaleDateString('pt-BR',{month:'short'}).replace('.','');
+    meses.push({key:key, label:lbl});
+  }
+
+  // Coleta top 5 formas pelo total do período
+  var totaisPorForma = {};
+  finances.forEach(function(f) {
+    if (f.type !== 'saida' || !f.method || !f.date) return;
+    var inRange = meses.some(function(m){ return f.date.startsWith(m.key); });
+    if (!inRange) return;
+    totaisPorForma[f.method] = (totaisPorForma[f.method]||0) + f.value;
   });
-  var data = Object.entries(grupos)
+  var topFormas = Object.entries(totaisPorForma)
     .sort(function(a,b){ return b[1]-a[1]; })
-    .slice(0,6);
+    .slice(0,5)
+    .map(function(e){ return e[0]; });
 
-  if (!data.length) { canvas.style.display='none'; return; }
+  if (!topFormas.length) { canvas.style.display='none'; return; }
   canvas.style.display='block';
 
-  var cores = ['rgba(124,58,237,.8)','rgba(6,182,212,.75)','rgba(245,158,11,.8)',
-               'rgba(16,185,129,.75)','rgba(167,139,250,.7)','rgba(239,68,68,.7)'];
-  var pH=14, gap=8;
-  var totalH = data.length*(pH+gap)-gap;
-  var H = totalH+20;
+  var CORES = ['#A78BFA','#06B6D4','#F59E0B','#10B981','#EC4899'];
+
+  // Calcula valores por forma por mês
+  var series = topFormas.map(function(forma, fi) {
+    var vals = meses.map(function(m) {
+      return finances.filter(function(f){
+        return f.type==='saida' && f.method===forma && f.date && f.date.startsWith(m.key);
+      }).reduce(function(s,f){ return s+f.value; }, 0);
+    });
+    return {nome:forma, cor:CORES[fi%CORES.length], vals:vals};
+  });
+
+  var allVals = series.flatMap(function(s){ return s.vals; });
+  var maxRaw = Math.max.apply(null, allVals.concat([1]));
+  var mag = Math.pow(10, Math.floor(Math.log10(maxRaw)));
+  var maxV = Math.ceil(maxRaw / mag) * mag * 1.1;
+
   var dpr = window.devicePixelRatio||1;
-  var W = canvas.parentElement.offsetWidth||300;
+  var W = canvas.parentElement.offsetWidth||400;
+  var H = 160;
   canvas.width = W*dpr; canvas.height = H*dpr;
   canvas.style.width = W+'px'; canvas.style.height = H+'px';
   var ctx = canvas.getContext('2d');
   ctx.scale(dpr,dpr);
 
-  var pL=Math.min(130,W*0.4), pR=70;
-  var maxV = data[0][1];
+  var pL=44, pR=48, pT=16, pB=22, pw=W-pL-pR, ph=H-pT-pB;
 
-  data.forEach(function(d,i){
-    var y = i*(pH+gap);
-    var w = (d[1]/maxV)*(W-pL-pR);
-
-    // Track
-    ctx.fillStyle='rgba(42,42,56,.5)';
-    ctx.beginPath();ctx.roundRect(pL,y,W-pL-pR,pH,3);ctx.fill();
-    // Barra
-    ctx.fillStyle=cores[i%cores.length];
-    ctx.beginPath();ctx.roundRect(pL,y,Math.max(w,4),pH,3);ctx.fill();
-
-    // Label esquerda
-    var nome = d[0].length>18 ? d[0].substring(0,17)+'…' : d[0];
-    ctx.fillStyle='#9090B0';ctx.font='9px Inter,sans-serif';ctx.textAlign='right';
-    ctx.fillText(nome,pL-6,y+pH/2+3);
-    // Valor direita
-    ctx.fillStyle='#E4E4F0';ctx.font='bold 9px Inter,sans-serif';ctx.textAlign='left';
-    var lbl = d[1]>=1000?'R$'+Math.round(d[1]/1000)+'k':'R$'+Math.round(d[1]);
-    ctx.fillText(lbl,pL+w+6,y+pH/2+3);
+  // Grid
+  [0,.33,.66,1].forEach(function(g){
+    var y=pT+ph*(1-g);
+    ctx.strokeStyle='rgba(42,42,56,.5)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(W-pR,y);ctx.stroke();
+    var val=maxV*g;
+    var lbl=val>=1000?'R$'+Math.round(val/1000)+'k':'R$'+Math.round(val);
+    ctx.fillStyle='#4A4A68';ctx.font='8px Inter,sans-serif';ctx.textAlign='right';
+    ctx.fillText(lbl,pL-4,y+3);
   });
+  meses.forEach(function(m,i){
+    ctx.fillStyle='#4A4A68';ctx.font='8px Inter,sans-serif';ctx.textAlign='center';
+    ctx.fillText(m.label,pL+i*pw/(meses.length-1),H-5);
+  });
+
+  // Linhas + área + pontos
+  series.forEach(function(s){
+    var pts = s.vals.map(function(v,i){
+      return {x:pL+i*pw/(meses.length-1), y:pT+ph*(1-v/maxV)};
+    });
+
+    // Área
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pT+ph);
+    pts.forEach(function(p){ ctx.lineTo(p.x,p.y); });
+    ctx.lineTo(pts[pts.length-1].x, pT+ph);
+    ctx.closePath();
+    ctx.fillStyle = s.cor+'18';
+    ctx.fill();
+
+    // Linha
+    ctx.strokeStyle=s.cor;ctx.lineWidth=2;ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.beginPath();
+    pts.forEach(function(p,i){ i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y); });
+    ctx.stroke();
+
+    // Pontos
+    pts.forEach(function(p,i){
+      ctx.fillStyle=s.cor;ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#111118';ctx.beginPath();ctx.arc(p.x,p.y,1.5,0,Math.PI*2);ctx.fill();
+    });
+
+    // Valor último ponto
+    var last=pts[pts.length-1];
+    var lastVal=s.vals[s.vals.length-1];
+    if (lastVal>0) {
+      var lbl=lastVal>=1000?'R$'+Math.round(lastVal/1000)+'k':'R$'+Math.round(lastVal);
+      ctx.fillStyle=s.cor;ctx.font='bold 8px Inter,sans-serif';ctx.textAlign='left';
+      ctx.fillText(lbl,last.x+5,last.y+3);
+    }
+  });
+
+  // Legenda
+  var leg = document.getElementById('fin-method-legend');
+  if (leg) {
+    leg.innerHTML = series.map(function(s){
+      return '<span style="display:inline-flex;align-items:center;gap:4px;font-size:9px;color:#9090B0">'+
+        '<span style="display:inline-block;width:12px;height:2px;border-radius:2px;background:'+s.cor+'"></span>'+
+        s.nome+'</span>';
+    }).join('');
+  }
 }
 
-// ══ GRÁFICO — DISTRIBUIÇÃO DE STATUS (DONUT) ══
+// ══ GRÁFICO — STATUS DO MÊS (DONUT + LEGENDA HORIZONTAL) ══
 function renderFinStatusChart() {
   var canvas = document.getElementById('fin-status-chart');
   if (!canvas) return;
@@ -12200,23 +12259,22 @@ function renderFinStatusChart() {
   canvas.style.display='block';
 
   var data = [
-    {label:'Pago',    val:pago,    cor:'rgba(16,185,129,.85)'},
-    {label:'Parcela', val:parcela, cor:'rgba(6,182,212,.8)'},
-    {label:'Pendente',val:pendente,cor:'rgba(245,158,11,.8)'},
+    {label:'✅ Pago',    val:pago,    cor:'rgba(16,185,129,.85)', corS:'#10B981'},
+    {label:'📋 Parcela', val:parcela, cor:'rgba(6,182,212,.8)',   corS:'#06B6D4'},
+    {label:'⏳ Pendente',val:pendente,cor:'rgba(245,158,11,.8)',  corS:'#F59E0B'},
   ].filter(function(d){ return d.val>0; });
 
   var dpr=window.devicePixelRatio||1;
-  var W=canvas.parentElement.offsetWidth||220;
-  var H=Math.min(W, 180);
+  var W=canvas.parentElement.offsetWidth||600;
+  var H=100;
   canvas.width=W*dpr; canvas.height=H*dpr;
   canvas.style.width=W+'px'; canvas.style.height=H+'px';
   var ctx=canvas.getContext('2d');
   ctx.scale(dpr,dpr);
 
-  var legW=90;
-  var donutW=W-legW;
-  var cx=donutW/2, cy=H/2;
-  var r=Math.min(cy-8, donutW/2-8), ri=r*0.55;
+  // Donut à esquerda
+  var r=40, ri=r*0.58;
+  var cx=r+8, cy=H/2;
 
   var angle=-Math.PI/2;
   data.forEach(function(d){
@@ -12225,25 +12283,32 @@ function renderFinStatusChart() {
     ctx.fillStyle=d.cor;ctx.fill();
     angle+=slice;
   });
-  // Buraco
   ctx.beginPath();ctx.arc(cx,cy,ri,0,Math.PI*2);ctx.fillStyle='#111118';ctx.fill();
-  // Texto centro
-  var lbl = total>=1000?'R$'+Math.round(total/1000)+'k':'R$'+Math.round(total);
-  ctx.fillStyle='#E4E4F0';ctx.font='bold 12px Inter,sans-serif';ctx.textAlign='center';
-  ctx.fillText(lbl,cx,cy+2);
-  ctx.fillStyle='#7878A0';ctx.font='8px Inter,sans-serif';
-  ctx.fillText('total',cx,cy+13);
+  var tlbl=total>=1000?'R$'+Math.round(total/1000)+'k':'R$'+Math.round(total);
+  ctx.fillStyle='#E4E4F0';ctx.font='bold 11px Inter,sans-serif';ctx.textAlign='center';
+  ctx.fillText(tlbl,cx,cy+2);
+  ctx.fillStyle='#7878A0';ctx.font='7px Inter,sans-serif';
+  ctx.fillText('total',cx,cy+12);
 
-  // Legenda direita
-  var lx=donutW+8, ly=(H-data.length*26)/2;
+  // Legenda horizontal ao lado
+  var lx = cx+r+20;
+  var itemW = Math.min(180, (W-lx)/data.length);
   data.forEach(function(d,i){
-    ctx.fillStyle=d.cor;ctx.beginPath();ctx.arc(lx+5,ly+i*26+5,5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#E4E4F0';ctx.font='bold 9px Inter,sans-serif';ctx.textAlign='left';
-    ctx.fillText(d.label,lx+13,ly+i*26+5);
-    var pct=(d.val/total*100).toFixed(0)+'%';
-    var vlbl=d.val>=1000?'R$'+Math.round(d.val/1000)+'k':'R$'+Math.round(d.val);
-    ctx.fillStyle='#7878A0';ctx.font='8px Inter,sans-serif';
-    ctx.fillText(vlbl+' · '+pct,lx+13,ly+i*26+17);
+    var x = lx + i*itemW;
+    var pct = (d.val/total*100).toFixed(0);
+    var vlbl = d.val>=1000?'R$'+(d.val/1000).toFixed(1)+'k':'R$'+Math.round(d.val);
+
+    // Barra vertical proporcional
+    var barH = Math.max(4, (d.val/total)*60);
+    var barY = cy + 28 - barH;
+    ctx.fillStyle=d.cor;
+    ctx.beginPath();ctx.roundRect(x,barY,24,barH,3);ctx.fill();
+
+    // Labels
+    ctx.fillStyle='#E4E4F0';ctx.font='bold 10px Inter,sans-serif';ctx.textAlign='left';
+    ctx.fillText(d.label,x+30,barY+barH/2-4);
+    ctx.fillStyle='#7878A0';ctx.font='9px Inter,sans-serif';
+    ctx.fillText(vlbl+' · '+pct+'%',x+30,barY+barH/2+9);
   });
 }
 
