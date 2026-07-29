@@ -11266,7 +11266,7 @@ function finGetMonthData(n) {
 
 // ① Receitas vs Despesas — área suavizada
 function renderFinAreaChart() {
-  var r = finSetupCanvas('fin-area-chart', 180);
+  var r = finSetupCanvas('fin-area-chart', 250);
   if (!r) return;
   var ctx=r.ctx, W=r.W, H=r.H;
   var months = finGetMonthData(6);
@@ -11352,7 +11352,7 @@ function renderFinCatChart() {
   if (!cats.length) return;
 
   var rows = cats.length;
-  var barH = 16, gap = 5;
+  var barH = 22, gap = 7;
   var H = rows*(barH+gap)+10;
   var r = finSetupCanvas('fin-cat-chart', H);
   if (!r) return;
@@ -11433,7 +11433,7 @@ function renderFinCashflowChart() {
   var mag = Math.pow(10, Math.floor(Math.log10(maxV)));
   maxV = Math.ceil(maxV / mag) * mag * 1.1;
 
-  var r = finSetupCanvas('fin-cashflow-chart', 180);
+  var r = finSetupCanvas('fin-cashflow-chart', 250);
   if (!r) return;
   var ctx=r.ctx,W=r.W,H=r.H;
   var pL=46,pR=8,pT=22,pB=24,pw=W-pL-pR,ph=H-pT-pB;
@@ -12172,7 +12172,7 @@ function renderFinMethodChart() {
 
   var dpr = window.devicePixelRatio||1;
   var W = canvas.parentElement.offsetWidth||400;
-  var H = 160;
+  var H = 224;
   canvas.width = W*dpr; canvas.height = H*dpr;
   canvas.style.width = W+'px'; canvas.style.height = H+'px';
   var ctx = canvas.getContext('2d');
@@ -12268,7 +12268,7 @@ function renderFinStatusChart() {
 
   var dpr=window.devicePixelRatio||1;
   var W=canvas.parentElement.offsetWidth||600;
-  var H=160;
+  var H=224;
   canvas.width=W*dpr; canvas.height=H*dpr;
   canvas.style.width=W+'px'; canvas.style.height=H+'px';
   var ctx=canvas.getContext('2d');
