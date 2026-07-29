@@ -11434,7 +11434,7 @@ function finSetStatusInline(id, status) {
   var f = finances.find(function(x){ return x.id === id; });
   if (!f) return;
   f.status = status;
-  if (status === 'pago') f.due_date = null;
+  f.due_date = null; // limpa vencimento em qualquer status que não seja pendente
   lsSave(); scheduleSave();
   renderFinList();
   renderFinance();
