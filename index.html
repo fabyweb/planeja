@@ -11260,9 +11260,17 @@ function renderFinAreaChart() {
   if (!r) return;
   var ctx=r.ctx, W=r.W, H=r.H;
   var months = finGetMonthData(6);
+  // Usa média dos valores não-zero + 30% para evitar distorção por outliers
+  var allVals = [];
+  months.forEach(function(m){ if(m.ent>0) allVals.push(m.ent); if(m.sai>0) allVals.push(m.sai); });
   var maxV = 1;
-  months.forEach(function(m){ maxV = Math.max(maxV, m.ent, m.sai); });
-  maxV *= 1.15;
+  if (allVals.length) {
+    allVals.sort(function(a,b){return a-b;});
+    // Usa o percentil 80 como teto (descarta o maior valor se for outlier)
+    var p80idx = Math.min(Math.floor(allVals.length * 0.8), allVals.length-1);
+    maxV = Math.max(allVals[p80idx] * 1.3, allVals[allVals.length-1] * 0.7);
+    maxV = Math.max(maxV, 1);
+  }
   var pL=40,pR=6,pT=10,pB=22,pw=W-pL-pR,ph=H-pT-pB;
 
   // Grid
@@ -11295,6 +11303,28 @@ function renderFinAreaChart() {
   drawSmooth(getPts('ent'),gR,'#A78BFA');
   var gD=ctx.createLinearGradient(0,pT,0,pT+ph);gD.addColorStop(0,'rgba(236,72,153,.4)');gD.addColorStop(1,'rgba(236,72,153,.03)');
   drawSmooth(getPts('sai'),gD,'#EC4899');
+
+  // Pontos e valores nos últimos e maiores
+  function drawPoints(key, color) {
+    var pts = getPts(key);
+    pts.forEach(function(p,i) {
+      var val = months[i][key];
+      if (val === 0) return;
+      // Ponto
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
+      // Valor acima do ponto
+      var lbl = val>=1000 ? 'R$'+Math.round(val/1000)+'k' : 'R$'+Math.round(val);
+      ctx.fillStyle = color;
+      ctx.font = 'bold 8px Inter,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(lbl, p.x, p.y - 7);
+    });
+  }
+  drawPoints('ent','#A78BFA');
+  drawPoints('sai','#EC4899');
 }
 
 // ② Saídas por categoria — barras horizontais
@@ -11387,39 +11417,62 @@ function renderFinSaldoChart() {
 // ④ Cashflow mensal — barras agrupadas
 function renderFinCashflowChart() {
   var months = finGetMonthData(6);
-  var maxV=1;
-  months.forEach(function(m){maxV=Math.max(maxV,m.ent,m.sai);});
-  maxV*=1.1;
+  var maxV = 1;
+  months.forEach(function(m){ maxV = Math.max(maxV, m.ent, m.sai); });
+  // Arredonda para cima em múltiplos bonitos
+  var mag = Math.pow(10, Math.floor(Math.log10(maxV)));
+  maxV = Math.ceil(maxV / mag) * mag * 1.1;
 
-  var r = finSetupCanvas('fin-cashflow-chart', 110);
+  var r = finSetupCanvas('fin-cashflow-chart', 130);
   if (!r) return;
   var ctx=r.ctx,W=r.W,H=r.H;
-  var pL=40,pR=8,pT=10,pB=22,pw=W-pL-pR,ph=H-pT-pB;
-  var gw=pw/months.length, bw=Math.min(18,gw/2-4);
+  var pL=46,pR=8,pT=22,pB=24,pw=W-pL-pR,ph=H-pT-pB;
+  var gw=pw/months.length, bw=Math.min(22,gw/2-4);
 
-  [0,.5,1].forEach(function(g){
+  // Grid
+  [0,.33,.66,1].forEach(function(g){
     var y=pT+ph*(1-g);
     ctx.strokeStyle='rgba(42,42,56,.6)';ctx.lineWidth=1;
     ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(W-pR,y);ctx.stroke();
+    var val = maxV*g;
+    var lbl = val>=1000 ? 'R$'+Math.round(val/1000)+'k' : 'R$'+Math.round(val);
     ctx.fillStyle='#4A4A68';ctx.font='8px Inter,sans-serif';ctx.textAlign='right';
-    ctx.fillText('R$'+Math.round(maxV*g/1000)+'k',pL-3,y+3);
+    ctx.fillText(lbl,pL-3,y+3);
   });
 
   months.forEach(function(m,i){
     var cx=pL+i*gw+gw/2;
     var xE=cx-bw-2,xS=cx+2;
-    var eh=(m.ent/maxV)*ph, sh=(m.sai/maxV)*ph;
+    var eh=Math.max(0,(m.ent/maxV)*ph), sh=Math.max(0,(m.sai/maxV)*ph);
 
+    // Barra entradas
     var ge=ctx.createLinearGradient(0,pT+ph-eh,0,pT+ph);
     ge.addColorStop(0,'rgba(16,185,129,.9)');ge.addColorStop(1,'rgba(16,185,129,.4)');
-    ctx.fillStyle=ge;ctx.beginPath();ctx.roundRect(xE,pT+ph-eh,bw,eh,3);ctx.fill();
+    ctx.fillStyle=ge;
+    if(eh>0){ctx.beginPath();ctx.roundRect(xE,pT+ph-eh,bw,eh,3);ctx.fill();}
 
+    // Barra saídas
     var gs=ctx.createLinearGradient(0,pT+ph-sh,0,pT+ph);
     gs.addColorStop(0,'rgba(239,68,68,.9)');gs.addColorStop(1,'rgba(239,68,68,.4)');
-    ctx.fillStyle=gs;ctx.beginPath();ctx.roundRect(xS,pT+ph-sh,bw,sh,3);ctx.fill();
+    ctx.fillStyle=gs;
+    if(sh>0){ctx.beginPath();ctx.roundRect(xS,pT+ph-sh,bw,sh,3);ctx.fill();}
 
+    // Label mês
     ctx.fillStyle='#4A4A68';ctx.font='8px Inter,sans-serif';ctx.textAlign='center';
-    ctx.fillText(m.label,cx,H-4);
+    ctx.fillText(m.label,cx,H-6);
+
+    // Valores acima das barras (apenas se houver valor)
+    ctx.font='bold 8px Inter,sans-serif';
+    if(m.ent>0){
+      var lE = m.ent>=1000?'R$'+Math.round(m.ent/1000)+'k':'R$'+Math.round(m.ent);
+      ctx.fillStyle='#10B981';ctx.textAlign='center';
+      ctx.fillText(lE,xE+bw/2,pT+ph-eh-4);
+    }
+    if(m.sai>0){
+      var lS = m.sai>=1000?'R$'+Math.round(m.sai/1000)+'k':'R$'+Math.round(m.sai);
+      ctx.fillStyle='#EF4444';ctx.textAlign='center';
+      ctx.fillText(lS,xS+bw/2,pT+ph-sh-4);
+    }
   });
 }
 
