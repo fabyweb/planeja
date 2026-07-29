@@ -1108,6 +1108,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .fin-tab{padding:8px 18px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
 .fin-tab:hover{color:var(--text)}
 .fin-tab.active{color:var(--violet-light);border-bottom-color:var(--violet)}
+
+/* ══ MODAL DETALHE ORÇAMENTO ══ */
+.orc-detail-row{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--card);border-radius:8px;border:1px solid var(--border-soft);margin-bottom:5px;cursor:pointer;transition:border-color .15s}
+.orc-detail-row:hover{border-color:var(--violet)}
+.orc-detail-desc{flex:1;min-width:0}
+.orc-detail-nome{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.orc-detail-sub{font-size:9px;color:var(--muted);margin-top:1px}
+.orc-detail-val{font-size:12px;font-weight:800;color:var(--red);white-space:nowrap}
+.orc-detail-total{display:flex;justify-content:space-between;padding:8px 10px;border-top:1px solid var(--border-soft);margin-top:4px;font-size:11px;font-weight:700}
 </style>
 
   <!-- PWA -->
@@ -11718,7 +11727,7 @@ function orcCard(o, idx) {
     '<div class="orc-top">' +
       '<span class="orc-icon">'+(o.icon||'📊')+'</span>' +
       '<div style="flex:1">' +
-        '<div class="orc-name">'+escHtml(o.nome)+'</div>' +
+        '<div class="orc-name" onclick="orcVerLancamentos('+idx+')" style="cursor:pointer" title="Ver lançamentos">'+escHtml(o.nome)+' <span style=\"font-size:9px;color:var(--dim)\">↗</span></div>' +
         '<div class="orc-period-lbl">'+o.inicio+' → '+o.fim+' · '+d.diasRestantes+' dias restantes</div>' +
       '</div>' +
       '<span class="orc-pct" style="color:'+cor+'">'+d.pct+'%</span>' +
@@ -11728,7 +11737,7 @@ function orcCard(o, idx) {
         '<button class="btn-act btn-act-del" onclick="excluirOrc('+idx+')" title="Excluir">✕</button>' +
       '</div>' +
     '</div>' +
-    '<div class="orc-bar-wrap">' +
+    '<div class="orc-bar-wrap" onclick="orcVerLancamentos('+idx+')" style="cursor:pointer" title="Ver lançamentos">' +
       '<div class="orc-bar-fill" style="width:'+barW+'%;background:'+barGrad+';'+barShadow+'"></div>' +
       '<div class="orc-ideal-marker" style="left:'+idealLeft+'%">' +
         '<div class="orc-ideal-badge">ideal</div>' +
@@ -11916,6 +11925,81 @@ function finSwitchTab(tab) {
   document.getElementById('fin-area-lancamentos').style.display = tab === 'lancamentos' ? '' : 'none';
   document.getElementById('fin-area-orcamentos').style.display  = tab === 'orcamentos'  ? '' : 'none';
   if (tab === 'orcamentos') renderOrcamentos();
+}
+
+// ══ DETALHE DE LANÇAMENTOS DO ORÇAMENTO ══
+var _orcDetailIdx = null;
+
+function orcVerLancamentos(idx) {
+  var o = orcamentos[idx];
+  if (!o) return;
+  _orcDetailIdx = idx;
+
+  // Filtra lançamentos do orçamento
+  var gastos = finances.filter(function(f) {
+    if (f.type !== 'saida') return false;
+    if (!f.date || f.date < o.inicio || f.date > o.fim) return false;
+    if (o.tipo === 'category') return f.category === o.filtro;
+    if (o.tipo === 'method')   return f.method   === o.filtro;
+    return false;
+  }).sort(function(a,b){ return b.date > a.date ? 1 : -1; });
+
+  var total = gastos.reduce(function(s,f){ return s+f.value; }, 0);
+
+  // Popula modal
+  document.getElementById('orc-detail-title').textContent = (o.icon||'📊') + ' ' + o.nome;
+  document.getElementById('orc-detail-period').textContent = o.inicio + ' → ' + o.fim + ' · ' +
+    (o.tipo === 'category' ? 'Categoria: ' : 'Forma: ') + o.filtro;
+  document.getElementById('orc-detail-total').textContent = '-' + fmtMoney(total);
+
+  var list = document.getElementById('orc-detail-list');
+  if (gastos.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--dim);font-size:11px">Nenhum lançamento neste período</div>';
+  } else {
+    list.innerHTML = gastos.map(function(f) {
+      var fmtDia = f.date ? new Date(f.date+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}) : '—';
+      return '<div class="orc-detail-row" onclick="closeModal(&quot;modal-orc-detail&quot;);editFinance('+f.id+')">' +
+        '<div style="font-size:11px;font-weight:700;color:var(--muted);min-width:44px;font-family:monospace">'+fmtDia+'</div>' +
+        '<div class="orc-detail-desc">' +
+          '<div class="orc-detail-nome">'+escHtml(f.desc)+'</div>' +
+          '<div class="orc-detail-sub">'+escHtml(f.category||'')+(f.method?' · '+escHtml(f.method):'')+'</div>' +
+        '</div>' +
+        '<span class="orc-detail-val">-'+fmtMoney(f.value)+'</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  openModal('modal-orc-detail');
+}
+
+function orcVerNoRelatorio() {
+  var o = _orcDetailIdx !== null ? orcamentos[_orcDetailIdx] : null;
+  if (!o) return;
+  closeModal('modal-orc-detail');
+
+  // Vai para aba de Lançamentos
+  finSwitchTab('lancamentos');
+
+  // Abre o relatório com filtros do orçamento
+  setTimeout(function() {
+    // Abre o relatório
+    if (!finRelOpen) finRelToggle();
+
+    // Aplica filtros de período
+    var ini = document.getElementById('frel-ini');
+    var fim = document.getElementById('frel-fim');
+    if (ini) ini.value = o.inicio;
+    if (fim) fim.value = o.fim;
+
+    // Aplica filtro de tipo (categoria ou forma)
+    var catSel  = document.getElementById('frel-cat');
+    var methSel = document.getElementById('frel-method');
+    if (o.tipo === 'category' && catSel)  catSel.value  = o.filtro;
+    if (o.tipo === 'method'   && methSel) methSel.value = o.filtro;
+
+    finRelRender();
+    showToast('📊 Mostrando lançamentos de ' + o.nome);
+  }, 300);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -12813,6 +12897,31 @@ function setAppHeight() {}
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-orc')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarOrc()">Salvar orçamento</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ MODAL — LANÇAMENTOS DO ORÇAMENTO ══ -->
+<div class="modal-overlay" id="modal-orc-detail">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div>
+        <span class="modal-title" id="orc-detail-title">Lançamentos</span>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px" id="orc-detail-period"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-orc-detail')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:12px 16px">
+      <div id="orc-detail-list" style="max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:4px"></div>
+      <div class="orc-detail-total">
+        <span style="color:var(--muted)">Total considerado</span>
+        <span id="orc-detail-total" style="color:var(--red)">R$0,00</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-orc-detail')">Fechar</button>
+      <button class="btn btn-primary" onclick="orcVerNoRelatorio()" id="orc-detail-rel-btn">Ver no relatório →</button>
     </div>
   </div>
 </div>
