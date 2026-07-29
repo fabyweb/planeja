@@ -3925,6 +3925,7 @@ function editFinance(id) {
   document.getElementById('fin-type').value = f.type || 'saida';
   updateFinCategorySelects();
   updateFinType(); // adapta labels/visibilidade dos botões de status
+  finSetStatus(f.status || 'pago'); // carrega status do lançamento
   document.getElementById('fin-category').value = f.category || '';
   // Carrega tags existentes
   var tw = document.getElementById('fin-tag-wrap');
@@ -10410,6 +10411,7 @@ function duplicateFinance(id) {
   document.getElementById('fin-type').value = f.type || 'saida';
   updateFinCategorySelects();
   updateFinType(); // adapta labels/visibilidade dos botões de status
+  finSetStatus(f.status || 'pago'); // carrega status do lançamento
   document.getElementById('fin-category').value = f.category || '';
 
   // Carrega as tags e status do original
