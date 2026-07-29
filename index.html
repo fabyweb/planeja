@@ -1405,9 +1405,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       </div>
       <!-- ── Gráficos ── -->
       <div id="fin-graficos-wrap" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-        <!-- ① Receitas vs Despesas (largura total) -->
-        <div class="fin-card" style="grid-column:1/-1;padding:12px 14px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <!-- ① Receitas vs Despesas -->
+        <div class="fin-card" style="padding:14px 16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
             <span style="font-size:10px;font-weight:700;color:var(--muted)">Receitas vs Despesas</span>
             <div style="display:flex;gap:10px;font-size:9px;color:var(--muted)">
               <span><span style="display:inline-block;width:12px;height:2px;background:#A78BFA;vertical-align:middle;margin-right:3px;border-radius:1px"></span>Receita</span>
@@ -1416,19 +1416,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
           </div>
           <canvas id="fin-area-chart" style="width:100%;display:block"></canvas>
         </div>
-        <!-- ② Categorias do mês -->
-        <div class="fin-card" style="padding:12px 14px">
-          <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px">Saídas por Categoria</div>
-          <canvas id="fin-cat-chart" style="width:100%;display:block"></canvas>
-        </div>
-        <!-- ③ Saldo acumulado -->
-        <div class="fin-card" style="padding:12px 14px">
-          <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px">Saldo Acumulado</div>
-          <canvas id="fin-saldo-chart" style="width:100%;display:block"></canvas>
-        </div>
         <!-- ④ Cashflow mensal -->
-        <div class="fin-card" style="grid-column:1/-1;padding:12px 14px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div class="fin-card" style="padding:14px 16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
             <span style="font-size:10px;font-weight:700;color:var(--muted)">Cashflow Mensal</span>
             <div style="display:flex;gap:10px;font-size:9px;color:var(--muted)">
               <span><span style="display:inline-block;width:10px;height:8px;background:rgba(16,185,129,.8);vertical-align:middle;margin-right:3px;border-radius:2px"></span>Entradas</span>
@@ -1436,6 +1426,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
             </div>
           </div>
           <canvas id="fin-cashflow-chart" style="width:100%;display:block"></canvas>
+        </div>
+        <!-- ② Categorias do mês -->
+        <div class="fin-card" style="padding:14px 16px">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px">Saídas por Categoria</div>
+          <canvas id="fin-cat-chart" style="width:100%;display:block"></canvas>
+        </div>
+        <!-- ③ Saldo acumulado -->
+        <div class="fin-card" style="padding:14px 16px">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px">Saldo Acumulado</div>
+          <canvas id="fin-saldo-chart" style="width:100%;display:block"></canvas>
         </div>
       </div>
       <div class="fin-cal" id="fin-calendar"></div>
@@ -11256,7 +11256,7 @@ function finGetMonthData(n) {
 
 // ① Receitas vs Despesas — área suavizada
 function renderFinAreaChart() {
-  var r = finSetupCanvas('fin-area-chart', 110);
+  var r = finSetupCanvas('fin-area-chart', 180);
   if (!r) return;
   var ctx=r.ctx, W=r.W, H=r.H;
   var months = finGetMonthData(6);
@@ -11423,7 +11423,7 @@ function renderFinCashflowChart() {
   var mag = Math.pow(10, Math.floor(Math.log10(maxV)));
   maxV = Math.ceil(maxV / mag) * mag * 1.1;
 
-  var r = finSetupCanvas('fin-cashflow-chart', 130);
+  var r = finSetupCanvas('fin-cashflow-chart', 180);
   if (!r) return;
   var ctx=r.ctx,W=r.W,H=r.H;
   var pL=46,pR=8,pT=22,pB=24,pw=W-pL-pR,ph=H-pT-pB;
