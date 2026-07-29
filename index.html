@@ -1405,7 +1405,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
       </div>
       <!-- ── Gráficos ── -->
       <div id="fin-graficos-wrap" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-        <!-- ① Receitas vs Despesas -->
+        <!-- Linha 1: Temporais -->
         <div class="fin-card" style="padding:14px 16px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
             <span style="font-size:10px;font-weight:700;color:var(--muted)">Receitas vs Despesas</span>
@@ -1416,7 +1416,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
           </div>
           <canvas id="fin-area-chart" style="width:100%;display:block"></canvas>
         </div>
-        <!-- ② Cashflow mensal -->
         <div class="fin-card" style="padding:14px 16px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
             <span style="font-size:10px;font-weight:700;color:var(--muted)">Cashflow Mensal</span>
@@ -1427,21 +1426,24 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
           </div>
           <canvas id="fin-cashflow-chart" style="width:100%;display:block"></canvas>
         </div>
-        <!-- ③ Saídas por Categoria -->
-        <div class="fin-card" style="padding:14px 16px">
-          <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px">Saídas por Categoria</div>
-          <canvas id="fin-cat-chart" style="width:100%;display:block"></canvas>
-        </div>
-        <!-- ④ Evolução por Forma de Pagamento -->
-        <div class="fin-card" style="padding:14px 16px">
-          <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px">Evolução por Forma de Pagamento</div>
-          <div id="fin-method-legend" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px;min-height:14px"></div>
-          <canvas id="fin-method-chart" style="width:100%;display:block"></canvas>
-        </div>
-        <!-- ⑤ Status do Mês — largura total -->
-        <div class="fin-card" style="padding:14px 16px;grid-column:1/-1">
-          <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px">Status do Mês</div>
-          <canvas id="fin-status-chart" style="width:100%;display:block"></canvas>
+        <!-- Linha 2: Analíticos (3 colunas) -->
+        <div class="fin-card" style="padding:14px 16px;grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+          <!-- Saídas por Categoria -->
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px">Saídas por Categoria</div>
+            <canvas id="fin-cat-chart" style="width:100%;display:block"></canvas>
+          </div>
+          <!-- Evolução por Forma -->
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px">Evolução por Forma de Pagamento</div>
+            <div id="fin-method-legend" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;min-height:14px"></div>
+            <canvas id="fin-method-chart" style="width:100%;display:block"></canvas>
+          </div>
+          <!-- Status do Mês -->
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px">Status do Mês</div>
+            <canvas id="fin-status-chart" style="width:100%;display:block"></canvas>
+          </div>
         </div>
       </div>
       <div class="fin-cal" id="fin-calendar"></div>
@@ -12266,15 +12268,15 @@ function renderFinStatusChart() {
 
   var dpr=window.devicePixelRatio||1;
   var W=canvas.parentElement.offsetWidth||600;
-  var H=100;
+  var H=160;
   canvas.width=W*dpr; canvas.height=H*dpr;
   canvas.style.width=W+'px'; canvas.style.height=H+'px';
   var ctx=canvas.getContext('2d');
   ctx.scale(dpr,dpr);
 
-  // Donut à esquerda
-  var r=40, ri=r*0.58;
-  var cx=r+8, cy=H/2;
+  // Donut centralizado
+  var r=50, ri=r*0.58;
+  var cx=W/2, cy=r+10;
 
   var angle=-Math.PI/2;
   data.forEach(function(d){
@@ -12285,30 +12287,22 @@ function renderFinStatusChart() {
   });
   ctx.beginPath();ctx.arc(cx,cy,ri,0,Math.PI*2);ctx.fillStyle='#111118';ctx.fill();
   var tlbl=total>=1000?'R$'+Math.round(total/1000)+'k':'R$'+Math.round(total);
-  ctx.fillStyle='#E4E4F0';ctx.font='bold 11px Inter,sans-serif';ctx.textAlign='center';
+  ctx.fillStyle='#E4E4F0';ctx.font='bold 12px Inter,sans-serif';ctx.textAlign='center';
   ctx.fillText(tlbl,cx,cy+2);
-  ctx.fillStyle='#7878A0';ctx.font='7px Inter,sans-serif';
-  ctx.fillText('total',cx,cy+12);
+  ctx.fillStyle='#7878A0';ctx.font='8px Inter,sans-serif';
+  ctx.fillText('total',cx,cy+14);
 
-  // Legenda horizontal ao lado
-  var lx = cx+r+20;
-  var itemW = Math.min(180, (W-lx)/data.length);
+  // Legenda vertical abaixo
+  var legY = cy+r+12;
   data.forEach(function(d,i){
-    var x = lx + i*itemW;
+    var y = legY + i*26;
     var pct = (d.val/total*100).toFixed(0);
     var vlbl = d.val>=1000?'R$'+(d.val/1000).toFixed(1)+'k':'R$'+Math.round(d.val);
-
-    // Barra vertical proporcional
-    var barH = Math.max(4, (d.val/total)*60);
-    var barY = cy + 28 - barH;
-    ctx.fillStyle=d.cor;
-    ctx.beginPath();ctx.roundRect(x,barY,24,barH,3);ctx.fill();
-
-    // Labels
+    ctx.fillStyle=d.cor;ctx.beginPath();ctx.arc(cx-60+6,y+5,5,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#E4E4F0';ctx.font='bold 10px Inter,sans-serif';ctx.textAlign='left';
-    ctx.fillText(d.label,x+30,barY+barH/2-4);
+    ctx.fillText(d.label,cx-60+16,y+5);
     ctx.fillStyle='#7878A0';ctx.font='9px Inter,sans-serif';
-    ctx.fillText(vlbl+' · '+pct+'%',x+30,barY+barH/2+9);
+    ctx.fillText(vlbl+' · '+pct+'%',cx-60+16,y+17);
   });
 }
 
