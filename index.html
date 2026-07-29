@@ -10970,6 +10970,35 @@ function renderFinNavBadge(count, total) {
   });
 }
 
+
+// Calcula total de entradas projetadas para um mês (YYYY-MM)
+// Considera: lançamentos cadastrados + a receber (due_date) + recorrentes
+function tlEntradas(mesKey) {
+  // 1. Lançamentos de entrada já cadastrados (recebidos ou a receber)
+  var lancamentos = finances.filter(function(f) {
+    if (f.type !== 'entrada') return false;
+    // A receber com due_date: usa due_date
+    var ref = (f.status === 'pendente' && f.due_date) ? f.due_date : f.date;
+    return ref && ref.startsWith(mesKey);
+  }).reduce(function(s,f){ return s+f.value; }, 0);
+
+  // 2. Receitas recorrentes projetadas (apenas meses futuros não lançados)
+  var ano = parseInt(mesKey.split('-')[0]);
+  var mes = parseInt(mesKey.split('-')[1]); // 1-12
+  var recorTotal = 0;
+  (typeof recorrentes !== 'undefined' ? recorrentes : []).forEach(function(r) {
+    // Verifica se já foi lançada neste mês
+    var jaLancada = finances.some(function(f) {
+      return f.type === 'entrada' &&
+             f.date && f.date.startsWith(mesKey) &&
+             f.desc === r.desc &&
+             Math.abs(f.value - r.valor) < 0.01;
+    });
+    if (!jaLancada) recorTotal += r.valor;
+  });
+
+  return lancamentos + recorTotal;
+}
 function renderTimeline() {
   var grid   = document.getElementById('tl-grid');
   var defEl  = document.getElementById('tl-deficit');
@@ -10991,18 +11020,25 @@ function renderTimeline() {
   // Calcula max para escala das barras
   var maxVal = 1;
   meses.forEach(function(m) {
-    var fin = finances.filter(function(f){ return f.date && f.date.startsWith(m.key); });
-    var e = fin.filter(function(f){return f.type==='entrada';}).reduce(function(s,f){return s+f.value;},0);
-    var s = fin.filter(function(f){return f.type==='saida';}).reduce(function(s,f){return s+f.value;},0);
+    var e = tlEntradas(m.key);
+    var s = finances.filter(function(f){
+      if (f.type !== 'saida') return false;
+      var ref = (f.status === 'pendente' && f.due_date) ? f.due_date : f.date;
+      return ref && ref.startsWith(m.key);
+    }).reduce(function(s,f){return s+f.value;},0);
     maxVal = Math.max(maxVal, e, s);
   });
 
   var acumuladoDeficit = 0;
 
   grid.innerHTML = meses.map(function(m) {
-    var fin      = finances.filter(function(f){ return f.date && f.date.startsWith(m.key); });
-    var entradas = fin.filter(function(f){return f.type==='entrada';}).reduce(function(s,f){return s+f.value;},0);
-    var saidas   = fin.filter(function(f){return f.type==='saida';}).reduce(function(s,f){return s+f.value;},0);
+    var entradas = tlEntradas(m.key);
+    var saidas = finances.filter(function(f){
+      if (f.type !== 'saida') return false;
+      // Pendentes usam due_date se tiver, senão date
+      var ref = (f.status === 'pendente' && f.due_date) ? f.due_date : f.date;
+      return ref && ref.startsWith(m.key);
+    }).reduce(function(s,f){return s+f.value;},0);
     var saldo    = entradas - saidas;
 
     if (!m.atual && saldo < 0) acumuladoDeficit += saldo;
