@@ -10876,9 +10876,11 @@ function renderCompromissos() {
   // Saídas nos próximos 30 dias (data >= hoje e <= hoje+30)
   var pending = finances.filter(function(f) {
     if (f.type !== 'saida') return false;
-    if (!f.date || f.date < hojeStr || f.date > fim30Str) return false;
-    // Exclui lançamentos já pagos — só pendente e parcela são compromissos futuros
-    return !f.status || f.status === 'pendente' || f.status === 'parcela';
+    // Só pendente e parcela são compromissos futuros
+    if (f.status === 'pago') return false;
+    // Usa due_date se existir, senão date
+    var dataRef = f.due_date || f.date || '';
+    return dataRef >= hojeStr && dataRef <= fim30Str;
   }).sort(function(a,b){ return a.date < b.date ? -1 : 1; });
 
   var total = pending.reduce(function(s,f){ return s+f.value; }, 0);
