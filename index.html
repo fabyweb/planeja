@@ -12248,13 +12248,22 @@ function renderFinStatusChart() {
   var canvas = document.getElementById('fin-status-chart');
   if (!canvas) return;
   var mes = finCalYear + '-' + String(finCalMonth+1).padStart(2,'0');
-  var saidas = finances.filter(function(f){
-    return f.type==='saida' && f.date && f.date.startsWith(mes);
-  });
 
-  var pago     = saidas.filter(function(f){ return !f.status||f.status==='pago'; }).reduce(function(s,f){return s+f.value;},0);
-  var parcela  = saidas.filter(function(f){ return f.status==='parcela'; }).reduce(function(s,f){return s+f.value;},0);
-  var pendente = saidas.filter(function(f){ return f.status==='pendente'; }).reduce(function(s,f){return s+f.value;},0);
+  // Pago/Parcela: usa date. Pendente: usa due_date se existir, senão date
+  var pago = finances.filter(function(f){
+    return f.type==='saida' && (!f.status||f.status==='pago') && f.date && f.date.startsWith(mes);
+  }).reduce(function(s,f){return s+f.value;},0);
+
+  var parcela = finances.filter(function(f){
+    return f.type==='saida' && f.status==='parcela' && f.date && f.date.startsWith(mes);
+  }).reduce(function(s,f){return s+f.value;},0);
+
+  var pendente = finances.filter(function(f){
+    if (f.type!=='saida' || f.status!=='pendente') return false;
+    var ref = f.due_date || f.date || '';
+    return ref.startsWith(mes);
+  }).reduce(function(s,f){return s+f.value;},0);
+
   var total = pago+parcela+pendente;
 
   if (!total) { canvas.style.display='none'; return; }
