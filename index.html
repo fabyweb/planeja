@@ -2883,6 +2883,7 @@ function finCalNav(dir) {
     if (finCalMonth > 11) { finCalMonth = 0; finCalYear++; }
   }
   renderFinCalendar();
+  renderFinCards();
   renderIndicadores();
   renderFinCatChart();
   renderFinList();
@@ -2946,27 +2947,7 @@ function renderFinance() {
   const totalEP = entradasPagas.reduce((s,f)=>s+f.value,0);
   const totalSP = saidasPagas.reduce((s,f)=>s+f.value,0);
   const saldoPago = totalEP - totalSP;
-  // Card 1 — Total pago no mês
-  var elSaldo = document.getElementById('fin-saldo');
-  if (elSaldo) elSaldo.textContent = '-' + fmtMoney(totalSP);
-  if (elSaldo) elSaldo.style.color = totalSP>0?'var(--red)':'var(--muted)';
-  var elSD = document.getElementById('fin-saldo-delta');
-  if (elSD) elSD.textContent = saidasPagas.length + ' pagamento(s) no mês';
-
-  // Card 2 — Comprometimento: pendentes/parcelas com due_date ou date no mês
-  var mesFiltro = finCalYear + '-' + String(finCalMonth+1).padStart(2,'0');
-  var saidasPendentes = finances.filter(function(f) {
-    if (f.type !== 'saida') return false;
-    if (f.status !== 'pendente' && f.status !== 'parcela') return false;
-    var dataRef = f.due_date || f.date || '';
-    return dataRef.startsWith(mesFiltro);
-  });
-  var comprometido = saidasPendentes.reduce(function(s,f){ return s+f.value; }, 0);
-  var elProj = document.getElementById('fin-saldo-proj');
-  if (elProj) elProj.textContent = comprometido > 0 ? '-' + fmtMoney(comprometido) : fmtMoney(0);
-  if (elProj) elProj.style.color = comprometido>0?'var(--amber)':'var(--muted)';
-  var elProjD = document.getElementById('fin-saldo-proj-delta');
-  if (elProjD) elProjD.textContent = saidasPendentes.length>0 ? saidasPendentes.length+' lançamento(s) a pagar' : 'nada pendente ✅';
+  renderFinCards();
 
   document.getElementById('fin-entrada').textContent = fmtMoney(totalE);
   document.getElementById('fin-saida').textContent   = fmtMoney(totalS);
@@ -11549,6 +11530,33 @@ function removePayMethod(idx) {
   renderPayMethodList();
   updateFinMethodSelects();
   showToast('🗑️ "' + nome + '" removido');
+}
+
+function renderFinCards() {
+  var mes = finCalYear + '-' + String(finCalMonth+1).padStart(2,'0');
+  var mesFin = finances.filter(function(f){ return f.date && f.date.startsWith(mes); });
+  var saidas = mesFin.filter(function(f){ return f.type === 'saida'; });
+
+  // Card 1 — Total pago
+  var saidasPagas = saidas.filter(function(f){ return !f.status || f.status === 'pago'; });
+  var totalSP = saidasPagas.reduce(function(s,f){ return s+f.value; }, 0);
+  var elSaldo = document.getElementById('fin-saldo');
+  if (elSaldo) { elSaldo.textContent = '-' + fmtMoney(totalSP); elSaldo.style.color = totalSP>0?'var(--red)':'var(--muted)'; }
+  var elSD = document.getElementById('fin-saldo-delta');
+  if (elSD) elSD.textContent = saidasPagas.length + ' pagamento(s) no mês';
+
+  // Card 2 — Comprometimento
+  var saidasPendentes = finances.filter(function(f) {
+    if (f.type !== 'saida') return false;
+    if (f.status !== 'pendente' && f.status !== 'parcela') return false;
+    var dataRef = f.due_date || f.date || '';
+    return dataRef.startsWith(mes);
+  });
+  var comprometido = saidasPendentes.reduce(function(s,f){ return s+f.value; }, 0);
+  var elProj = document.getElementById('fin-saldo-proj');
+  if (elProj) { elProj.textContent = comprometido > 0 ? '-' + fmtMoney(comprometido) : fmtMoney(0); elProj.style.color = comprometido>0?'var(--amber)':'var(--muted)'; }
+  var elProjD = document.getElementById('fin-saldo-proj-delta');
+  if (elProjD) elProjD.textContent = saidasPendentes.length>0 ? saidasPendentes.length+' lançamento(s) a pagar' : 'nada pendente ✅';
 }
 
 document.addEventListener('DOMContentLoaded', function() {
