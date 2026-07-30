@@ -1117,6 +1117,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .orc-detail-sub{font-size:9px;color:var(--muted);margin-top:1px}
 .orc-detail-val{font-size:12px;font-weight:800;color:var(--red);white-space:nowrap}
 .orc-detail-total{display:flex;justify-content:space-between;padding:8px 10px;border-top:1px solid var(--border-soft);margin-top:4px;font-size:11px;font-weight:700}
+
+/* ══ PAINEL SAÚDE FINANCEIRA ══ */
+.fin-saude{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.fin-saude-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.fin-saude-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+.fin-saude-card{background:var(--card);border-radius:8px;padding:10px 12px}
+.fin-saude-card-val{font-size:16px;font-weight:800;margin-bottom:2px}
+.fin-saude-card-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.fin-saude-input-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.fin-saude-input-lbl{font-size:10px;color:var(--muted);white-space:nowrap}
+.fin-saude-input{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:12px;font-weight:700;width:140px}
+.fin-saude-input:focus{outline:none;border-color:var(--violet)}
+.fin-saude-bar-wrap{height:8px;background:var(--border-soft);border-radius:4px;margin-bottom:10px;position:relative;overflow:visible}
+.fin-saude-bar-fill{height:100%;border-radius:4px;transition:width .5s}
+.fin-saude-bar-comp{height:100%;border-radius:0 4px 4px 0;opacity:.5;position:absolute;top:0}
+.fin-saude-msg{font-size:11px;padding:9px 12px;border-radius:8px;line-height:1.6;font-weight:500}
 </style>
 
   <!-- PWA -->
@@ -1447,6 +1463,35 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
         </div>
       </div>
       <div class="fin-cal" id="fin-calendar"></div>
+      <!-- ── Saúde Financeira do Mês ── -->
+      <div class="fin-saude" id="fin-saude-wrap">
+        <div class="fin-saude-title">💡 Saúde Financeira — <span id="fin-saude-mes"></span></div>
+        <div class="fin-saude-input-row">
+          <span class="fin-saude-input-lbl">Orçamento estimado para o mês:</span>
+          <input class="fin-saude-input" id="fin-saude-orcamento" type="text"
+            placeholder="R$ 0,00" oninput="renderFinSaude()" onblur="salvarOrcamentoMes()">
+        </div>
+        <div class="fin-saude-grid">
+          <div class="fin-saude-card">
+            <div class="fin-saude-card-val" id="fs-pago">—</div>
+            <div class="fin-saude-card-lbl">Saídas pagas até hoje</div>
+          </div>
+          <div class="fin-saude-card">
+            <div class="fin-saude-card-val" id="fs-comp">—</div>
+            <div class="fin-saude-card-lbl">Comprometido próximos dias</div>
+          </div>
+          <div class="fin-saude-card">
+            <div class="fin-saude-card-val" id="fs-livre">—</div>
+            <div class="fin-saude-card-lbl">Livre no orçamento</div>
+          </div>
+        </div>
+        <div class="fin-saude-bar-wrap" id="fs-bar-wrap" style="display:none">
+          <div class="fin-saude-bar-fill" id="fs-bar-pago"></div>
+          <div class="fin-saude-bar-comp" id="fs-bar-comp"></div>
+        </div>
+        <div class="fin-saude-msg" id="fs-msg"></div>
+      </div>
+
       <div class="fin-layout">
         <div class="fin-transactions">
           <table class="fin-table">
@@ -2969,6 +3014,7 @@ function finCalNav(dir) {
   }
   renderFinCalendar();
   renderFinCards();
+  renderFinSaude();
   renderIndicadores();
   renderFinCatChart();
   renderFinMethodChart();
@@ -12315,9 +12361,130 @@ function renderFinStatusChart() {
   });
 }
 
+// ══ SAÚDE FINANCEIRA DO MÊS ══
+var orcamentosMes = JSON.parse(localStorage.getItem('painel_orc_mes') || '{}');
+
+function salvarOrcamentoMes() {
+  var inp = document.getElementById('fin-saude-orcamento');
+  if (!inp) return;
+  var mesKey = finCalYear + '-' + String(finCalMonth+1).padStart(2,'0');
+  var raw = (inp.value||'').replace(/R\$/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim();
+  var val = parseFloat(raw) || 0;
+  orcamentosMes[mesKey] = val;
+  localStorage.setItem('painel_orc_mes', JSON.stringify(orcamentosMes));
+  renderFinSaude();
+}
+
+function renderFinSaude() {
+  var mesKey = finCalYear + '-' + String(finCalMonth+1).padStart(2,'0');
+  var hoje   = todayLocal();
+
+  // Label do mês
+  var mesEl = document.getElementById('fin-saude-mes');
+  if (mesEl) {
+    var d = new Date(finCalYear, finCalMonth, 1);
+    mesEl.textContent = d.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  }
+
+  // Carrega orçamento do mês
+  var inp = document.getElementById('fin-saude-orcamento');
+  // Se o usuário está digitando, usa o valor do campo; senão usa o salvo
+  var rawInp = (inp ? inp.value : '').replace(/R\$/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim();
+  var orc = parseFloat(rawInp) || orcamentosMes[mesKey] || 0;
+  if (inp && document.activeElement !== inp && orc > 0) {
+    inp.value = fmtMoney(orc);
+  }
+
+  // Saídas pagas até hoje
+  var pago = finances.filter(function(f){
+    return f.type==='saida' && (!f.status||f.status==='pago') &&
+           f.date && f.date.startsWith(mesKey) && f.date <= hoje;
+  }).reduce(function(s,f){ return s+f.value; }, 0);
+
+  // Comprometimento: pendentes/parcelas com due_date (ou date) ainda no mês
+  var dFimMes = new Date(finCalYear, finCalMonth+1, 0);
+  var fimMes  = dateToLocal(dFimMes);
+  var comp = finances.filter(function(f){
+    if (f.type !== 'saida') return false;
+    if (f.status !== 'pendente' && f.status !== 'parcela') return false;
+    var ref = f.due_date || f.date || '';
+    return ref >= hoje && ref <= fimMes;
+  }).reduce(function(s,f){ return s+f.value; }, 0);
+
+  // Dias do mês
+  var totalDias = dFimMes.getDate();
+  var diaAtual  = parseInt(hoje.split('-')[2]);
+  var diasRestantes = totalDias - diaAtual;
+
+  // Atualiza cards
+  var corPago = 'var(--red)';
+  var corComp = 'var(--amber)';
+  var corLivre= orc > 0 ? (orc - pago - comp > 0 ? 'var(--green)' : 'var(--red)') : 'var(--muted)';
+  var livre   = orc > 0 ? orc - pago - comp : null;
+
+  var el = document.getElementById('fs-pago');
+  if (el) { el.textContent = '-'+fmtMoney(pago); el.style.color = corPago; }
+  el = document.getElementById('fs-comp');
+  if (el) { el.textContent = '-'+fmtMoney(comp); el.style.color = corComp; }
+  el = document.getElementById('fs-livre');
+  if (el) {
+    el.textContent = livre !== null ? (livre>=0?'+':'')+fmtMoney(livre) : '—';
+    el.style.color = corLivre;
+  }
+
+  // Barra de progresso
+  var barWrap = document.getElementById('fs-bar-wrap');
+  var barPago = document.getElementById('fs-bar-pago');
+  var barComp = document.getElementById('fs-bar-comp');
+  if (barWrap && orc > 0) {
+    barWrap.style.display = 'block';
+    var pctPago = Math.min(pago/orc*100, 100);
+    var pctComp = Math.min(comp/orc*100, 100 - pctPago);
+    if (barPago) { barPago.style.width = pctPago+'%'; barPago.style.background = pctPago>80?'var(--red)':'var(--cyan)'; }
+    if (barComp) { barComp.style.width = pctComp+'%'; barComp.style.left = pctPago+'%'; barComp.style.background = 'var(--amber)'; }
+  } else if (barWrap) {
+    barWrap.style.display = 'none';
+  }
+
+  // Mensagem de ritmo
+  var msgEl = document.getElementById('fs-msg');
+  if (!msgEl) return;
+  if (orc <= 0) {
+    msgEl.style.display = 'none';
+    return;
+  }
+  msgEl.style.display = 'block';
+
+  var total = pago + comp;
+  var projecao = diaAtual > 0 ? (pago / diaAtual) * totalDias + comp : comp;
+  var maxDia   = diasRestantes > 0 ? Math.max(0, orc - pago - comp) / diasRestantes : 0;
+  var pct      = (total / orc * 100).toFixed(0);
+
+  var msg, cls;
+  if (total > orc) {
+    cls = 'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#f87171';
+    msg = '🚨 <strong>Orçamento estourado.</strong> Você pagou ' + fmtMoney(pago) + ' e ainda tem ' + fmtMoney(comp) +
+          ' comprometido — total de ' + fmtMoney(total) + ' contra orçamento de ' + fmtMoney(orc) +
+          '. Excesso de ' + fmtMoney(total - orc) + '.';
+  } else if (projecao > orc * 1.05) {
+    cls = 'background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:var(--amber)';
+    msg = '⚠️ <strong>Atenção ao ritmo.</strong> Você pagou ' + fmtMoney(pago) + ' ('+pct+'% do orçamento). ' +
+          'Com o comprometimento de ' + fmtMoney(comp) + ', a projeção é ' + fmtMoney(Math.round(projecao)) +
+          ' — acima do limite. Reduza para no máximo ' + fmtMoney(maxDia) + '/dia nos próximos ' + diasRestantes + ' dias.';
+  } else {
+    cls = 'background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.18);color:#34d399';
+    msg = '✅ <strong>Dentro do ritmo.</strong> Você pagou ' + fmtMoney(pago) + ' ('+pct+'% do orçamento). ' +
+          'Com o comprometimento de ' + fmtMoney(comp) + ', ainda há ' + fmtMoney(Math.max(0,orc-total)) +
+          ' livre. Pode gastar até ' + fmtMoney(maxDia) + '/dia nos próximos ' + diasRestantes + ' dias.';
+  }
+  msgEl.style.cssText = cls + ';font-size:11px;padding:9px 12px;border-radius:8px;line-height:1.6;font-weight:500';
+  msgEl.innerHTML = msg;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   ensureDefaultCategories();
-  setTimeout(renderOrcamentos, 2000); // atualiza alerta no Financeiro
+  setTimeout(renderOrcamentos, 2000);
+  renderFinSaude(); // atualiza alerta no Financeiro
   setTimeout(checkRecorrentesDoMes, 3000);
 
 // Calcula altura real da viewport (exclui barra do navegador em tablets)
