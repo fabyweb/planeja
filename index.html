@@ -12193,14 +12193,24 @@ function orcVerLancamentos(idx) {
   if (!o) return;
   _orcDetailIdx = idx;
 
-  // Filtra lançamentos do orçamento
+  // Filtra lançamentos do orçamento — mesma lógica do orcCalc
   var gastos = finances.filter(function(f) {
     if (f.type !== 'saida') return false;
-    if (!f.date || f.date < o.inicio || f.date > o.fim) return false;
+    var cartao = getCartaoConfig(f.method);
+    var dataRef;
+    if (cartao && f.date) {
+      dataRef = f.due_date || calcDueDate(f.date, cartao);
+    } else {
+      dataRef = f.date;
+    }
+    if (!dataRef || dataRef < o.inicio || dataRef > o.fim) return false;
     if (o.tipo === 'category') return f.category === o.filtro;
     if (o.tipo === 'method')   return f.method   === o.filtro;
     return false;
-  }).sort(function(a,b){ return b.date > a.date ? 1 : -1; });
+  }).sort(function(a,b){
+    var da = a.due_date||a.date||'', db = b.due_date||b.date||'';
+    return db > da ? 1 : -1;
+  });
 
   var total = gastos.reduce(function(s,f){ return s+f.value; }, 0);
 
@@ -12256,7 +12266,7 @@ function orcVerNoRelatorio() {
       renderFinRelatorio();
     }
     showToast('📊 Mostrando lançamentos de ' + o.nome);
-  }, 200);
+  }, 500);
 }
 
 // ══ GRÁFICO — EVOLUÇÃO POR FORMA DE PAGAMENTO (linhas, 6 meses) ══
