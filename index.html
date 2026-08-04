@@ -11872,9 +11872,15 @@ function orcRenovar() {
   orcamentos.forEach(function(o) {
     if (!o.renovacao || o.renovacao === 'none') return;
     if (o.fim && o.fim < hoje) {
+      if (o.renovacao === 'cartao' && o.tipo === 'method') {
+        // Ciclo do cartão
+        if (orcRenovarCartao(o)) { changed = true; return; }
+      }
       var inicio = new Date(o.inicio + 'T12:00:00');
       var fim    = new Date(o.fim    + 'T12:00:00');
-      var dias = Math.round((fim - inicio) / 86400000);
+      var dias = o.renovacao === 'monthly'
+        ? Math.round((fim - inicio) / 86400000)
+        : (parseInt(o.ciclo) || 30);
       var novoinicio = new Date(fim.getFullYear(), fim.getMonth(), fim.getDate() + 1);
       var novofim    = new Date(novoinicio.getFullYear(), novoinicio.getMonth(), novoinicio.getDate() + dias);
       o.inicio = dateToLocal(novoinicio);
@@ -12079,7 +12085,13 @@ function openOrcModal(idx) {
   var cicloWrap = document.getElementById('orc-ciclo-wrap');
   if (cicloWrap) cicloWrap.style.display = (o&&o.renovacao==='custom')?'flex':'none';
   orcUpdateSelects();
-  if (o) document.getElementById('orc-filtro').value = o.filtro;
+  if (o) {
+    document.getElementById('orc-filtro').value = o.filtro;
+    orcCheckCartao();
+    // Restaura período manual ao editar
+    document.getElementById('orc-inicio').value = o.inicio;
+    document.getElementById('orc-fim').value    = o.fim;
+  }
   document.getElementById('modal-orc').dataset.editIdx = idx !== null ? idx : '';
   openModal('modal-orc');
 }
@@ -12087,6 +12099,7 @@ function openOrcModal(idx) {
 function orcUpdateSelects() {
   var tipo = document.getElementById('orc-tipo').value;
   var sel  = document.getElementById('orc-filtro');
+  var prevVal = sel.value;
   sel.innerHTML = '';
   var items = tipo === 'category'
     ? (finCategories||[]).map(function(c){ return typeof c==='string'?c:(c.label||c.id); })
@@ -12097,9 +12110,11 @@ function orcUpdateSelects() {
     o.value = o.textContent = item;
     sel.appendChild(o);
   });
+  if (prevVal) sel.value = prevVal;
   var cicloWrap = document.getElementById('orc-ciclo-wrap');
-  var renov = document.getElementById('orc-renovacao').value;
+  var renov = document.getElementById('orc-renovacao') ? document.getElementById('orc-renovacao').value : '';
   if (cicloWrap) cicloWrap.style.display = renov==='custom'?'flex':'none';
+  orcCheckCartao();
 }
 
 function salvarOrc() {
@@ -12772,6 +12787,137 @@ function renderCartaoList() {
       '</div>' +
     '</div>';
   }).join('');
+}
+
+// ══ ORÇAMENTO COM CICLO DE CARTÃO ══
+
+// Gera lista de faturas de um cartão (últimas 2 + próximas 4)
+function orcGetFaturas(cartao) {
+  var faturas = [];
+  var hoje = new Date();
+  var nomes = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+  // Gera 6 ciclos: começa 2 meses atrás
+  for (var i = -2; i <= 4; i++) {
+    var ref = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
+    var ano = ref.getFullYear();
+    var mes = ref.getMonth(); // 0-11
+
+    // Período do ciclo: dia após fechamento do mês anterior até dia de fechamento deste mês
+    var inicioD = new Date(ano, mes - 1, cartao.fecha + 1);
+    var fimD    = new Date(ano, mes, cartao.fecha);
+
+    // Due date (vencimento)
+    var vencMes = mes, vencAno = ano;
+    if (cartao.vence <= cartao.fecha) {
+      vencMes = mes + 1;
+      if (vencMes > 11) { vencMes = 0; vencAno++; }
+    }
+
+    var inicioStr = inicioD.getFullYear() + '-' + String(inicioD.getMonth()+1).padStart(2,'0') + '-' + String(inicioD.getDate()).padStart(2,'0');
+    var fimStr    = fimD.getFullYear()    + '-' + String(fimD.getMonth()+1).padStart(2,'0')    + '-' + String(fimD.getDate()).padStart(2,'0');
+    var venceStr  = vencAno + '-' + String(vencMes+1).padStart(2,'0') + '-' + String(cartao.vence).padStart(2,'0');
+
+    var label = nomes[mes] + '/' + String(ano).slice(2) +
+      ' · ' + inicioD.getDate() + '/' + nomes[inicioD.getMonth()] +
+      ' → ' + fimD.getDate()    + '/' + nomes[fimD.getMonth()] +
+      ' · vence ' + cartao.vence + '/' + nomes[vencMes];
+
+    faturas.push({label:label, inicio:inicioStr, fim:fimStr, vence:venceStr, mes:mes, ano:ano});
+  }
+  return faturas;
+}
+
+// Popula o seletor de faturas quando tipo=method e cartão configurado
+function orcCheckCartao() {
+  var tipo    = document.getElementById('orc-tipo').value;
+  var filtro  = document.getElementById('orc-filtro').value;
+  var fatWrap = document.getElementById('orc-fatura-wrap');
+  var perWrap = document.getElementById('orc-periodo-wrap');
+  var renovSel= document.getElementById('orc-renovacao');
+
+  var cartao = tipo === 'method' ? getCartaoConfig(filtro) : null;
+
+  if (cartao) {
+    // Mostra seletor de fatura, oculta período manual
+    fatWrap.style.display = 'flex';
+    perWrap.style.display = 'none';
+
+    // Adiciona opção "cartao" à renovação
+    var optCartao = renovSel.querySelector('option[value="cartao"]');
+    if (!optCartao) {
+      var o = document.createElement('option');
+      o.value = 'cartao'; o.textContent = 'Ciclo do cartão (automático)';
+      renovSel.insertBefore(o, renovSel.children[2]);
+    }
+    renovSel.value = 'cartao';
+
+    // Popula select de faturas
+    var sel = document.getElementById('orc-fatura');
+    var faturas = orcGetFaturas(cartao);
+    sel.innerHTML = faturas.map(function(f, i) {
+      return '<option value="'+i+'">'+f.label+'</option>';
+    }).join('');
+
+    // Seleciona a fatura atual (mês corrente)
+    var hoje = new Date();
+    var melhor = 2; // índice padrão (mês atual)
+    faturas.forEach(function(f, i) {
+      if (f.mes === hoje.getMonth() && f.ano === hoje.getFullYear()) melhor = i;
+    });
+    sel.value = melhor;
+    orcSelectFatura();
+
+    // Auto-preenche nome se vazio
+    var nomeEl = document.getElementById('orc-nome');
+    if (!nomeEl.value) {
+      var nomes = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+      nomeEl.value = filtro + ' — ' + nomes[faturas[melhor].mes] + '/' + String(faturas[melhor].ano).slice(2);
+    }
+  } else {
+    // Forma sem ciclo: mostra período manual
+    fatWrap.style.display = 'none';
+    perWrap.style.display = 'grid';
+    // Remove opção cartao se existir
+    var optC = renovSel.querySelector('option[value="cartao"]');
+    if (optC) optC.remove();
+    if (renovSel.value === 'cartao') renovSel.value = 'monthly';
+  }
+}
+
+function orcSelectFatura() {
+  var sel    = document.getElementById('orc-fatura');
+  var filtro = document.getElementById('orc-filtro').value;
+  var cartao = getCartaoConfig(filtro);
+  if (!cartao || !sel) return;
+
+  var faturas = orcGetFaturas(cartao);
+  var idx = parseInt(sel.value) || 0;
+  var fat = faturas[idx];
+  if (!fat) return;
+
+  document.getElementById('orc-inicio').value = fat.inicio;
+  document.getElementById('orc-fim').value    = fat.fim;
+
+  // Auto-atualiza nome
+  var nomes = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  var nomeEl = document.getElementById('orc-nome');
+  if (!nomeEl.value || nomeEl.value.includes(' — ')) {
+    nomeEl.value = filtro + ' — ' + nomes[fat.mes] + '/' + String(fat.ano).slice(2);
+  }
+}
+
+// Renovação de cartão: avança um ciclo
+function orcRenovarCartao(o) {
+  var cartao = getCartaoConfig(o.filtro);
+  if (!cartao) return false;
+  var fimD = new Date(o.fim + 'T12:00:00');
+  // Próximo ciclo começa no dia seguinte ao fechamento
+  var novoInicio = new Date(fimD.getFullYear(), fimD.getMonth(), fimD.getDate() + 1);
+  var novoFim    = new Date(novoInicio.getFullYear(), novoInicio.getMonth() + 1, cartao.fecha);
+  o.inicio = novoInicio.getFullYear() + '-' + String(novoInicio.getMonth()+1).padStart(2,'0') + '-' + String(novoInicio.getDate()).padStart(2,'0');
+  o.fim    = novoFim.getFullYear()    + '-' + String(novoFim.getMonth()+1).padStart(2,'0')    + '-' + String(novoFim.getDate()).padStart(2,'0');
+  return true;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -13664,7 +13810,7 @@ function setAppHeight() {}
         </div>
         <div class="form-row">
           <label>Filtro</label>
-          <select class="form-select" id="orc-filtro"></select>
+          <select class="form-select" id="orc-filtro" onchange="orcCheckCartao()"></select>
         </div>
       </div>
 
@@ -13673,7 +13819,13 @@ function setAppHeight() {}
         <input class="form-input" id="orc-limite" type="number" step="0.01" placeholder="Ex: 1800">
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <!-- Seletor de fatura (aparece só para cartões configurados) -->
+      <div class="form-row" id="orc-fatura-wrap" style="display:none">
+        <label>Fatura</label>
+        <select class="form-select" id="orc-fatura" onchange="orcSelectFatura()"></select>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="orc-periodo-wrap">
         <div class="form-row">
           <label>Início do período</label>
           <input class="form-input" id="orc-inicio" type="date">
@@ -13689,6 +13841,7 @@ function setAppHeight() {}
         <select class="form-select" id="orc-renovacao">
           <option value="none">Sem renovação</option>
           <option value="monthly">Mensal (mesmo dia)</option>
+          <option value="cartao">Ciclo do cartão (automático)</option>
           <option value="custom">Ciclo personalizado (dias)</option>
         </select>
       </div>
