@@ -11891,9 +11891,19 @@ function orcCalc(o) {
   var hoje = todayLocal();
   var gastos = finances.filter(function(f) {
     if (f.type !== 'saida') return false;
-    if (!f.date || f.date < inicio || f.date > fim) return false;
+
+    // Data de referência: se for cartão configurado usa due_date do ciclo, senão usa date
+    var cartao = getCartaoConfig(f.method);
+    var dataRef;
+    if (cartao && f.date) {
+      dataRef = f.due_date || calcDueDate(f.date, cartao);
+    } else {
+      dataRef = f.date;
+    }
+    if (!dataRef || dataRef < inicio || dataRef > fim) return false;
+
     if (o.tipo === 'category') return f.category === o.filtro;
-    if (o.tipo === 'method')   return f.method === o.filtro;
+    if (o.tipo === 'method')   return f.method   === o.filtro;
     return false;
   });
   var gasto = gastos.reduce(function(s,f){ return s+f.value; }, 0);
