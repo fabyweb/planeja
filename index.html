@@ -2061,6 +2061,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 //  STATE
 // ══════════════════════════════════════════
 let currentView = 'inbox';
+var orcamentosMes = JSON.parse(localStorage.getItem('painel_orc_mes') || '{}');
 
 let backlog = [
   {id:1, text:'Marcar consulta médica anual', time:'há 2h'},
@@ -6336,8 +6337,13 @@ async function fbCloudLoad(forceLoad) {
     var localRaw = localStorage.getItem("painel_dados_v1");
     var localTime = 0;
     if (localRaw) { try { localTime = new Date(JSON.parse(localRaw).savedAt).getTime(); } catch(_){} }
-    if (!forceLoad && cloudTime > 0 && cloudTime <= localTime && localRaw) {
-      cloudDiag("Local mais recente - Firebase atualizado");
+    // Só usa local se for mais recente E tiver dados significativos (>10 itens)
+    var localData = null;
+    try { localData = localRaw ? JSON.parse(localRaw) : null; } catch(_) {}
+    var localFinCount = (localData && localData.finances) ? localData.finances.length : 0;
+    var localIsNewer = cloudTime > 0 && localTime > cloudTime && localFinCount > 10;
+    if (!forceLoad && localIsNewer) {
+      cloudDiag("Local mais recente (" + localFinCount + " fin) - Firebase atualizado");
       await fbCloudSave(); cloudSetBtn("ok", "Nuvem"); return;
     }
     if (d.events)            { events = d.events; nextEventId = d.nextEventId || nextEventId; }
