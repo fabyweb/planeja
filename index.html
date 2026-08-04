@@ -9953,6 +9953,13 @@ function renderFinRelatorio() {
   var section = document.getElementById('fin-relatorio-section');
   if (!section) return;
 
+  // Salva filtros atuais antes de reconstruir o HTML
+  var _savedFilters = {};
+  ['frel-ini','frel-fim','frel-tipo','frel-cat','frel-method','frel-tag','frel-obs'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) _savedFilters[id] = el.value;
+  });
+
   // Coleta opções de filtro
   var cats    = [...new Set(finances.map(function(f){ return f.category; }).filter(Boolean))].sort();
   var methods = [...new Set(finances.map(function(f){ return f.method;   }).filter(Boolean))].sort();
@@ -10045,6 +10052,12 @@ function renderFinRelatorio() {
     if (fCat)  fCat.value  = p.cat    || '';
     if (fMeth) fMeth.value = p.method || '';
     window._relFiltrosPendentes = null;
+  } else {
+    // Restaura filtros salvos antes da re-renderização
+    ['frel-ini','frel-fim','frel-tipo','frel-cat','frel-method','frel-tag','frel-obs'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el && _savedFilters[id]) el.value = _savedFilters[id];
+    });
   }
   finRelRender();
 }
