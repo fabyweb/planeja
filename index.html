@@ -1024,6 +1024,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .fin-table tbody tr:hover td{background:rgba(255,255,255,.02);cursor:pointer}
 .fin-table tr.tx-pendente td{opacity:.75}
 .fin-table tr.tx-pendente{border-left:3px solid var(--amber)}
+.fin-table tr.tx-parcela{border-left:3px solid var(--cyan)}
 .col-desc{min-width:180px}
 .col-data{white-space:nowrap;color:var(--muted);font-size:11px;font-family:monospace;width:70px}
 .col-forma{white-space:nowrap;color:var(--muted);font-size:11px;width:80px}
@@ -3049,7 +3050,7 @@ function renderFinList() {
   var filtFin = filteredFinances();
   el.innerHTML = filtFin.length
     ? filtFin.map(f=>`
-      <tr class="${f.status==='pendente'?'tx-pendente':''}" onclick="editFinance(${f.id})">
+      <tr class="${f.status==='pendente'?'tx-pendente':f.status==='parcela'?'tx-parcela':''}" onclick="editFinance(${f.id})">
         <td class="col-desc">
           <div class="tx-nome">${escHtml(f.desc)}</div>
           <div class="tx-sub">
@@ -12396,7 +12397,6 @@ function renderFinStatusChart() {
   if (!canvas) return;
   var mes = finCalYear + '-' + String(finCalMonth+1).padStart(2,'0');
 
-  // Pago/Parcela: usa date. Pendente: usa due_date se existir, senão date
   var pago = finances.filter(function(f){
     return f.type==='saida' && (!f.status||f.status==='pago') && f.date && f.date.startsWith(mes);
   }).reduce(function(s,f){return s+f.value;},0);
@@ -12412,58 +12412,78 @@ function renderFinStatusChart() {
   }).reduce(function(s,f){return s+f.value;},0);
 
   var total = pago+parcela+pendente;
-
   if (!total) { canvas.style.display='none'; return; }
   canvas.style.display='block';
 
   var data = [
-    {label:'✅ Pago',    val:pago,    cor:'rgba(16,185,129,.85)', corS:'#10B981'},
-    {label:'📋 Parcela', val:parcela, cor:'rgba(6,182,212,.8)',   corS:'#06B6D4'},
-    {label:'⏳ Pendente',val:pendente,cor:'rgba(245,158,11,.8)',  corS:'#F59E0B'},
+    {label:'Pago',    emoji:'\u2705', val:pago,    cor:'rgba(16,185,129,.85)', corS:'#10B981'},
+    {label:'Parcela', emoji:'\uD83D\uDCCB', val:parcela, cor:'rgba(6,182,212,.8)',   corS:'#06B6D4'},
+    {label:'Pendente',emoji:'\u23F3', val:pendente,cor:'rgba(245,158,11,.8)',  corS:'#F59E0B'},
   ].filter(function(d){ return d.val>0; });
 
   var dpr=window.devicePixelRatio||1;
-  var W=canvas.parentElement.offsetWidth||600;
+  var W=canvas.parentElement.offsetWidth||400;
   var H=224;
   canvas.width=W*dpr; canvas.height=H*dpr;
   canvas.style.width=W+'px'; canvas.style.height=H+'px';
   var ctx=canvas.getContext('2d');
   ctx.scale(dpr,dpr);
 
-  // Donut centralizado
-  var r=50, ri=r*0.58;
-  var cx=W/2, cy=r+10;
+  // Donut lado esquerdo
+  var legW = Math.min(160, W*0.42);
+  var donutW = W - legW;
+  var r = Math.min(donutW/2 - 16, H/2 - 16);
+  var cx = donutW/2, cy = H/2;
 
-  var angle=-Math.PI/2;
+  // Fatias
+  var angle = -Math.PI/2;
   data.forEach(function(d){
-    var slice=(d.val/total)*Math.PI*2;
+    var slice = (d.val/total)*Math.PI*2;
     ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,angle,angle+slice);ctx.closePath();
     ctx.fillStyle=d.cor;ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=1;ctx.stroke();
     angle+=slice;
   });
-  ctx.beginPath();ctx.arc(cx,cy,ri,0,Math.PI*2);ctx.fillStyle='#111118';ctx.fill();
-  var tlbl=total>=1000?'R$'+Math.round(total/1000)+'k':'R$'+Math.round(total);
-  ctx.fillStyle='#E4E4F0';ctx.font='bold 12px Inter,sans-serif';ctx.textAlign='center';
-  ctx.fillText(tlbl,cx,cy+2);
-  ctx.fillStyle='#7878A0';ctx.font='8px Inter,sans-serif';
-  ctx.fillText('total',cx,cy+14);
 
-  // Legenda vertical abaixo
-  var legY = cy+r+12;
+  // Buraco
+  var ri = r*0.55;
+  ctx.beginPath();ctx.arc(cx,cy,ri,0,Math.PI*2);ctx.fillStyle='#111118';ctx.fill();
+
+  // Texto central
+  var tlbl = total>=1000?'R$'+(total/1000).toFixed(1)+'k':'R$'+Math.round(total);
+  ctx.fillStyle='#E4E4F0';ctx.font='bold 14px Inter,sans-serif';ctx.textAlign='center';
+  ctx.fillText(tlbl,cx,cy+2);
+  ctx.fillStyle='#7878A0';ctx.font='9px Inter,sans-serif';
+  ctx.fillText('total',cx,cy+15);
+
+  // Legenda lado direito — vertical centralizada
+  var lx = donutW + 10;
+  var itemH = Math.min(60, (H - 20) / Math.max(data.length, 1));
+  var startY = (H - data.length * itemH) / 2;
+
   data.forEach(function(d,i){
-    var y = legY + i*26;
-    var pct = (d.val/total*100).toFixed(0);
+    var y = startY + i * itemH;
+    var pct = (d.val/total*100).toFixed(1)+'%';
     var vlbl = d.val>=1000?'R$'+(d.val/1000).toFixed(1)+'k':'R$'+Math.round(d.val);
-    ctx.fillStyle=d.cor;ctx.beginPath();ctx.arc(cx-60+6,y+5,5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#E4E4F0';ctx.font='bold 10px Inter,sans-serif';ctx.textAlign='left';
-    ctx.fillText(d.label,cx-60+16,y+5);
-    ctx.fillStyle='#7878A0';ctx.font='9px Inter,sans-serif';
-    ctx.fillText(vlbl+' · '+pct+'%',cx-60+16,y+17);
+
+    // Barra indicadora colorida
+    ctx.fillStyle=d.cor;
+    ctx.beginPath();ctx.roundRect(lx, y+2, 4, itemH-10, 2);ctx.fill();
+
+    // Label
+    ctx.fillStyle='#E4E4F0';ctx.font='bold 11px Inter,sans-serif';ctx.textAlign='left';
+    ctx.fillText(d.label, lx+10, y+13);
+
+    // Valor
+    ctx.fillStyle=d.corS;ctx.font='bold 13px Inter,sans-serif';
+    ctx.fillText(vlbl, lx+10, y+28);
+
+    // Percentual
+    ctx.fillStyle='#7878A0';ctx.font='10px Inter,sans-serif';
+    ctx.fillText(pct, lx+10, y+42);
   });
 }
 
-// ══ SAÚDE FINANCEIRA DO MÊS ══
-var orcamentosMes = JSON.parse(localStorage.getItem('painel_orc_mes') || '{}');
 
 function salvarOrcamentoMes() {
   var inp = document.getElementById('fin-saude-orcamento');
