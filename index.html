@@ -11916,9 +11916,14 @@ function orcCalc(o) {
     // Data de referência: se for cartão configurado usa due_date do ciclo, senão usa date
     var cartao = getCartaoConfig(f.method);
     var dataRef;
-    if (cartao && f.date) {
-      dataRef = f.due_date || calcDueDate(f.date, cartao);
+    if (f.due_date) {
+      // Tem due_date explícito: usa sempre
+      dataRef = f.due_date;
+    } else if (cartao && f.date && (f.status === 'pendente' || f.status === 'parcela')) {
+      // Pendente/parcela com cartão configurado: calcula due_date
+      dataRef = calcDueDate(f.date, cartao);
     } else {
+      // Pago ou sem cartão: usa date
       dataRef = f.date;
     }
     if (!dataRef || dataRef < inicio || dataRef > fim) return false;
@@ -12198,9 +12203,14 @@ function orcVerLancamentos(idx) {
     if (f.type !== 'saida') return false;
     var cartao = getCartaoConfig(f.method);
     var dataRef;
-    if (cartao && f.date) {
-      dataRef = f.due_date || calcDueDate(f.date, cartao);
+    if (f.due_date) {
+      // Tem due_date explícito: usa sempre
+      dataRef = f.due_date;
+    } else if (cartao && f.date && (f.status === 'pendente' || f.status === 'parcela')) {
+      // Pendente/parcela com cartão configurado: calcula due_date
+      dataRef = calcDueDate(f.date, cartao);
     } else {
+      // Pago ou sem cartão: usa date
       dataRef = f.date;
     }
     if (!dataRef || dataRef < o.inicio || dataRef > o.fim) return false;
