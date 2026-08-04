@@ -10024,6 +10024,21 @@ function renderFinRelatorio() {
       '</div>' +
     '</div>';
 
+  // Aplica filtros pendentes (ex: vindos de orcVerNoRelatorio)
+  if (window._relFiltrosPendentes) {
+    var p = window._relFiltrosPendentes;
+    var fIni  = document.getElementById('frel-ini');
+    var fFim  = document.getElementById('frel-fim');
+    var fTipo = document.getElementById('frel-tipo');
+    var fCat  = document.getElementById('frel-cat');
+    var fMeth = document.getElementById('frel-method');
+    if (fIni)  fIni.value  = p.ini    || '';
+    if (fFim)  fFim.value  = p.fim    || '';
+    if (fTipo) fTipo.value = p.tipo   || '';
+    if (fCat)  fCat.value  = p.cat    || '';
+    if (fMeth) fMeth.value = p.method || '';
+    window._relFiltrosPendentes = null;
+  }
   finRelRender();
 }
 
@@ -12223,40 +12238,25 @@ function orcVerNoRelatorio() {
   // Vai para aba de Lançamentos
   finSwitchTab('lancamentos');
 
+  // Guarda filtros pendentes para aplicar após renderizar o relatório
+  window._relFiltrosPendentes = {
+    ini:    o.inicio,
+    fim:    o.fim,
+    tipo:   'saida',
+    cat:    o.tipo === 'category' ? o.filtro : '',
+    method: o.tipo === 'method'   ? o.filtro : '',
+  };
+
   setTimeout(function() {
     // Abre o relatório se estiver fechado
     if (!finRelOpen) {
       var btn = document.getElementById('btn-fin-relatorio');
       if (btn) toggleFinRelatorio(btn);
-    }
-
-    // Aguarda o relatório renderizar e aplica filtros
-    setTimeout(function() {
-      // Limpa filtros anteriores
-      ['frel-ini','frel-fim','frel-tipo','frel-cat','frel-method','frel-tag','frel-obs'].forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el) el.value = '';
-      });
-
-      // Aplica período do orçamento
-      var ini = document.getElementById('frel-ini');
-      var fim = document.getElementById('frel-fim');
-      if (ini) ini.value = o.inicio;
-      if (fim) fim.value = o.fim;
-
-      // Aplica filtro de categoria ou forma
-      if (o.tipo === 'category') {
-        var cat = document.getElementById('frel-cat');
-        if (cat) cat.value = o.filtro;
-      } else {
-        var meth = document.getElementById('frel-method');
-        if (meth) meth.value = o.filtro;
-      }
-
+    } else {
       renderFinRelatorio();
-      showToast('📊 Mostrando lançamentos de ' + o.nome);
-    }, 150);
-  }, 300);
+    }
+    showToast('📊 Mostrando lançamentos de ' + o.nome);
+  }, 200);
 }
 
 // ══ GRÁFICO — EVOLUÇÃO POR FORMA DE PAGAMENTO (linhas, 6 meses) ══
