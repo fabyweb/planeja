@@ -3022,16 +3022,36 @@ function renderFinCalendar() {
       if (!f.lembrete || f.status === 'pago') return false;
       var ref = f.due_date || f.date || '';
       return ref === key;
-    }) || cartoesCredito.some(function(cc) {
-      if (!cc.lembrete) return false;
+    });
+    // Adiciona lembrete de fatura de cartão com valor
+    var faturaInfo = null;
+    cartoesCredito.forEach(function(cc) {
+      if (!cc.lembrete) return;
       var due = calcDueDate(key, cc);
-      return due === key;
+      if (due !== key) return;
+      temLembrete = true;
+      // Calcula o ciclo desta fatura
+      var keyD = new Date(key+'T12:00:00');
+      var diaKey = keyD.getDate();
+      // Início do ciclo = dia após fechamento do mês anterior
+      var cicloFimD = new Date(keyD.getFullYear(), keyD.getMonth(), cc.fecha);
+      var cicloIniD = new Date(cicloFimD.getFullYear(), cicloFimD.getMonth()-1, cc.fecha+1);
+      var cicloIni = cicloIniD.getFullYear()+'-'+String(cicloIniD.getMonth()+1).padStart(2,'0')+'-'+String(cicloIniD.getDate()).padStart(2,'0');
+      var cicloFim = cicloFimD.getFullYear()+'-'+String(cicloFimD.getMonth()+1).padStart(2,'0')+'-'+String(cicloFimD.getDate()).padStart(2,'0');
+      var totalFatura = finances.filter(function(f){
+        return f.type==='saida' && f.method===cc.nome && f.date>=cicloIni && f.date<=cicloFim;
+      }).reduce(function(s,f){ return s+f.value; }, 0);
+      faturaInfo = {nome: cc.nome, total: totalFatura};
     });
     if (temLembrete) {
       var hoje = todayLocal();
       var diff = Math.round((new Date(key+'T12:00:00') - new Date(hoje+'T12:00:00')) / 86400000);
       var opacity = diff <= 0 ? '1' : diff <= 2 ? '0.7' : '0.45';
-      html += '<div class="cal-bell" style="opacity:'+opacity+';font-size:9px">🔔</div>';
+      if (faturaInfo && faturaInfo.total > 0) {
+        html += '<div class="cal-bell" style="opacity:'+opacity+';font-size:8px;line-height:1.3;text-align:center">🔔<br><span style="font-size:7px;color:var(--amber)">'+fmtMoney(faturaInfo.total)+'</span></div>';
+      } else {
+        html += '<div class="cal-bell" style="opacity:'+opacity+';font-size:9px">🔔</div>';
+      }
     }
     html += '</div>';
   }
@@ -10132,7 +10152,7 @@ function finRelRender() {
       '<td style="font-family:monospace;color:var(--text-muted);font-size:10px;white-space:nowrap">'+dateF+'</td>' +
       '<td style="font-weight:600;max-width:200px">'+escHtml(f.desc)+(f.source?'<div style="font-size:9px;color:var(--dim)">'+escHtml(f.source)+'</div>':'')+'</td>' +
       '<td>'+badge+'</td>' +
-      '<td><span class="status-badge status-'+(f.status||'pago')+'" onclick="event.stopPropagation();toggleFinStatus('+f.id+');finRelRender()" style="cursor:pointer">'+(f.type==='entrada'?(f.status==='pendente'?'⏳ A receber':'✅ Recebido'):(f.status==='pendente'?'⏳ Pendente':f.status==='parcela'?'📋 Parcela':'✅ Pago'))+'</span></td>' +
+      '<td><span class="status-badge status-'+(f.status||'pago')+'" onclick="event.stopPropagation();toggleFinStatus('+f.id+');finRelRender()" style="cursor:pointer">'+(f.type==='entrada'?(f.status==='pendente'?'⏳ A receber':'✅ Recebido'):(f.status==='pendente'?'⏳ Pendente':f.status==='parcela'?'📋 Parcela':'✅ Pago'))+'</span>'+(f.lembrete?'<span title="Lembrete ativo" style="margin-left:4px;cursor:pointer;font-size:11px" onclick="event.stopPropagation();toggleLembrete('+f.id+');finRelRender()">🔔</span>':'')+'</td>' +
       '<td><span style="font-size:10px;background:var(--border-soft);padding:2px 7px;border-radius:6px;color:var(--muted)">'+escHtml(f.category||'')+'</span></td>' +
       '<td style="color:var(--text-muted);font-size:11px;white-space:nowrap">'+escHtml(f.method||'')+'</td>' +
       '<td style="font-weight:800;color:'+valC+';font-size:12px;white-space:nowrap">'+(f.type==='entrada'?'+':'-')+fmtMoney(f.value)+'</td>' +
