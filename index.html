@@ -1152,6 +1152,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .form-hint{font-size:9px;color:var(--dim);margin-top:2px}
 /* Alerta de fatura no modal de lançamento */
 .fatura-alert-inline{border-radius:8px;padding:8px 12px;font-size:11px;line-height:1.5;margin-top:6px;display:none}
+
+/* ══ LEMBRETES ══ */
+.btn-lembrete{padding:3px 7px;font-size:11px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--dim);cursor:pointer;transition:all .15s}
+.btn-lembrete:hover{border-color:var(--amber);color:var(--amber)}
+.btn-lembrete.ativo{border-color:var(--amber);background:rgba(245,158,11,.12);color:var(--amber)}
+.cal-bell{font-size:9px;line-height:1;text-align:center}
 </style>
 
   <!-- PWA -->
@@ -3011,6 +3017,22 @@ function renderFinCalendar() {
       if (dt.saidas > 0) html += '<div class="fin-cal-val neg">-' + fmtMoney(dt.saidas) + '</div>';
       if (dt.entradas > 0) html += '<div class="fin-cal-val pos">+' + fmtMoney(dt.entradas) + '</div>';
     }
+    // Ícone 🔔 se há lembrete ativo neste dia (lançamentos ou faturas de cartão)
+    var temLembrete = finances.some(function(f) {
+      if (!f.lembrete || f.status === 'pago') return false;
+      var ref = f.due_date || f.date || '';
+      return ref === key;
+    }) || cartoesCredito.some(function(cc) {
+      if (!cc.lembrete) return false;
+      var due = calcDueDate(key, cc);
+      return due === key;
+    });
+    if (temLembrete) {
+      var hoje = todayLocal();
+      var diff = Math.round((new Date(key+'T12:00:00') - new Date(hoje+'T12:00:00')) / 86400000);
+      var opacity = diff <= 0 ? '1' : diff <= 2 ? '0.7' : '0.45';
+      html += '<div class="cal-bell" style="opacity:'+opacity+';font-size:9px">🔔</div>';
+    }
     html += '</div>';
   }
   html += '</div>';
@@ -3078,6 +3100,7 @@ function renderFinList() {
         </td>
         <td class="col-valor ${f.type==='entrada'?'pos':'neg'}">${f.type==='entrada'?'+':'-'}${fmtMoney(f.value)}</td>
         <td class="col-acts" onclick="event.stopPropagation()">
+          ${(f.status==='pendente'||f.status==='parcela')?`<button class="btn-lembrete${f.lembrete?' ativo':''}" onclick="toggleLembrete(${f.id})" title="${f.lembrete?'Lembrete ativo — clique para remover':'Ativar lembrete'}">🔔</button>`:''}
           <button class="btn-act" onclick="finToBacklog(${f.id})" title="Backlog">↩</button>
           <button class="btn-act" onclick="duplicateFinance(${f.id})" title="Duplicar" style="color:var(--cyan)">⎘</button>
           <button class="btn-act btn-del" onclick="deleteFinance(${f.id})">✕</button>
@@ -11270,15 +11293,16 @@ function renderRecorLista() {
   var el = document.getElementById('recor-lista');
   if (!el) return;
   if (!recorrentes.length) {
-    el.innerHTML = '<div class="recor-empty">Nenhuma receita recorrente cadastrada</div>';
+    el.innerHTML = '<div class="recor-empty">Nenhum lançamento recorrente cadastrado</div>';
     return;
   }
   el.innerHTML = recorrentes.map(function(r, i) {
     return '<div class="recor-item">' +
       '<div class="recor-item-info">' +
         '<div class="recor-item-desc">'+escHtml(r.desc)+'</div>' +
-        '<div class="recor-item-sub">Todo dia '+r.dia+' · '+escHtml(r.category)+' · '+escHtml(r.method)+'</div>' +
+        '<div class="recor-item-sub">'+(r.tipo==='saida'?'📤':'📥')+' Todo dia '+r.dia+' · '+escHtml(r.category)+' · '+escHtml(r.method)+'</div>' +
       '</div>' +
+      '<button class="btn-lembrete'+(r.lembrete?' ativo':'')+'" onclick="toggleLembreteRecor('+i+')" title="'+(r.lembrete?'Lembrete ativo':'Ativar lembrete')+'">🔔</button>' +
       '<span class="recor-item-val">+'+fmtMoney(r.valor)+'</span>' +
       '<div class="recor-item-acts">' +
         '<button class="btn btn-ghost btn-sm" style="padding:3px 6px;font-size:10px" onclick="lancarRecorrente('+i+')">↓ Lançar</button>' +
@@ -11289,17 +11313,18 @@ function renderRecorLista() {
 }
 
 function salvarRecorrente() {
+  var tipo  = (document.getElementById('recor-tipo') || {}).value || 'entrada';
   var desc  = (document.getElementById('recor-desc').value || '').trim();
   var valor = parseFloat(document.getElementById('recor-valor').value) || 0;
   var dia   = parseInt(document.getElementById('recor-dia').value) || 0;
-  var cat   = document.getElementById('recor-category').value || 'Renda fixa';
+  var cat   = document.getElementById('recor-category').value || (tipo==='entrada'?'Renda fixa':'Outros');
   var meth  = document.getElementById('recor-method').value || 'TED';
 
   if (!desc)         { showToast('⚠️ Informe a descrição'); return; }
   if (valor <= 0)    { showToast('⚠️ Informe o valor'); return; }
   if (dia < 1 || dia > 31) { showToast('⚠️ Dia inválido (1–31)'); return; }
 
-  recorrentes.push({id: Date.now(), desc, valor, dia, category: cat, method: meth});
+  recorrentes.push({id: Date.now(), desc, valor, dia, category: cat, method: meth, tipo: tipo});
   saveRecorrentes();
 
   // Limpa campos
@@ -11309,7 +11334,7 @@ function salvarRecorrente() {
   });
 
   renderRecorLista();
-  showToast('✅ Receita recorrente cadastrada!');
+  showToast('✅ ' + (tipo==='entrada'?'Receita':'Despesa') + ' recorrente cadastrada!');
 }
 
 function excluirRecorrente(idx) {
@@ -11330,24 +11355,27 @@ function lancarRecorrente(idx) {
   // Se o dia já passou no mês, lança no mês atual mesmo
   var dateStr = ano + '-' + mes + '-' + dia;
 
-  finances.unshift({
+  var tipo = r.tipo || 'entrada';
+  var novoLanc = {
     id: nextFinId++,
     desc: r.desc,
-    type: 'entrada',
+    type: tipo,
     value: r.valor,
     date: dateStr,
     method: r.method,
     category: r.category,
     source: '',
-    obs: 'Lançamento automático — receita recorrente',
+    obs: 'Lançamento automático — ' + (tipo==='entrada'?'receita':'despesa') + ' recorrente',
     tags: [],
-    status: 'pago'
-  });
+    status: tipo==='entrada' ? 'pago' : 'pendente'
+  };
+  if (tipo === 'saida') applyCartaoDueDate(novoLanc);
+  finances.unshift(novoLanc);
   lsSave();
   scheduleSave();
   renderFinance();
   closeModal('modal-recorrentes');
-  showToast('✅ ' + r.desc + ' lançado: +' + fmtMoney(r.valor));
+  showToast((tipo==='entrada'?'✅ ':'📤 ') + r.desc + ' lançado: ' + (tipo==='entrada'?'+':'-') + fmtMoney(r.valor));
 }
 
 // Sugestão de lançar receitas recorrentes no início do mês
@@ -12788,6 +12816,16 @@ function salvarCartao() {
   showToast('✅ Cartão "'+nome+'" salvo!');
 }
 
+function toggleLembreteCartao(idx) {
+  var cc = cartoesCredito[idx];
+  if (!cc) return;
+  cc.lembrete = !cc.lembrete;
+  saveCartoes();
+  lsSave(); scheduleSave();
+  renderCartaoList();
+  showToast(cc.lembrete ? '🔔 Lembrete de fatura ativado para '+cc.nome : '🔕 Lembrete removido');
+}
+
 function excluirCartao(idx) {
   var nome = cartoesCredito[idx].nome;
   if (!confirm('Excluir configuração de "'+nome+'"?')) return;
@@ -12824,6 +12862,7 @@ function renderCartaoList() {
       '<div class="cartao-item-header">' +
         '<span style="font-size:16px">💳</span>' +
         '<span class="cartao-item-name">'+escHtml(cc.nome)+'</span>' +
+        '<button class="btn-lembrete'+(cc.lembrete?' ativo':'')+'" onclick="toggleLembreteCartao('+i+')" title="'+(cc.lembrete?'Lembrete de fatura ativo':'Ativar lembrete de fatura')+'">🔔</button>' +
         '<button class="btn-sm" onclick="toggleCartaoForm('+i+')" title="Editar">✏️</button>' +
         '<button class="btn-sm" onclick="excluirCartao('+i+')" title="Excluir" style="color:var(--red)">✕</button>' +
       '</div>' +
@@ -12970,11 +13009,106 @@ function orcRenovarCartao(o) {
   return true;
 }
 
+// ══ LEMBRETES ══
+
+function toggleLembrete(id) {
+  var f = finances.find(function(x){ return x.id === id; });
+  if (!f) return;
+  f.lembrete = !f.lembrete;
+  lsSave(); scheduleSave();
+  renderFinList();
+  renderFinCalendar();
+  showToast(f.lembrete ? '🔔 Lembrete ativado para "'+f.desc+'"' : '🔕 Lembrete removido');
+}
+
+function toggleLembreteRecor(idx) {
+  var r = recorrentes[idx];
+  if (!r) return;
+  r.lembrete = !r.lembrete;
+  saveRecorrentes();
+  lsSave(); scheduleSave();
+  renderRecorLista();
+  showToast(r.lembrete ? '🔔 Lembrete ativado para "'+r.desc+'"' : '🔕 Lembrete removido');
+}
+
+function checkLembretes() {
+  var hoje = todayLocal();
+  var hojeD = new Date(hoje + 'T12:00:00');
+  var avisos = [];
+
+  // Lançamentos com lembrete ativo
+  finances.forEach(function(f) {
+    if (!f.lembrete) return;
+    if (f.type !== 'saida') return;
+    if (f.status === 'pago') return;
+    var ref = f.due_date || f.date || '';
+    if (!ref) return;
+    var refD = new Date(ref + 'T12:00:00');
+    var diff = Math.round((refD - hojeD) / 86400000);
+    if (diff === 0) {
+      avisos.push({urgencia: 'hoje', msg: '🔔 Vence <strong>hoje</strong> — ' + escHtml(f.desc), val: f.value, ref: ref});
+    } else if (diff > 0 && diff <= 2) {
+      avisos.push({urgencia: 'proximo', msg: '🔔 Vence em <strong>' + diff + ' dia'+(diff>1?'s':'')+'</strong> — ' + escHtml(f.desc), val: f.value, ref: ref});
+    }
+  });
+
+  // Recorrentes com lembrete ativo
+  recorrentes.forEach(function(r) {
+    if (!r.lembrete) return;
+    var now = new Date();
+    var diaVenc = new Date(now.getFullYear(), now.getMonth(), r.dia);
+    var diff = Math.round((diaVenc - hojeD) / 86400000);
+    // Verifica se já foi lançada este mês
+    var mesKey = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+    var jaLancada = finances.some(function(f){
+      return f.desc === r.desc && f.date && f.date.startsWith(mesKey);
+    });
+    if (jaLancada) return;
+    if (diff === 0) {
+      avisos.push({urgencia: 'hoje', msg: '🔔 Recorrente <strong>hoje</strong> — ' + escHtml(r.desc), val: r.valor, ref: hoje});
+    } else if (diff > 0 && diff <= 2) {
+      avisos.push({urgencia: 'proximo', msg: '🔔 Recorrente em <strong>' + diff + ' dia'+(diff>1?'s':'')+'</strong> — ' + escHtml(r.desc), val: r.valor, ref: ''});
+    }
+  });
+
+  // Faturas de cartão com lembrete ativo
+  cartoesCredito.forEach(function(cc) {
+    if (!cc.lembrete) return;
+    var dueDate = calcDueDate(hoje, cc);
+    if (!dueDate) return;
+    var dueD = new Date(dueDate + 'T12:00:00');
+    var diff = Math.round((dueD - hojeD) / 86400000);
+    if (diff === 0) {
+      avisos.push({urgencia:'hoje', msg:'🔔 Fatura <strong>'+escHtml(cc.nome)+'</strong> vence <strong>hoje</strong>', val:0, ref:dueDate});
+    } else if (diff > 0 && diff <= 2) {
+      avisos.push({urgencia:'proximo', msg:'🔔 Fatura <strong>'+escHtml(cc.nome)+'</strong> vence em <strong>'+diff+' dia'+(diff>1?'s':'')+'</strong>', val:0, ref:dueDate});
+    }
+  });
+
+  if (!avisos.length) return;
+
+  // Mostra toasts sequenciais
+  avisos.forEach(function(a, i) {
+    setTimeout(function() {
+      var div = document.createElement('div');
+      div.style.cssText = 'position:fixed;top:'+(20+i*70)+'px;right:20px;z-index:9999;' +
+        'background:var(--surface);border:1px solid ' + (a.urgencia==='hoje'?'rgba(239,68,68,.4)':'rgba(245,158,11,.4)') + ';' +
+        'border-radius:10px;padding:10px 14px;font-size:11px;max-width:300px;line-height:1.5;' +
+        'box-shadow:0 4px 20px rgba(0,0,0,.4);display:flex;align-items:flex-start;gap:8px;' +
+        (a.urgencia==='hoje'?'background:rgba(239,68,68,.06)':'background:rgba(245,158,11,.06)');
+      div.innerHTML = '<div>' + a.msg + '<br><span style="color:var(--muted)">R$' + fmtMoney(a.val) + (a.ref?' · '+new Date(a.ref+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}):'') + '</span></div>';
+      document.body.appendChild(div);
+      setTimeout(function(){ div.remove(); }, 6000);
+    }, i * 800);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   ensureDefaultCategories();
   setTimeout(renderOrcamentos, 2000);
   renderFinSaude(); // atualiza alerta no Financeiro
   setTimeout(checkRecorrentesDoMes, 3000);
+  setTimeout(checkLembretes, 4000);
 
 // Calcula altura real da viewport (exclui barra do navegador em tablets)
 // setAppHeight desativado — usando height:100% puro que funciona melhor em PWA
@@ -13683,7 +13817,7 @@ function setAppHeight() {}
 <div class="modal-overlay" id="modal-recorrentes">
   <div class="modal" style="max-width:460px">
     <div class="modal-header">
-      <span class="modal-title">💚 Receitas Recorrentes</span>
+      <span class="modal-title">🔄 Lançamentos Recorrentes</span>
       <button class="modal-close" onclick="closeModal('modal-recorrentes')">✕</button>
     </div>
     <div class="modal-body" style="display:flex;flex-direction:column;gap:12px">
@@ -13696,10 +13830,17 @@ function setAppHeight() {}
 
       <!-- Formulário nova recorrente -->
       <div style="background:var(--card);border:1px solid var(--border-soft);border-radius:10px;padding:12px">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">+ Nova receita recorrente</div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">+ Novo lançamento recorrente</div>
+        <div class="form-row">
+          <label>Tipo</label>
+          <select class="form-select" id="recor-tipo">
+            <option value="entrada">📥 Receita</option>
+            <option value="saida">📤 Despesa</option>
+          </select>
+        </div>
         <div class="form-row">
           <label>Descrição</label>
-          <input class="form-input" id="recor-desc" placeholder="Ex: Salário SPGG">
+          <input class="form-input" id="recor-desc" placeholder="Ex: Salário SPGG, Academia...">
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <div class="form-row">
