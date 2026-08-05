@@ -2811,8 +2811,10 @@ function renderBacklog() {
   document.getElementById('backlog-list').innerHTML = activeFiltersPillsHtml() + filtB.map(item => `
     <div class="backlog-item" id="bi-${item.id}" onclick="editBacklog(${item.id})">
       ${(item.photo && item.photo !== '__local__' && item.photo.startsWith('data:image'))
-        ? '<div style="width:100%;overflow:hidden;line-height:0"><img src="' + item.photo + '" style="width:100%;height:200px;object-fit:cover;display:block;border-bottom:1px solid var(--border-soft)"></div>'
-        : ''}
+        ? '<div style="width:100%;overflow:hidden;line-height:0;border-radius:var(--radius) var(--radius) 0 0"><img src="' + item.photo + '" style="width:100%;height:200px;object-fit:cover;display:block"></div>'
+        : (item.photo === '__local__'
+            ? '<div style="width:100%;height:52px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--dim);border-bottom:1px solid var(--border-soft)">🖼 Foto salva em outro dispositivo</div>'
+            : '')}
       <div class="backlog-content">
         <div class="backlog-header">
           <span class="item-text" id="bit-${item.id}">${escHtml(item.text)}</span>
@@ -6753,6 +6755,7 @@ function lsSave() {
       parcelamentos, nextParcId, economias, nextEcoId,
       jogoXP, jogoMoedas, jogoStreak, jogoLastDay,
     }));
+    saveBacklogPhotos();
   } catch(e) { console.warn('lsSave:', e); }
 }
 
