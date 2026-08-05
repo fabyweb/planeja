@@ -313,15 +313,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .inbox-hint{font-size:11px;color:var(--text-dim)}
 
 /* backlog list */
-.backlog-list{display:flex;flex-direction:column;gap:12px}
-.backlog-item{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:16px 20px;display:flex;align-items:flex-start;gap:10px;transition:background-color 0.15s,color 0.15s,border-color 0.15s,opacity 0.15s,transform 0.15s;position:relative}
+.backlog-list{columns:3;column-gap:14px}
+.backlog-item{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden;cursor:default;transition:background-color 0.15s,border-color 0.15s,box-shadow 0.2s;break-inside:avoid;margin-bottom:14px;display:block;position:relative}
 .backlog-item:hover{background:var(--card-hover)}
-.item-text{flex:1;font-size:13px;color:var(--text);line-height:1.4;word-break:break-word}
-.item-meta{font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;white-space:nowrap;padding-top:2px}
-.item-actions{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.item-text{font-size:13px;font-weight:600;color:var(--text);line-height:1.5;word-break:break-word;letter-spacing:-.01em}
+.item-meta{font-size:10px;color:var(--dim);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.item-actions{display:flex;gap:4px;flex-wrap:wrap;padding:8px 14px;background:var(--surface);border-top:1px solid var(--border-soft)}
 .backlog-item-wrap{display:flex;flex-direction:column}
 .backlog-item-top{display:flex;align-items:flex-start;gap:10px}
-.action-chip{padding:3px 8px;border-radius:4px;font-size:11px;font-weight:500;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);cursor:pointer;transition:background-color 0.12s,color 0.12s,border-color 0.12s,opacity 0.12s,transform 0.12s;white-space:nowrap;font-family:'Inter',sans-serif}
+.action-chip{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;border:none;background:var(--surface);color:var(--muted);cursor:pointer;transition:background-color 0.15s,color 0.15s;white-space:nowrap;font-family:'Inter',sans-serif;touch-action:manipulation}
 .action-chip:hover{background:var(--card-hover);color:var(--text)}
 .action-chip.task{border-color:var(--violet);color:var(--violet-light)}
 .action-chip.event{border-color:var(--cyan);color:var(--cyan)}
@@ -1387,8 +1387,8 @@ canvas{transform:translateZ(0)}
 }
 
 /* ── Backlog: botão opções ⋮ ── */
-.item-actions-wrap{position:relative;margin-top:8px}
-.item-opts-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:16px;font-weight:700;padding:2px 10px;line-height:1.4;transition:background-color 0.15s,color 0.15s,border-color 0.15s}
+.item-actions-wrap{position:relative}
+.item-opts-btn{width:28px;height:28px;border-radius:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:16px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;transition:background-color 0.15s,color 0.15s;flex-shrink:0}
 .item-opts-btn:hover{background:var(--surface);color:var(--text);border-color:var(--violet)}
 .item-actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;padding:10px;background:var(--surface);border:1px solid var(--border-soft);border-radius:8px}
 
@@ -1615,6 +1615,49 @@ body.light-theme .note-card,html.light-theme-pre body .note-card{
 }
 body.light-theme .note-card:hover,html.light-theme-pre body .note-card:hover{
   box-shadow:0 3px 14px rgba(0,0,0,.11);
+}
+
+/* ── Backlog card: hover ── */
+.backlog-item:hover{box-shadow:0 4px 16px rgba(0,0,0,.20);border-color:var(--border)}
+
+/* ── Backlog card: conteúdo interno ── */
+.backlog-content{padding:14px 16px 10px}
+
+/* ── Backlog card: foto full-bleed ── */
+.backlog-photo{width:100%;object-fit:cover;max-height:220px;display:block}
+
+/* ── Backlog card: header (texto + meta + ⋮) ── */
+.backlog-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+
+/* ── Backlog card: tags ── */
+.backlog-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.backlog-tag{padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;background:var(--violet-glow);color:var(--violet-light);cursor:pointer;border:none;font-family:'Inter',sans-serif}
+.backlog-tag:hover{background:rgba(124,58,237,.28)}
+
+/* ── Backlog card: badge de prioridade ── */
+.backlog-priority{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;flex-shrink:0}
+.backlog-priority.urgente{background:rgba(239,68,68,.15);color:var(--red)}
+.backlog-priority.alta{background:rgba(245,158,11,.15);color:var(--amber)}
+
+/* ── Backlog card: from gmail ── */
+.backlog-gmail{font-size:10px;color:var(--dim);margin-top:4px;display:flex;align-items:center;gap:4px}
+
+/* ── action-chip hover ── */
+.action-chip:hover{background:var(--card-hover);color:var(--text)}
+.action-chip.del:hover{background:rgba(239,68,68,.12);color:var(--red)}
+.action-chip.task:hover{color:var(--violet-light)}
+.action-chip.event:hover{color:var(--cyan)}
+.action-chip.fin:hover{color:var(--green)}
+
+/* ── Backlog: mobile 1 coluna ── */
+@media(max-width:768px){
+  .backlog-list{columns:1}
+  .backlog-item{margin-bottom:10px}
+  .item-actions{gap:6px}
+  .action-chip{padding:6px 12px;font-size:11px}
+}
+@media(min-width:769px) and (max-width:1200px){
+  .backlog-list{columns:2}
 }
 </style>
 
@@ -2725,28 +2768,33 @@ function renderBacklog() {
 
   const filtB = filteredBacklog();
   document.getElementById('backlog-list').innerHTML = activeFiltersPillsHtml() + filtB.map(item => `
-    <div class="backlog-item" id="bi-${item.id}">
-      <div class="backlog-item-wrap" style="flex:1;min-width:0">
-        <div class="backlog-item-top">
+    <div class="backlog-item" id="bi-${item.id}" onclick="editBacklog(${item.id})">
+      ${item.photo ? `<img class="backlog-photo" src="${item.photo}" alt="foto">` : ''}
+      <div class="backlog-content">
+        <div class="backlog-header">
           <span class="item-text" id="bit-${item.id}">${escHtml(item.text)}</span>
-          <span class="item-meta">${item.time}</span>
-          ${item.photo ? '<img src="'+item.photo+'" style="max-height:100px;max-width:100%;border-radius:6px;margin-top:6px;border:1px solid var(--border);display:block">' : ''}
-          ${item.fromGmail && item.meta ? '<div style="font-size:10px;color:var(--text-dim);margin-top:3px">De: '+escHtml(item.meta.from)+'</div>' : ''}
-          ${(item.tags||[]).length ? '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">'+
-            (item.tags||[]).map(tg=>`<span onclick="setFilter('tag','${tg}');closeSearch()" style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700;background:var(--violet-glow);border:1px solid var(--violet);color:var(--violet-light);cursor:pointer">#${escHtml(tg)}</span>`).join('')+'</div>' : ''}
-          ${item.priority && item.priority!=='normal' ? '<span style="font-size:10px;color:'+(item.priority==='urgente'?'var(--red)':'var(--amber)')+'">'+item.priority+'</span>' : ''}
+          <button class="item-opts-btn" onclick="toggleBacklogOpts(${item.id},event)" title="Opções" aria-label="Opções">⋮</button>
         </div>
-        <div class="item-actions-wrap">
-          <button class="item-opts-btn" onclick="toggleBacklogOpts(${item.id}, event)" title="Opções" aria-label="Opções">⋮</button>
-          <div class="item-actions" id="opts-${item.id}" style="display:none">
-            <button class="action-chip" onclick="editBacklog(${item.id})">✏️ Editar</button>
-            <button class="action-chip task"  onclick="openTaskModal(${item.id}, '${escJs(item.text)}')">→ Tarefa</button>
-            <button class="action-chip event" onclick="openEventModal(${item.id}, '${escJs(item.text)}')">→ Evento</button>
-            <button class="action-chip fin"   onclick="openFinModal(${item.id}, '${escJs(item.text)}')">→ Gasto</button>
-            <button class="action-chip list"  onclick="openListPick(${item.id}, '${escJs(item.text)}')">→ Lista</button>
-            <button class="action-chip note"  onclick="openNoteFromBacklog(${item.id}, '${escJs(item.text)}')">→ Nota</button>
-            <button class="action-chip del"   onclick="deleteBacklog(${item.id})">✕ Remover</button>
-          </div>
+        ${item.fromGmail && item.meta
+          ? `<div class="backlog-gmail"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg> ${escHtml(item.meta.from)}</div>`
+          : ''}
+        <div style="display:flex;align-items:center;gap:5px;margin-top:6px;flex-wrap:wrap">
+          ${(item.tags||[]).map(tg=>`<button class="backlog-tag" onclick="event.stopPropagation();setFilter('tag','${tg}');closeSearch()">#${escHtml(tg)}</button>`).join('')}
+          ${item.priority && item.priority!=='normal'
+            ? `<span class="backlog-priority ${item.priority}">${item.priority==='urgente'?'🔴':'🔺'} ${item.priority}</span>`
+            : ''}
+          <span class="item-meta" style="margin-left:auto">${item.time}</span>
+        </div>
+      </div>
+      <div class="item-actions-wrap">
+        <div class="item-actions" id="opts-${item.id}" style="display:none">
+          <button class="action-chip"       onclick="event.stopPropagation();editBacklog(${item.id})">✏️ Editar</button>
+          <button class="action-chip task"  onclick="event.stopPropagation();openTaskModal(${item.id},'${escJs(item.text)}')">→ Tarefa</button>
+          <button class="action-chip event" onclick="event.stopPropagation();openEventModal(${item.id},'${escJs(item.text)}')">→ Evento</button>
+          <button class="action-chip fin"   onclick="event.stopPropagation();openFinModal(${item.id},'${escJs(item.text)}')">→ Gasto</button>
+          <button class="action-chip list"  onclick="event.stopPropagation();openListPick(${item.id},'${escJs(item.text)}')">→ Lista</button>
+          <button class="action-chip note"  onclick="event.stopPropagation();openNoteFromBacklog(${item.id},'${escJs(item.text)}')">→ Nota</button>
+          <button class="action-chip del"   onclick="event.stopPropagation();deleteBacklog(${item.id})">✕ Remover</button>
         </div>
       </div>
     </div>
