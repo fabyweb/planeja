@@ -1624,7 +1624,7 @@ body.light-theme .note-card:hover,html.light-theme-pre body .note-card:hover{
 .backlog-content{padding:14px 16px 10px}
 
 /* ── Backlog card: foto full-bleed ── */
-.backlog-photo{width:100%;object-fit:cover;max-height:220px;display:block}
+.backlog-photo{width:100%;object-fit:cover;max-height:220px;display:block;border-bottom:1px solid var(--border-soft)}
 
 /* ── Backlog card: header (texto + meta + ⋮) ── */
 .backlog-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
@@ -2769,7 +2769,7 @@ function renderBacklog() {
   const filtB = filteredBacklog();
   document.getElementById('backlog-list').innerHTML = activeFiltersPillsHtml() + filtB.map(item => `
     <div class="backlog-item" id="bi-${item.id}" onclick="editBacklog(${item.id})">
-      ${item.photo ? `<img class="backlog-photo" src="${item.photo}" alt="foto">` : ''}
+      ${(item.photo && item.photo !== '__local__' && item.photo.startsWith('data:image')) ? '<img class="backlog-photo" src="' + item.photo + '">' : ''}
       <div class="backlog-content">
         <div class="backlog-header">
           <span class="item-text" id="bit-${item.id}">${escHtml(item.text)}</span>
