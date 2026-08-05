@@ -1659,6 +1659,39 @@ body.light-theme .note-card:hover,html.light-theme-pre body .note-card:hover{
 @media(min-width:769px) and (max-width:1200px){
   .backlog-list{columns:2}
 }
+
+/* ── Gerenciador de Abas ── */
+.tab-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border-soft)}
+.tab-toggle-row:last-child{border-bottom:none}
+.tab-toggle-info{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text)}
+.tab-toggle-icon{width:28px;height:28px;border-radius:7px;background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.tab-toggle-switch{position:relative;width:40px;height:22px;flex-shrink:0}
+.tab-toggle-switch input{opacity:0;width:0;height:0;position:absolute}
+.tab-toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:22px;cursor:pointer;transition:background-color .2s}
+.tab-toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s}
+.tab-toggle-switch input:checked + .tab-toggle-slider{background:var(--violet)}
+.tab-toggle-switch input:checked + .tab-toggle-slider:before{transform:translateX(18px)}
+.tab-required{font-size:10px;color:var(--dim);font-style:italic}
+
+/* ── Menu "Mais" (sidebar desktop) ── */
+.sidebar-more-btn{width:40px;height:40px;border-radius:10px;border:1px dashed var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;transition:background-color .15s,color .15s,border-color .15s;position:relative}
+.sidebar-more-btn:hover{background:var(--surface);color:var(--text);border-color:var(--border)}
+.sidebar-more-menu{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);background:var(--card);border:1px solid var(--border-soft);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.35);z-index:500;min-width:160px;padding:6px 0;display:none}
+.sidebar-more-menu.open{display:block}
+.sidebar-more-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--text-muted);transition:background-color .12s,color .12s;white-space:nowrap}
+.sidebar-more-item:hover,.sidebar-more-item.active{background:var(--surface);color:var(--text)}
+.sidebar-more-item .ico{width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* ── Botão "Mais" na bottom-nav ── */
+.bnav-more-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 8px;font-size:10px;color:var(--muted);cursor:pointer;border:none;background:none;font-family:'Inter',sans-serif;min-width:48px;touch-action:manipulation}
+.bnav-more-btn:hover,.bnav-more-btn.active{color:var(--violet)}
+.bnav-more-icon{font-size:22px;line-height:1}
+
+/* ── Modal "Mais" no mobile ── */
+#modal-more-tabs .modal{max-width:320px}
+.more-tab-btn{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border:none;background:transparent;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;border-radius:8px;transition:background-color .12s;text-align:left}
+.more-tab-btn:hover,.more-tab-btn.active{background:var(--surface);color:var(--violet)}
+.more-tab-btn .ico{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 </style>
 
   <!-- PWA -->
@@ -1711,14 +1744,14 @@ body.light-theme .note-card:hover,html.light-theme-pre body .note-card:hover{
 <nav class="sidebar">
   <div class="sidebar-logo">F</div>
   <div class="nav-group">
-    <button class="nav-btn active" onclick="switchView('inbox',this)" title="Inbox"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg></span><span class="badge" id="badge-sb">0</span></button>
-    <button class="nav-btn" onclick="switchView('kanban',this)" title="Tarefas"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v10"/></svg></span></button>
-    <button class="nav-btn" onclick="switchView('calendar',this)" title="Calendário"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span></button>
-    <button class="nav-btn" onclick="switchView('finance',this)" title="Financeiro"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span></button>
-    <button class="nav-btn" onclick="switchView('jogo',this)" title="Jogo de Quitação"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-style:normal">🎮</span></button>
-    <button class="nav-btn" onclick="switchView('lists',this)" title="Listas"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg></span></button>
-    <button class="nav-btn" onclick="switchView('notes',this)" title="Notas"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span></button>
-    <button class="nav-btn" onclick="switchView('estudos',this)" title="Estudos"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></span></button>
+    <button class="nav-btn active" data-view="inbox" onclick="switchView('inbox',this)" title="Inbox"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg></span><span class="badge" id="badge-sb">0</span></button>
+    <button class="nav-btn" data-view="kanban" onclick="switchView('kanban',this)" title="Tarefas"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v10"/></svg></span></button>
+    <button class="nav-btn" data-view="calendar" onclick="switchView('calendar',this)" title="Calendário"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span></button>
+    <button class="nav-btn" data-view="finance" onclick="switchView('finance',this)" title="Financeiro"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span></button>
+    <button class="nav-btn" data-view="jogo" onclick="switchView('jogo',this)" title="Jogo de Quitação"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-style:normal">🎮</span></button>
+    <button class="nav-btn" data-view="lists" onclick="switchView('lists',this)" title="Listas"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg></span></button>
+    <button class="nav-btn" data-view="notes" onclick="switchView('notes',this)" title="Notas"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span></button>
+    <button class="nav-btn" data-view="estudos" onclick="switchView('estudos',this)" title="Estudos"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></span></button>
   </div>
   <div class="nav-divider"></div>
   <div class="nav-group">
@@ -1727,7 +1760,11 @@ body.light-theme .note-card:hover,html.light-theme-pre body .note-card:hover{
   </div>
   <div class="sidebar-bottom">
     <button class="nav-btn" title="Configurações" onclick="openSettingsModal()"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span></button>
-    <button class="theme-toggle-btn" id="theme-btn-sidebar" onclick="toggleTheme()" title="Alternar tema"></button>
+    <div style="position:relative;margin-top:4px">
+      <button class="sidebar-more-btn" id="sidebar-more-btn" onclick="toggleSidebarMore(event)" title="Mais abas" style="display:none">⋮</button>
+      <div class="sidebar-more-menu" id="sidebar-more-menu"></div>
+    </div>
+    <button class="theme-toggle-btn" id="theme-btn-sidebar"  onclick="toggleTheme()" title="Alternar tema"></button>
     <div class="avatar">F</div>
   </div>
 </nav>
@@ -2176,14 +2213,18 @@ body.light-theme .note-card:hover,html.light-theme-pre body .note-card:hover{
 
 <!-- ── BOTTOM NAV (mobile) ── -->
 <nav class="bottom-nav" id="bottom-nav">
-  <button class="bnav-btn active" onclick="switchView('inbox',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg></span><span>Inbox</span><span class="badge" id="badge-bn">0</span></button>
-  <button class="bnav-btn" onclick="switchView('kanban',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v10"/></svg></span><span>Tarefas</span></button>
-  <button class="bnav-btn" onclick="switchView('calendar',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span>Agenda</span></button>
-  <button class="bnav-btn" onclick="switchView('finance',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span><span>Finanças</span></button>
-  <button class="bnav-btn" onclick="switchView('jogo',this)"><span style="font-size:20px;line-height:1">🎮</span><span>Quitação</span></button>
-  <button class="bnav-btn" onclick="switchView('lists',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg></span><span>Listas</span></button>
-  <button class="bnav-btn" onclick="switchView('notes',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span><span>Notas</span></button>
-  <button class="bnav-btn" onclick="switchView('estudos',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></span><span>Estudos</span></button>
+  <button class="bnav-btn active" data-view="inbox" onclick="switchView('inbox',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg></span><span>Inbox</span><span class="badge" id="badge-bn">0</span></button>
+  <button class="bnav-btn" data-view="kanban" onclick="switchView('kanban',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v10"/></svg></span><span>Tarefas</span></button>
+  <button class="bnav-btn" data-view="calendar" onclick="switchView('calendar',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span>Agenda</span></button>
+  <button class="bnav-btn" data-view="finance" onclick="switchView('finance',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span><span>Finanças</span></button>
+  <button class="bnav-btn" data-view="jogo" onclick="switchView('jogo',this)"><span style="font-size:20px;line-height:1">🎮</span><span>Quitação</span></button>
+  <button class="bnav-btn" data-view="lists" onclick="switchView('lists',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg></span><span>Listas</span></button>
+  <button class="bnav-btn" data-view="notes" onclick="switchView('notes',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span><span>Notas</span></button>
+  <button class="bnav-btn" data-view="estudos" onclick="switchView('estudos',this)"><span class="ico" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></span><span>Estudos</span></button>
+  <button class="bnav-more-btn" id="bnav-more-btn" onclick="openMoreTabs()" style="display:none">
+    <span class="bnav-more-icon">⋯</span>
+    <span>Mais</span>
+  </button>
 </nav>
 
 
@@ -7127,6 +7168,7 @@ function pwaInit() {
 
 
 function openSettingsModal() {
+  renderSettingsTabs();
   // Update cloud status
   var cs = document.getElementById('settings-cloud-status');
   var fbCfg = fbLoadConfig();
@@ -13934,6 +13976,166 @@ function toggleTheme() {
   });
 })();
 
+// ══════════════════════════════════════════
+//  ABAS PERSONALIZÁVEIS
+// ══════════════════════════════════════════
+var ALL_TABS = [
+  { id:'inbox',    label:'Inbox',      emoji:'📥', required:true  },
+  { id:'kanban',   label:'Tarefas',    emoji:'📋', required:false },
+  { id:'calendar', label:'Calendário', emoji:'📅', required:false },
+  { id:'finance',  label:'Financeiro', emoji:'💰', required:false },
+  { id:'jogo',     label:'Quitação',   emoji:'🎮', required:false },
+  { id:'lists',    label:'Listas',     emoji:'☰',  required:false },
+  { id:'notes',    label:'Notas',      emoji:'📝', required:false },
+  { id:'estudos',  label:'Estudos',    emoji:'📖', required:false },
+];
+
+var DEFAULT_VISIBLE = ['inbox','kanban','finance','notes'];
+
+function tabsLoad() {
+  try {
+    var saved = JSON.parse(localStorage.getItem('painel_visible_tabs') || 'null');
+    if (Array.isArray(saved)) return saved;
+  } catch(e) {}
+  return DEFAULT_VISIBLE.slice();
+}
+
+function tabsSave(arr) {
+  localStorage.setItem('painel_visible_tabs', JSON.stringify(arr));
+}
+
+function tabsIsVisible(id) {
+  return tabsLoad().indexOf(id) !== -1;
+}
+
+function tabsToggle(id) {
+  var tab = ALL_TABS.find(function(t){ return t.id === id; });
+  if (tab && tab.required) return; // Inbox sempre visível
+  var vis = tabsLoad();
+  var idx = vis.indexOf(id);
+  if (idx === -1) vis.push(id);
+  else vis.splice(idx, 1);
+  // Garante que inbox sempre está
+  if (vis.indexOf('inbox') === -1) vis.unshift('inbox');
+  tabsSave(vis);
+  applyTabVisibility();
+  renderSettingsTabs();
+  renderSidebarMore();
+  renderBottomNavMore();
+}
+
+// Aplica visibilidade nas duas barras
+function applyTabVisibility() {
+  var vis = tabsLoad();
+
+  // ── Sidebar (desktop) ──
+  var navGroup = document.querySelector('.nav-group');
+  if (navGroup) {
+    navGroup.querySelectorAll('.nav-btn[data-view]').forEach(function(btn) {
+      var v = btn.dataset.view;
+      btn.style.display = vis.indexOf(v) !== -1 ? '' : 'none';
+    });
+    // Botão "Mais" na sidebar
+    var moreBtn = document.getElementById('sidebar-more-btn');
+    var hidden = ALL_TABS.filter(function(t){ return vis.indexOf(t.id) === -1; });
+    if (moreBtn) moreBtn.style.display = hidden.length > 0 ? '' : 'none';
+  }
+
+  // ── Bottom-nav (mobile) ──
+  var bnav = document.querySelector('.bottom-nav');
+  if (bnav) {
+    bnav.querySelectorAll('.bnav-btn[data-view]').forEach(function(btn) {
+      var v = btn.dataset.view;
+      btn.style.display = vis.indexOf(v) !== -1 ? '' : 'none';
+    });
+    var bnavMore = document.getElementById('bnav-more-btn');
+    var hiddenM = ALL_TABS.filter(function(t){ return vis.indexOf(t.id) === -1; });
+    if (bnavMore) bnavMore.style.display = hiddenM.length > 0 ? '' : 'none';
+  }
+}
+
+// Renderiza os toggles no modal de settings
+function renderSettingsTabs() {
+  var el = document.getElementById('settings-tabs-list');
+  if (!el) return;
+  var vis = tabsLoad();
+  el.innerHTML = ALL_TABS.map(function(tab) {
+    var isVis = vis.indexOf(tab.id) !== -1;
+    var isReq = tab.required;
+    return '<div class="tab-toggle-row">'
+      + '<div class="tab-toggle-info">'
+        + '<div class="tab-toggle-icon">' + tab.emoji + '</div>'
+        + '<span>' + tab.label + (isReq ? ' <span class="tab-required">(sempre visível)</span>' : '') + '</span>'
+      + '</div>'
+      + '<label class="tab-toggle-switch">'
+        + '<input type="checkbox"' + (isVis ? ' checked' : '') + (isReq ? ' disabled' : '')
+          + ' onchange="tabsToggle(\'' + tab.id + '\')">'
+        + '<span class="tab-toggle-slider"></span>'
+      + '</label>'
+      + '</div>';
+  }).join('');
+}
+
+// Renderiza menu "Mais" na sidebar (desktop)
+function renderSidebarMore() {
+  var vis = tabsLoad();
+  var hidden = ALL_TABS.filter(function(t){ return vis.indexOf(t.id) === -1; });
+  var menu = document.getElementById('sidebar-more-menu');
+  if (!menu) return;
+  menu.innerHTML = hidden.map(function(tab) {
+    return '<div class="sidebar-more-item" onclick="switchView(\'' + tab.id + '\',null);closeSidebarMore()">'
+      + '<span class="ico">' + tab.emoji + '</span>'
+      + '<span>' + tab.label + '</span>'
+      + '</div>';
+  }).join('');
+}
+
+function toggleSidebarMore(e) {
+  if (e) e.stopPropagation();
+  var menu = document.getElementById('sidebar-more-menu');
+  if (!menu) return;
+  var isOpen = menu.classList.contains('open');
+  menu.classList.toggle('open', !isOpen);
+  if (!isOpen) {
+    setTimeout(function(){
+      document.addEventListener('click', closeSidebarMore, {once:true});
+    }, 10);
+  }
+}
+
+function closeSidebarMore() {
+  var menu = document.getElementById('sidebar-more-menu');
+  if (menu) menu.classList.remove('open');
+}
+
+// Renderiza modal "Mais" no mobile
+function renderBottomNavMore() {
+  var vis = tabsLoad();
+  var hidden = ALL_TABS.filter(function(t){ return vis.indexOf(t.id) === -1; });
+  var body = document.getElementById('more-tabs-body');
+  if (!body) return;
+  body.innerHTML = hidden.map(function(tab) {
+    return '<button class="more-tab-btn" onclick="switchView(\'' + tab.id + '\',null);closeModal(\'modal-more-tabs\')">'
+      + '<span class="ico" style="font-size:18px">' + tab.emoji + '</span>'
+      + '<span>' + tab.label + '</span>'
+      + '</button>';
+  }).join('') || '<p style="color:var(--muted);font-size:12px;padding:8px 14px">Todas as abas já estão visíveis.</p>';
+}
+
+function openMoreTabs() {
+  renderBottomNavMore();
+  openModal('modal-more-tabs');
+}
+
+// Inicializa ao carregar
+(function initTabs() {
+  // Garante data-view nos botões da sidebar e bottom-nav após DOM pronto
+  document.addEventListener('DOMContentLoaded', function() {
+    applyTabVisibility();
+    renderSidebarMore();
+  });
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
   ensureDefaultCategories();
   setTimeout(renderOrcamentos, 2000);
@@ -14319,6 +14521,13 @@ function setAppHeight() {}
           <input class="form-input" id="settings-gmail-label" placeholder="painel" style="width:120px;font-size:12px" value="painel">
           <button class="btn btn-ghost btn-sm" onclick="document.getElementById('gmail-label-input')&&(document.getElementById('gmail-label-input').value=document.getElementById('settings-gmail-label').value);showToast('✅ Label atualizada')">Salvar</button>
         </div>
+      </div>
+
+      <!-- Abas Visíveis -->
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border-soft)">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px">📌 Abas visíveis</div>
+        <div id="settings-tabs-list"></div>
+        <div style="font-size:11px;color:var(--dim);margin-top:8px">As abas ocultas ficam acessíveis pelo botão ⋮ Mais.</div>
       </div>
 
       <!-- Dados -->
@@ -14946,5 +15155,16 @@ function setAppHeight() {}
   </div>
 </div>
 
+
+<!-- ══ MODAL — MAIS ABAS (mobile) ══ -->
+<div class="modal-overlay" id="modal-more-tabs">
+  <div class="modal" style="max-width:300px">
+    <div class="modal-header">
+      <span class="modal-title">Mais abas</span>
+      <button class="modal-close" onclick="closeModal('modal-more-tabs')">✕</button>
+    </div>
+    <div class="modal-body" id="more-tabs-body" style="padding:8px 0"></div>
+  </div>
+</div>
 </body>
 </html>
