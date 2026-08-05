@@ -222,7 +222,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 
 /* ── LAYOUT ── */
 .app-shell{display:flex;flex:1;min-height:0}
-.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border-soft);display:flex;flex-direction:column;align-items:center;padding:14px 0 16px;gap:4px;z-index:100;flex-shrink:0;transition:width 0.2s;overflow-y:auto;overflow-x:hidden}
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border-soft);display:flex;flex-direction:column;align-items:center;padding:14px 0 16px;gap:4px;z-index:100;flex-shrink:0;transition:width 0.2s;overflow:visible}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;min-height:0}
 
 /* ── SIDEBAR ── */
@@ -1368,7 +1368,7 @@ html{overscroll-behavior:none}
 body{overscroll-behavior-y:none;text-rendering:optimizeSpeed}
 canvas{transform:translateZ(0)}
 .modal{transform:translateZ(0)}
-.sidebar{transform:translateZ(0)}
+.sidebar{isolation:isolate}
 @media(max-width:1024px){
   .modal-overlay{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(0,0,0,0.82)}
   .search-overlay{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(0,0,0,0.72)}
@@ -1676,7 +1676,7 @@ body.light-theme .note-card:hover,html.light-theme-pre body .note-card:hover{
 /* ── Menu "Mais" (sidebar desktop) ── */
 .sidebar-more-btn{width:40px;height:40px;border-radius:10px;border:1px dashed var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;transition:background-color .15s,color .15s,border-color .15s;position:relative}
 .sidebar-more-btn:hover{background:var(--surface);color:var(--text);border-color:var(--border)}
-.sidebar-more-menu{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);background:var(--card);border:1px solid var(--border-soft);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.35);z-index:500;min-width:160px;padding:6px 0;display:none}
+.sidebar-more-menu{position:fixed;background:var(--card);border:1px solid var(--border-soft);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.35);z-index:9999;min-width:180px;padding:6px 0;display:none}
 .sidebar-more-menu.open{display:block}
 .sidebar-more-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--text-muted);transition:background-color .12s,color .12s;white-space:nowrap}
 .sidebar-more-item:hover,.sidebar-more-item.active{background:var(--surface);color:var(--text)}
@@ -2810,7 +2810,9 @@ function renderBacklog() {
   const filtB = filteredBacklog();
   document.getElementById('backlog-list').innerHTML = activeFiltersPillsHtml() + filtB.map(item => `
     <div class="backlog-item" id="bi-${item.id}" onclick="editBacklog(${item.id})">
-      ${(item.photo && item.photo !== '__local__' && item.photo.startsWith('data:image')) ? '<img class="backlog-photo" src="' + item.photo + '">' : ''}
+      ${(item.photo && item.photo !== '__local__' && item.photo.startsWith('data:image'))
+        ? '<div style="width:100%;overflow:hidden;line-height:0"><img src="' + item.photo + '" style="width:100%;height:200px;object-fit:cover;display:block;border-bottom:1px solid var(--border-soft)"></div>'
+        : ''}
       <div class="backlog-content">
         <div class="backlog-header">
           <span class="item-text" id="bit-${item.id}">${escHtml(item.text)}</span>
@@ -14093,14 +14095,26 @@ function renderSidebarMore() {
 function toggleSidebarMore(e) {
   if (e) e.stopPropagation();
   var menu = document.getElementById('sidebar-more-menu');
-  if (!menu) return;
+  var btn  = document.getElementById('sidebar-more-btn');
+  if (!menu || !btn) return;
   var isOpen = menu.classList.contains('open');
-  menu.classList.toggle('open', !isOpen);
-  if (!isOpen) {
-    setTimeout(function(){
-      document.addEventListener('click', closeSidebarMore, {once:true});
-    }, 10);
-  }
+  if (isOpen) { closeSidebarMore(); return; }
+  // Posiciona o menu com fixed relativo ao botão
+  var rect = btn.getBoundingClientRect();
+  menu.style.left = (rect.right + 8) + 'px';
+  menu.style.top  = Math.max(8, rect.top - menu.offsetHeight / 2 + rect.height / 2) + 'px';
+  menu.classList.add('open');
+  // Após renderizar, ajusta se ultrapassar a tela
+  requestAnimationFrame(function() {
+    var mRect = menu.getBoundingClientRect();
+    var winH = window.innerHeight;
+    if (mRect.bottom > winH - 8) {
+      menu.style.top = Math.max(8, winH - mRect.height - 8) + 'px';
+    }
+  });
+  setTimeout(function(){
+    document.addEventListener('click', closeSidebarMore, {once:true});
+  }, 10);
 }
 
 function closeSidebarMore() {
