@@ -606,7 +606,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .note-new-title::placeholder{color:var(--text-dim)}
 .note-new-body{width:100%;background:transparent;border:none;outline:none;font-size:13px;color:var(--text-muted);font-family:'Inter',sans-serif;resize:none;min-height:40px;line-height:1.5}
 .note-new-body::placeholder{color:var(--text-dim)}
-.note-new-toolbar{display:flex;align-items:center;gap:8px;margin-top:14px;border-top:1px solid var(--border-soft);padding-top:12px;flex-wrap:wrap;justify-content:space-between}
+/* note-new-toolbar: ver .note-toolbar-row */
 .color-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform 0.15s,border-color 0.15s;flex-shrink:0;touch-action:manipulation}
 .color-dot:hover,.color-dot.active{transform:scale(1.25);border-color:rgba(255,255,255,0.5)}
 .pinned-section{margin-bottom:4px}
@@ -1430,7 +1430,7 @@ canvas{transform:translateZ(0)}
 .color-dot:hover,.color-dot.active{border-color:rgba(255,255,255,.6);transform:scale(1.15)}
 
 /* note-new-card touch targets */
-.note-new-toolbar .btn{min-height:36px;padding:6px 12px}
+/* note-new-toolbar .btn: ver #note-new-card .btn-primary */
 .notes-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);padding:4px 2px 8px}
 
 /* ── Financeiro: botão ⋮ nas ações ── */
@@ -1562,9 +1562,7 @@ canvas{transform:translateZ(0)}
 }
 
 /* ── Toolbar: grupo direito (meta+ações) ── */
-.note-toolbar-right{
-  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
-}
+/* note-toolbar-right: substituída por .note-toolbar-row */
 
 /* ── Botão Cancelar fantasma ── */
 .note-cancel-btn{
@@ -1692,6 +1690,50 @@ body.light-theme .note-card:hover,html.light-theme-pre body .note-card:hover{
 .more-tab-btn{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border:none;background:transparent;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;border-radius:8px;transition:background-color .12s;text-align:left}
 .more-tab-btn:hover,.more-tab-btn.active{background:var(--surface);color:var(--violet)}
 .more-tab-btn .ico{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* ── Note toolbar: 2 linhas explícitas ── */
+.note-new-toolbar{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:14px;
+  border-top:1px solid var(--border-soft);
+  padding-top:12px;
+}
+.note-toolbar-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  width:100%;
+}
+.note-toolbar-actions{
+  flex-wrap:wrap;
+  gap:6px;
+}
+.note-toolbar-tools{
+  flex-wrap:wrap;
+  gap:6px;
+}
+/* Garante que o botão Salvar é sempre visível e grande o suficiente */
+#note-new-card .btn-primary{
+  min-height:36px;
+  min-width:80px;
+  touch-action:manipulation;
+  flex-shrink:0;
+}
+/* Cancelar discreto mas acessível */
+.note-cancel-btn{
+  background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;
+  padding:6px 8px;border-radius:6px;font-family:'Inter',sans-serif;
+  transition:color .15s;min-height:36px;touch-action:manipulation;flex-shrink:0;
+}
+.note-cancel-btn:hover{color:var(--text)}
+/* Mobile: campo tag e pasta mais compactos */
+@media(max-width:480px){
+  .note-toolbar-actions .note-meta-input{font-size:11px;padding:4px 8px}
+  #note-new-card .btn-primary{padding:8px 14px!important;font-size:12px}
+  .note-toolbar-tools span{display:none} /* oculta legenda em telas muito pequenas */
+}
 </style>
 
   <!-- PWA -->
@@ -2111,68 +2153,89 @@ body.light-theme .note-card:hover,html.light-theme-pre body .note-card:hover{
     <!-- ═══ NOTAS ═══ -->
     <div class="view" id="view-notes">
       <!-- Quick-add card -->
-      <div class="note-new-card" id="note-new-card" onclick="if(document.getElementById('note-new-extra').style.display==='none')focusNewNote()">
-        <input class="note-new-title" id="note-new-title" placeholder="Título da nota…"
-          onclick="event.stopPropagation()"
+      <div class="note-new-card" id="note-new-card">
+
+        <!-- Título: sempre visível, clique expande o corpo -->
+        <input class="note-new-title" id="note-new-title"
+          placeholder="Título da nota…"
+          onclick="event.stopPropagation();focusNewNote()"
           onmousedown="event.stopPropagation()"
+          onfocus="focusNewNote()"
           onkeydown="event.stopPropagation();if(event.key==='Enter'){document.getElementById('note-new-body').focus()}">
+
+        <!-- Corpo: aparece ao expandir -->
         <textarea class="note-new-body" id="note-new-body" rows="3"
           placeholder="Escreva aqui…" style="display:none"
-          onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></textarea>
+          onclick="event.stopPropagation()"
+          onmousedown="event.stopPropagation()"></textarea>
 
-        <div id="note-new-extra" style="display:none">
-          <div id="note-new-checklist" style="margin:8px 0" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></div>
+        <!-- Checklist: aparece ao expandir -->
+        <div id="note-new-checklist" style="margin:8px 0;display:none"
+          onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></div>
 
-          <div class="note-new-toolbar" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">
-            <!-- Esquerda: cores + ferramentas -->
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <!-- Preview de imagem -->
+        <div id="note-new-img-preview" style="margin-top:8px"></div>
 
-              <!-- Grupo de cores -->
-              <div class="note-color-group">
-                <button class="color-dot active" id="ndot-default"
-                  style="background:var(--border)" onclick="selectNoteColor('default',this)" title="Padrão"></button>
-                <button class="color-dot" style="background:#3B82F6"
-                  onclick="selectNoteColor('blue',this)" title="Azul"></button>
-                <button class="color-dot" style="background:#F59E0B"
-                  onclick="selectNoteColor('amber',this)" title="Âmbar"></button>
-                <button class="color-dot" style="background:#10B981"
-                  onclick="selectNoteColor('green',this)" title="Verde"></button>
-                <button class="color-dot" style="background:#F43F5E"
-                  onclick="selectNoteColor('rose',this)" title="Rosa"></button>
-                <button class="color-dot" style="background:#8B5CF6"
-                  onclick="selectNoteColor('violet',this)" title="Violeta"></button>
-              </div>
+        <!-- ═══ BARRA DE FERRAMENTAS — SEMPRE VISÍVEL ═══ -->
+        <div class="note-new-toolbar" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">
 
-              <!-- Separador -->
-              <div style="width:1px;height:18px;background:var(--border-soft)"></div>
+          <!-- Linha 1: Ferramentas (cores · checklist · imagem) -->
+          <div class="note-toolbar-row note-toolbar-tools">
 
-              <!-- Checklist -->
-              <button class="note-tool-btn" onclick="addChecklistItem()" title="Checklist">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-                </svg>
-              </button>
-
-              <!-- Imagem -->
-              <button class="note-tool-btn" onclick="document.getElementById('note-img-input').click()" title="Imagem">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
-                  <polyline points="21 15 16 10 5 21"/>
-                </svg>
-              </button>
-              <input type="file" id="note-img-input" accept="image/*" style="display:none" onchange="loadNoteImage(this)">
+            <div class="note-color-group">
+              <button class="color-dot active" id="ndot-default"
+                style="background:var(--border)"
+                onclick="selectNoteColor('default',this)" title="Cor padrão"></button>
+              <button class="color-dot" style="background:#3B82F6"
+                onclick="selectNoteColor('blue',this)" title="Azul"></button>
+              <button class="color-dot" style="background:#F59E0B"
+                onclick="selectNoteColor('amber',this)" title="Âmbar"></button>
+              <button class="color-dot" style="background:#10B981"
+                onclick="selectNoteColor('green',this)" title="Verde"></button>
+              <button class="color-dot" style="background:#F43F5E"
+                onclick="selectNoteColor('rose',this)" title="Rosa"></button>
+              <button class="color-dot" style="background:#8B5CF6"
+                onclick="selectNoteColor('violet',this)" title="Violeta"></button>
             </div>
 
-            <!-- Direita: meta + ações -->
-            <div class="note-toolbar-right">
-              <input id="note-new-tag" class="note-meta-input" style="width:88px" placeholder="# tag">
-              <select id="note-new-folder" class="note-meta-input" style="width:110px"></select>
-              <button class="note-cancel-btn" onclick="cancelNewNote()">Cancelar</button>
-              <button class="btn btn-primary btn-sm" onclick="saveNewNote()" style="padding:7px 18px">Salvar</button>
-            </div>
+            <div style="width:1px;height:20px;background:var(--border-soft);flex-shrink:0"></div>
+
+            <!-- Checklist -->
+            <button class="note-tool-btn" onclick="addChecklistItem();focusNewNote()" title="Adicionar checklist">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 11 12 14 22 4"/>
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+              </svg>
+            </button>
+
+            <!-- Imagem -->
+            <button class="note-tool-btn" onclick="document.getElementById('note-img-input').click()" title="Adicionar imagem">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </button>
+            <input type="file" id="note-img-input" accept="image/*" style="display:none" onchange="loadNoteImage(this)">
+
           </div>
 
-          <div id="note-new-img-preview" style="margin-top:10px"></div>
+          <!-- Linha 2: Meta + Ações primárias -->
+          <div class="note-toolbar-row note-toolbar-actions" id="note-new-actions" style="display:none">
+            <input id="note-new-tag" class="note-meta-input"
+              style="flex:1;min-width:70px;max-width:110px" placeholder="# tag"
+              onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">
+            <select id="note-new-folder" class="note-meta-input"
+              style="flex:1;min-width:80px;max-width:130px"
+              onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></select>
+            <div style="flex:1"></div>
+            <button class="note-cancel-btn" onclick="cancelNewNote()">Cancelar</button>
+            <button class="btn btn-primary btn-sm" onclick="saveNewNote()"
+              style="padding:8px 20px;font-size:13px;font-weight:700;min-height:36px">
+              ✓ Salvar
+            </button>
+          </div>
+
         </div>
       </div>
 
@@ -5602,8 +5665,7 @@ function selectModalColor(color, btn) {
 // ── Checklist ──
 function addChecklistItem() {
   newNoteChecklist.push({text:'', done:false});
-  document.getElementById('note-new-body').style.display = 'block';
-  document.getElementById('note-new-extra').style.display = 'block';
+  focusNewNote(); // garante que tudo está visível
   renderNewNoteChecklist(newNoteChecklist.length - 1);
 }
 
@@ -5764,9 +5826,14 @@ function loadModalImage(input) {
 
 // ── Quick-add ──
 function focusNewNote() {
-  document.getElementById('note-new-body').style.display = 'block';
-  document.getElementById('note-new-extra').style.display = 'block';
-  document.getElementById('note-new-title').focus();
+  var body     = document.getElementById('note-new-body');
+  var checklist= document.getElementById('note-new-checklist');
+  var actions  = document.getElementById('note-new-actions');
+  if (body)     body.style.display = 'block';
+  if (checklist)checklist.style.display = 'block';
+  if (actions)  actions.style.display = 'flex';
+  var title = document.getElementById('note-new-title');
+  if (title && document.activeElement !== title) title.focus();
 }
 
 function saveNewNote() {
@@ -5793,13 +5860,18 @@ function saveNewNote() {
 }
 
 function cancelNewNote() {
-  document.getElementById('note-new-title').value = '';
-  document.getElementById('note-new-body').value = '';
-  document.getElementById('note-new-body').style.display = 'none';
-  document.getElementById('note-new-extra').style.display = 'none';
-  document.getElementById('note-new-tag').value = '';
-  document.getElementById('note-new-checklist').innerHTML = '';
-  document.getElementById('note-new-img-preview').innerHTML = '';
+  var body      = document.getElementById('note-new-body');
+  var checklist = document.getElementById('note-new-checklist');
+  var actions   = document.getElementById('note-new-actions');
+  var tag       = document.getElementById('note-new-tag');
+  var title     = document.getElementById('note-new-title');
+  var preview   = document.getElementById('note-new-img-preview');
+  if (title)    title.value = '';
+  if (body)     { body.value = ''; body.style.display = 'none'; }
+  if (checklist){ checklist.innerHTML = ''; checklist.style.display = 'none'; }
+  if (actions)  actions.style.display = 'none';
+  if (tag)      tag.value = '';
+  if (preview)  preview.innerHTML = '';
   newNoteChecklist = [];
   newNoteImage = null;
   newNoteColor = 'default';
