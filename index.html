@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:#0A0A0F; --surface:#111118; --card:#16161E; --card-hover:#1C1C27;
+  --bg:#0A0A0F; --surface:#111118; --card:#1A1A24; --card-hover:#20202E;
   --border:#2A2A38; --border-soft:#1E1E2A;
   --text:#E4E4F0; --text-muted:#7878A0; --text-dim:#4A4A68;
   --violet:#7C3AED; --violet-light:#A78BFA; --violet-glow:rgba(124,58,237,0.18);
@@ -89,7 +89,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .modal-footer{padding:14px 20px;border-top:1px solid var(--border-soft);display:flex;gap:8px;justify-content:flex-end}
 
 /* ── FORM ── */
-.form-row{margin-bottom:14px}
+.form-row{margin-bottom:18px}
 .form-row label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin-bottom:6px}
 .form-input,.form-select,.form-textarea{width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-xs);padding:9px 12px;font-size:13px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border-color 0.15s}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--violet)}
@@ -120,8 +120,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .inbox-hint{font-size:11px;color:var(--text-dim)}
 
 /* backlog list */
-.backlog-list{display:flex;flex-direction:column;gap:6px}
-.backlog-item{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:11px 13px;display:flex;align-items:flex-start;gap:10px;transition:background 0.15s;position:relative}
+.backlog-list{display:flex;flex-direction:column;gap:12px}
+.backlog-item{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:16px 20px;display:flex;align-items:flex-start;gap:10px;transition:background-color 0.15s,color 0.15s,border-color 0.15s,opacity 0.15s,transform 0.15s;position:relative}
 .backlog-item:hover{background:var(--card-hover)}
 .item-text{flex:1;font-size:13px;color:var(--text);line-height:1.4;word-break:break-word}
 .item-meta{font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;white-space:nowrap;padding-top:2px}
@@ -223,8 +223,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 /* ═══════════════════════════
    FINANCEIRO
 ═══════════════════════════ */
-.fin-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px}
-.fin-card{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden}
+.fin-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px}
+.fin-card{background:var(--card);border:1px solid var(--border-soft);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.18)}
 .fin-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
 .fin-card.saldo::after{background:var(--green)}
 .fin-card.entrada::after{background:var(--cyan)}
@@ -291,16 +291,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 /* ═══════════════════════════
    LISTAS
 ═══════════════════════════ */
-.lists-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.lists-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:16px}
 .list-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden}
 .list-head{padding:12px 14px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:8px}
 .list-icon{width:26px;height:26px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;font-size:13px}
 .list-name{font-size:13px;font-weight:600;color:var(--text);flex:1}
 .list-count{font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
 .list-items{padding:6px 0}
-.list-item{display:flex;align-items:center;gap:5px;padding:6px 10px;transition:background 0.12s;user-select:none}
+.list-item{display:flex;align-items:center;gap:8px;padding:10px 14px;transition:background-color 0.15s;user-select:none;border-bottom:1px solid var(--border-soft)}
 .list-item:hover{background:var(--card)}
-.check-box{width:15px;height:15px;border:1.5px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;flex-shrink:0;margin-top:2px;justify-content:center;transition:background-color 0.12s,color 0.12s,border-color 0.12s,opacity 0.12s,transform 0.12s;font-size:9px}
+.check-box{width:22px;height:22px;min-width:22px;border:2px solid var(--border);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background-color 0.15s,color 0.15s,border-color 0.15s;font-size:12px}
 .list-item.done .check-box{background:var(--green);border-color:var(--green);color:#fff}
 .list-item-text{flex:1;font-size:13px;min-width:0;word-break:break-word;line-height:1.4;padding-top:1px}
 .list-item.done .list-item-text{color:var(--text-dim);text-decoration:line-through}
@@ -386,8 +386,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .folder-chip:hover{border-color:var(--violet);color:var(--violet-light)}
 .folder-chip.active{background:var(--violet-glow);border-color:var(--violet);color:var(--violet-light)}
 .notes-masonry{columns:3;column-gap:14px}
-.note-card{break-inside:avoid;margin-bottom:14px;border-radius:var(--radius);border:1px solid var(--border-soft);padding:14px;cursor:pointer;transition:background-color 0.15s,color 0.15s,border-color 0.15s,opacity 0.15s,transform 0.15s;position:relative;display:inline-block;width:100%}
-.note-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.35);border-color:var(--border)}
+.note-card{break-inside:avoid;margin-bottom:14px;border-radius:var(--radius);border:1px solid var(--border-soft);overflow:hidden;cursor:pointer;transition:background-color 0.15s,border-color 0.15s,box-shadow 0.2s,transform 0.15s;position:relative;display:inline-block;width:100%}
+.note-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.28);border-color:var(--border)}
 .note-card.pinned{border-top:2px solid var(--amber)}
 .note-card-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
 .note-title{font-size:13px;font-weight:600;color:var(--text);flex:1;line-height:1.4;word-break:break-word}
@@ -399,14 +399,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .note-checklist li{display:flex;align-items:flex-start;gap:7px;padding:3px 0;font-size:12px;color:var(--text-muted)}
 .note-checklist li.done{color:var(--text-dim);text-decoration:line-through}
 .note-checklist li input[type=checkbox]{accent-color:var(--violet);flex-shrink:0;margin-top:2px;cursor:pointer}
-.note-image{width:100%;border-radius:var(--radius-xs);margin-bottom:8px;object-fit:cover;max-height:160px;display:block}
+.note-image{width:100%;border-radius:0;object-fit:cover;max-height:180px;display:block;margin-bottom:0}
 .note-footer{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
 .note-tag{padding:2px 6px;border-radius:3px;font-size:10px;font-weight:700;background:var(--surface);border:1px solid var(--border-soft);color:var(--text-dim);cursor:pointer}
 .note-tag:hover{border-color:var(--violet);color:var(--violet-light)}
 .note-folder{font-size:10px;color:var(--text-dim);margin-left:auto;font-style:italic}
-.note-actions{display:none;position:absolute;bottom:10px;right:10px;gap:4px}
-.note-card:hover .note-actions{display:flex}
-.note-action-btn{width:26px;height:26px;border-radius:5px;border:none;background:var(--surface);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:background-color 0.12s,color 0.12s,border-color 0.12s,opacity 0.12s,transform 0.12s}
+.note-actions{display:flex;gap:4px;margin-top:10px;justify-content:flex-end;padding:0 2px}
+/* note-actions always visible */
+.note-action-btn{width:28px;height:28px;border-radius:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:background-color 0.15s,color 0.15s;flex-shrink:0}
 .note-action-btn:hover{background:var(--card-hover);color:var(--text)}
 .note-new-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:20px;cursor:text}
 .note-new-title{width:100%;background:transparent;border:none;outline:none;font-size:14px;font-weight:600;color:var(--text);font-family:'Inter',sans-serif;margin-bottom:6px}
@@ -950,7 +950,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .ind-footer{margin-top:10px;font-size:9px;color:var(--dim);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 
 /* ══ FASE 3 — COMPROMISSOS E LINHA DO TEMPO ══ */
-.comp-wrap{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.comp-wrap{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:14px 16px;margin-bottom:24px}
 .comp-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer}
 .comp-title{font-size:11px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .comp-badge{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.3);font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px}
@@ -969,7 +969,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .comp-total strong{color:var(--red);font-size:13px;font-weight:800}
 
 /* Linha do tempo */
-.tl-wrap{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.tl-wrap{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:14px 16px;margin-bottom:24px}
 .tl-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:0}
 .tl-title{font-size:11px;font-weight:700;color:var(--text)}
 .tl-grid{display:flex;flex-direction:column;gap:8px;margin-top:12px}
@@ -1047,7 +1047,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 
 /* ══ SELETOR DE STATUS INLINE ══ */
 .status-selector{display:inline-flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:2px}
-.status-opt{padding:2px 7px;border-radius:6px;font-size:9px;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:background-color .15s,color .15s,border-color .15s,opacity .15s,transform .15s;white-space:nowrap}
+.status-opt{padding:5px 9px;border-radius:6px;font-size:9px;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:background-color .15s,color .15s,border-color .15s,opacity .15s,transform .15s;white-space:nowrap}
 .status-opt:hover{color:var(--text)}
 .status-opt.active-pago    {background:rgba(16,185,129,.18);color:var(--green)}
 .status-opt.active-pendente{background:rgba(245,158,11,.18);color:var(--amber)}
@@ -1123,7 +1123,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .orc-detail-total{display:flex;justify-content:space-between;padding:8px 10px;border-top:1px solid var(--border-soft);margin-top:4px;font-size:11px;font-weight:700}
 
 /* ══ PAINEL SAÚDE FINANCEIRA ══ */
-.fin-saude{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.fin-saude{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:14px 16px;margin-bottom:24px}
 .fin-saude-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
 .fin-saude-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
 .fin-saude-card{background:var(--card);border-radius:8px;padding:10px 12px}
@@ -1191,6 +1191,134 @@ canvas{transform:translateZ(0)}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
+
+/* ── Backlog: botão opções ⋮ ── */
+.item-actions-wrap{position:relative;margin-top:8px}
+.item-opts-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:16px;font-weight:700;padding:2px 10px;line-height:1.4;transition:background-color 0.15s,color 0.15s,border-color 0.15s}
+.item-opts-btn:hover{background:var(--surface);color:var(--text);border-color:var(--violet)}
+.item-actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;padding:10px;background:var(--surface);border:1px solid var(--border-soft);border-radius:8px}
+
+/* ── Gmail bar header ── */
+#gmail-bar-toggle:hover{background:rgba(255,255,255,.03)}
+
+/* ── Listas: itens concluídos ── */
+.list-item.done{opacity:.45}
+.list-item.done .list-item-text{text-decoration:line-through;color:var(--muted)}
+.list-item:last-child{border-bottom:none}
+
+/* ── Listas: separador pendentes/concluídos ── */
+.list-done-divider{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);padding:8px 14px 4px;border-top:1px solid var(--border-soft);margin-top:2px}
+
+/* ── Listas: botão ⋮ opções ── */
+.list-item-opts-btn{background:none;border:1px solid transparent;border-radius:6px;color:var(--dim);cursor:pointer;font-size:18px;font-weight:700;padding:0 6px;line-height:1.4;flex-shrink:0;transition:background-color 0.15s,color 0.15s,border-color 0.15s;min-width:28px;text-align:center}
+.list-item-opts-btn:hover,.list-item-opts-btn.active{background:var(--surface);color:var(--text);border-color:var(--border)}
+.list-item-actions{display:none;gap:4px;flex-wrap:wrap;padding:6px 14px 8px;background:var(--surface);border-top:1px solid var(--border-soft)}
+.list-item-actions.open{display:flex}
+.list-item-actions .btn{font-size:11px;padding:4px 10px}
+
+/* ── Listas: footer com botão ── */
+.list-footer{padding:0;border-top:1px solid var(--border-soft);display:flex;align-items:center}
+.list-add-input{flex:1;background:transparent;border:none;outline:none;font-size:13px;color:var(--text-muted);font-family:'Inter',sans-serif;padding:11px 14px}
+.list-add-input::placeholder{color:var(--dim)}
+.list-add-btn{flex-shrink:0;width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:none;border:none;border-left:1px solid var(--border-soft);cursor:pointer;font-size:16px;color:var(--dim);transition:background-color 0.15s,color 0.15s}
+.list-add-btn:hover{background:rgba(124,58,237,.08);color:var(--violet-light)}
+
+/* ── Notas Keep-style ── */
+.note-card-content{padding:12px 14px 10px}
+.note-card .note-card-header{margin-bottom:6px}
+.note-card .note-footer{margin-top:6px}
+.note-card .note-actions{padding-top:4px;border-top:1px solid rgba(255,255,255,.06)}
+.note-card-img-wrap{width:100%;overflow:hidden}
+.note-card-img-wrap img{width:100%;object-fit:cover;max-height:180px;display:block}
+
+/* color-dot maior para touch */
+.color-dot{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform 0.12s,border-color 0.12s;flex-shrink:0}
+.color-dot:hover,.color-dot.active{border-color:rgba(255,255,255,.6);transform:scale(1.15)}
+
+/* note-new-card touch targets */
+.note-new-toolbar .btn{min-height:36px;padding:6px 12px}
+.notes-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);padding:4px 2px 8px}
+
+/* ── Financeiro: botão ⋮ nas ações ── */
+.fin-acts-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;font-size:18px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;transition:background-color 0.15s,color 0.15s,border-color 0.15s;flex-shrink:0;line-height:1}
+.fin-acts-btn:hover{background:var(--surface);color:var(--text);border-color:var(--violet)}
+.fin-acts-menu{display:none;gap:4px;align-items:center;margin-top:6px}
+.fin-acts-menu.open{display:flex}
+
+/* ── Financeiro: cartão de transação no mobile ── */
+@media(max-width:768px){
+  .fin-table thead{display:none}
+  .fin-table,
+  .fin-table tbody,
+  .fin-table tr,
+  .fin-table td{display:block;width:100%}
+  .fin-table tr{
+    background:var(--card);
+    border:1px solid var(--border-soft);
+    border-radius:12px;
+    margin-bottom:8px;
+    padding:0;
+    position:relative;
+    overflow:hidden;
+  }
+  .fin-table tr.tx-pendente{border-left:3px solid var(--amber)}
+  .fin-table tr.tx-parcela{border-left:3px solid var(--cyan)}
+  /* Layout do cartão: topo com desc+valor, baixo com meta+status */
+  .fin-table .col-desc{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    padding:12px 14px 6px;
+    border-bottom:none;
+  }
+  .fin-table .col-valor{
+    position:absolute;
+    top:12px;
+    right:14px;
+    text-align:right;
+    font-size:15px;
+    font-weight:800;
+    padding:0;
+  }
+  .fin-table .col-data,
+  .fin-table .col-forma{
+    display:inline-block;
+    width:auto;
+    padding:0 14px;
+    font-size:10px;
+    color:var(--muted);
+    border-bottom:none;
+  }
+  .fin-table .col-forma{padding-left:4px}
+  .fin-table .col-status{
+    padding:6px 14px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .fin-table .col-acts{
+    padding:8px 14px;
+    text-align:left;
+    width:100%;
+  }
+  .fin-table .col-desc .tx-nome{
+    font-size:13px;
+    font-weight:600;
+    padding-right:80px; /* espaço para o valor absoluto */
+  }
+}
+
+/* ── Modal financeiro: botão Registrar full-width no mobile ── */
+@media(max-width:768px){
+  #modal-fin .modal-footer{flex-direction:column;gap:8px}
+  #modal-fin .modal-footer .btn-primary{width:100%;justify-content:center;padding:14px;font-size:15px;font-weight:700}
+  #modal-fin .modal-footer .btn-ghost{width:100%;justify-content:center;padding:10px}
+  /* Tag btn maior */
+  #modal-fin [onclick="finTagConfirmBtn()"]{min-width:44px;min-height:44px;font-size:18px}
+}
+
+/* ── Graficos: mais respiro ── */
+#fin-graficos-wrap{margin-bottom:24px!important}
+.fin-cal{margin-bottom:24px}
+.fin-saude-grid{gap:12px}
 </style>
 
   <!-- PWA -->
@@ -1306,23 +1434,28 @@ canvas{transform:translateZ(0)}
         <div id="inbox-photo-preview" style="display:none;margin-top:10px;position:relative;display:inline-block"></div>
       </div>
       <!-- Gmail integration bar -->
-      <div id="gmail-bar" style="background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-muted)">
-          <svg viewBox="0 0 24 24" style="width:16px;height:16px;flex-shrink:0" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>
-          Gmail
+      <div id="gmail-bar" style="background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius-sm);margin-bottom:16px;overflow:hidden">
+        <!-- Header retrátil -->
+        <button onclick="toggleGmailBar()" style="width:100%;display:flex;align-items:center;gap:8px;padding:9px 14px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-family:inherit;text-align:left" id="gmail-bar-toggle">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;flex-shrink:0" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>
+          <span style="font-size:11px;font-weight:600">Integração Gmail</span>
+          <div id="gmail-status" style="font-size:10px;color:var(--text-dim);padding:2px 7px;border-radius:20px;border:1px solid var(--border);margin-left:4px">Desconectado</div>
+          <span id="gmail-bar-arrow" style="margin-left:auto;font-size:11px;color:var(--dim);transition:transform .2s">▼</span>
+        </button>
+        <!-- Corpo (oculto por padrão) -->
+        <div id="gmail-bar-body" style="display:none;padding:10px 14px 12px;border-top:1px solid var(--border-soft)">
+          <div id="gmail-label-wrap" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <input id="gmail-label-input" class="form-input" style="width:140px;font-size:12px;padding:5px 8px"
+              placeholder="Label (ex: painel)" value="painel">
+            <button class="btn btn-ghost btn-sm" onclick="gmailFetch()" id="gmail-fetch-btn" title="Buscar e-mails com esta label">
+              📩 Buscar e-mails
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="gmailToggleAuto()" id="gmail-auto-btn" title="Busca automática a cada 5 min">
+              ⏱ Auto: OFF
+            </button>
+          </div>
+          <div id="gmail-info" style="font-size:11px;color:var(--text-dim);margin-top:6px"></div>
         </div>
-        <div id="gmail-status" style="font-size:11px;color:var(--text-dim);padding:3px 8px;border-radius:20px;border:1px solid var(--border)">Desconectado</div>
-        <div id="gmail-label-wrap" style="display:flex;gap:6px;align-items:center;flex:1;flex-wrap:wrap">
-          <input id="gmail-label-input" class="form-input" style="width:140px;font-size:12px;padding:5px 8px"
-            placeholder="Label (ex: painel)" value="painel">
-          <button class="btn btn-ghost btn-sm" onclick="gmailFetch()" id="gmail-fetch-btn" title="Buscar e-mails com esta label">
-            📩 Buscar e-mails
-          </button>
-          <button class="btn btn-ghost btn-sm" onclick="gmailToggleAuto()" id="gmail-auto-btn" title="Busca automática a cada 5 min">
-            ⏱ Auto: OFF
-          </button>
-        </div>
-        <div id="gmail-info" style="font-size:11px;color:var(--text-dim)"></div>
       </div>
 
       <div class="section-header">
@@ -2269,13 +2402,17 @@ function renderBacklog() {
             (item.tags||[]).map(tg=>`<span onclick="setFilter('tag','${tg}');closeSearch()" style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700;background:var(--violet-glow);border:1px solid var(--violet);color:var(--violet-light);cursor:pointer">#${escHtml(tg)}</span>`).join('')+'</div>' : ''}
           ${item.priority && item.priority!=='normal' ? '<span style="font-size:10px;color:'+(item.priority==='urgente'?'var(--red)':'var(--amber)')+'">'+item.priority+'</span>' : ''}
         </div>
-        <div class="item-actions">
-          <button class="action-chip" onclick="editBacklog(${item.id})">✏️ Editar</button>
-          <button class="action-chip task"  onclick="openTaskModal(${item.id}, '${escJs(item.text)}')">→ Tarefa</button>
-          <button class="action-chip event" onclick="openEventModal(${item.id}, '${escJs(item.text)}')">→ Evento</button>
-          <button class="action-chip fin"   onclick="openFinModal(${item.id}, '${escJs(item.text)}')">→ Gasto</button>
-          <button class="action-chip list"  onclick="openListPick(${item.id}, '${escJs(item.text)}')">→ Lista</button>
-          <button class="action-chip del"   onclick="deleteBacklog(${item.id})">✕ Remover</button>
+        <div class="item-actions-wrap">
+          <button class="item-opts-btn" onclick="toggleBacklogOpts(${item.id}, event)" title="Opções" aria-label="Opções">⋮</button>
+          <div class="item-actions" id="opts-${item.id}" style="display:none">
+            <button class="action-chip" onclick="editBacklog(${item.id})">✏️ Editar</button>
+            <button class="action-chip task"  onclick="openTaskModal(${item.id}, '${escJs(item.text)}')">→ Tarefa</button>
+            <button class="action-chip event" onclick="openEventModal(${item.id}, '${escJs(item.text)}')">→ Evento</button>
+            <button class="action-chip fin"   onclick="openFinModal(${item.id}, '${escJs(item.text)}')">→ Gasto</button>
+            <button class="action-chip list"  onclick="openListPick(${item.id}, '${escJs(item.text)}')">→ Lista</button>
+            <button class="action-chip note"  onclick="openNoteFromBacklog(${item.id}, '${escJs(item.text)}')">→ Nota</button>
+            <button class="action-chip del"   onclick="deleteBacklog(${item.id})">✕ Remover</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2293,7 +2430,11 @@ function addToBacklog() {
 }
 
 function handleInboxKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addToBacklogFull(); }
+  // Desktop: Enter salva. Mobile: Enter apenas quebra linha (usuário usa botão Salvar)
+  if (e.key === 'Enter' && !e.shiftKey && window.innerWidth > 1024) {
+    e.preventDefault();
+    addToBacklogFull();
+  }
 }
 
 function deleteBacklog(id) {
@@ -3157,10 +3298,15 @@ function renderFinList() {
         </td>
         <td class="col-valor ${f.type==='entrada'?'pos':'neg'}">${f.type==='entrada'?'+':'-'}${fmtMoney(f.value)}</td>
         <td class="col-acts" onclick="event.stopPropagation()">
-          ${(f.status==='pendente'||f.status==='parcela')?`<button class="btn-lembrete${f.lembrete?' ativo':''}" onclick="toggleLembrete(${f.id})" title="${f.lembrete?'Lembrete ativo — clique para remover':'Ativar lembrete'}">🔔</button>`:''}
-          <button class="btn-act" onclick="finToBacklog(${f.id})" title="Backlog">↩</button>
-          <button class="btn-act" onclick="duplicateFinance(${f.id})" title="Duplicar" style="color:var(--cyan)">⎘</button>
-          <button class="btn-act btn-del" onclick="deleteFinance(${f.id})">✕</button>
+          <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
+            ${(f.status==='pendente'||f.status==='parcela')?`<button class="btn-lembrete${f.lembrete?' ativo':''}" onclick="toggleLembrete(${f.id})" title="${f.lembrete?'Lembrete ativo':'Ativar lembrete'}">🔔</button>`:''}
+            <button class="fin-acts-btn" onclick="finToggleOpts(${f.id},event)" title="Opções" aria-label="Opções">⋮</button>
+          </div>
+          <div class="fin-acts-menu" id="fin-opts-${f.id}">
+            <button class="btn-act" onclick="finToBacklog(${f.id})" title="Backlog">↩</button>
+            <button class="btn-act" onclick="duplicateFinance(${f.id})" title="Duplicar" style="color:var(--cyan)">⎘</button>
+            <button class="btn-act btn-del" onclick="deleteFinance(${f.id})">✕</button>
+          </div>
         </td>
       </tr>`).join('')
     : '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--dim);font-size:12px">Nenhum lançamento neste mês.</td></tr>';
@@ -3215,23 +3361,34 @@ function renderLists() {
         <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:11px;opacity:0.6" onclick="openTagsModal('${list.id}')" title="Gerenciar tags">🏷️</button>
       </div>
       <div class="list-items">
-        ${filteredListItems(list).map(item=>`
-          <div class="list-item${item.done?' done':''}">
-            <div style="display:flex;flex-direction:column;gap:1px;flex-shrink:0;margin-right:2px;opacity:0.4">
-              <button onclick="event.stopPropagation();moveListItem('${list.id}',${item.id},-1)" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:8px;padding:0 3px;line-height:1.2" title="Subir">▲</button>
-              <button onclick="event.stopPropagation();moveListItem('${list.id}',${item.id},1)"  style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:8px;padding:0 3px;line-height:1.2" title="Descer">▼</button>
-            </div>
-            <div class="check-box" onclick="toggleListItem('${list.id}',${item.id})">${item.done?'✓':''}</div>
-            <span class="list-item-text" onclick="toggleListItem('${list.id}',${item.id})">${escHtml(item.text)}</span>
-            ${item.tag?`<span class="list-item-tag" onclick="editListItem('${list.id}',${item.id})" style="cursor:pointer" title="Clique para editar">${escHtml(item.tag)}</span>`:`<span style="font-size:9px;color:var(--text-dim);cursor:pointer" onclick="editListItem('${list.id}',${item.id})" title="Adicionar tag">+tag</span>`}
-            <button class="btn btn-ghost btn-sm" style="padding:2px 4px;font-size:10px;flex-shrink:0;color:var(--text-dim)" onclick="event.stopPropagation();sendToBacklog('list-item',{listId:'${list.id}',itemId:${item.id}})" title="↩ Backlog">↩</button>
-            <button class="btn btn-ghost btn-sm" style="padding:2px 5px;font-size:10px;opacity:0.5;flex-shrink:0" onclick="event.stopPropagation();editListItem('${list.id}',${item.id})">✏️</button>
-            <button class="btn btn-danger btn-sm" style="padding:2px 5px;font-size:10px;flex-shrink:0" onclick="event.stopPropagation();deleteListItem('${list.id}',${item.id})">✕</button>
-          </div>`).join('')}
+        ${(()=>{
+          const pending = filteredListItems(list).filter(i=>!i.done);
+          const done    = filteredListItems(list).filter(i=>i.done);
+          const renderItem = (item) => `
+          <div class="list-item${item.done?' done':''}" id="li-wrap-${list.id}-${item.id}">
+            <div class="check-box" onclick="event.stopPropagation();toggleListItem('${list.id}',${item.id})">${item.done?'✓':''}</div>
+            <span class="list-item-text" onclick="event.stopPropagation();toggleListItem('${list.id}',${item.id})" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${escHtml(item.text)}</span>
+            ${item.tag?`<span class="list-item-tag" onclick="event.stopPropagation();editListItem('${list.id}',${item.id})" style="cursor:pointer" title="Editar">${escHtml(item.tag)}</span>`:''}
+            <button class="list-item-opts-btn" onclick="event.stopPropagation();toggleListItemOpts('${list.id}',${item.id})" title="Opções" aria-label="Opções">⋮</button>
+          </div>
+          <div class="list-item-actions" id="li-opts-${list.id}-${item.id}">
+            <button class="btn btn-ghost btn-sm" onclick="moveListItem('${list.id}',${item.id},-1)" title="Subir">▲ Subir</button>
+            <button class="btn btn-ghost btn-sm" onclick="moveListItem('${list.id}',${item.id},1)" title="Descer">▼ Descer</button>
+            <button class="btn btn-ghost btn-sm" onclick="editListItem('${list.id}',${item.id})">✏️ Editar</button>
+            <button class="btn btn-ghost btn-sm" onclick="sendToBacklog('list-item',{listId:'${list.id}',itemId:${item.id}})">↩ Backlog</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteListItem('${list.id}',${item.id})">✕ Excluir</button>
+          </div>`;
+          const html = pending.map(renderItem).join('');
+          const doneHtml = done.length
+            ? `<div class="list-done-divider">✓ Concluídos (${done.length})</div>` + done.map(renderItem).join('')
+            : '';
+          return html + doneHtml;
+        })()}
       </div>
       <div class="list-footer">
-        <input class="list-add-input" placeholder="+ Adicionar item…"
+        <input class="list-add-input" id="add-inp-${list.id}" placeholder="Adicionar item…"
           onkeydown="addListItem(event,'${list.id}',this)">
+        <button class="list-add-btn" onclick="addListItemBtn('${list.id}')" title="Adicionar">➕</button>
       </div>
     </div>`).join('');
 }
@@ -4903,22 +5060,24 @@ function renderNoteCard(n) {
     <div class="note-card${n.pinned?' pinned':''}"
       style="background:${c.bg};border-color:${c.border}"
       onclick="openNoteModal(${n.id})">
-      ${imgHtml}
-      <div class="note-card-header">
-        <div class="note-title">${escHtml(n.title||'')}</div>
-        <button class="note-pin" onclick="event.stopPropagation();toggleNotePin(${n.id})" title="${n.pinned?'Desafixar':'Fixar'}">📌</button>
-      </div>
-      ${checkHtml}
-      ${bodyHtml}
-      ${n.link?`<a href="${n.link}" target="_blank" rel="noopener noreferrer" class="note-link" onclick="event.stopPropagation()">🔗 ${n.link.replace(/^https?:\/\//,'').split('/')[0].replace(/^www\./,'')}</a>`:''}
-      <div class="note-footer">
-        ${tagsHtml}
-        ${n.folder?`<span class="note-folder">📁 ${escHtml(n.folder)}</span>`:''}
-      </div>
-      <div class="note-actions">
-        <button class="note-action-btn" onclick="event.stopPropagation();sendToBacklog('note',${n.id})" title="↩ Backlog" style="color:var(--violet-light)">↩</button>
-        <button class="note-action-btn" onclick="event.stopPropagation();duplicateNote(${n.id})" title="Duplicar">⧉</button>
-        <button class="note-action-btn" onclick="event.stopPropagation();deleteNote(${n.id})" title="Excluir" style="color:var(--red)">✕</button>
+      ${n.image ? `<div class="note-card-img-wrap"><img src="${n.image}" alt="imagem"></div>` : ''}
+      <div class="note-card-content">
+        <div class="note-card-header">
+          <div class="note-title">${escHtml(n.title||'')}</div>
+          <button class="note-pin" onclick="event.stopPropagation();toggleNotePin(${n.id})" title="${n.pinned?'Desafixar':'Fixar'}" style="opacity:${n.pinned?'1':'0.35'}">📌</button>
+        </div>
+        ${checkHtml}
+        ${bodyHtml}
+        ${n.link?`<a href="${n.link}" target="_blank" rel="noopener noreferrer" class="note-link" onclick="event.stopPropagation()">🔗 ${n.link.replace(/^https?:\/\//,'').split('/')[0].replace(/^www\./,'')}</a>`:''}
+        <div class="note-footer">
+          ${tagsHtml}
+          ${n.folder?`<span class="note-folder">📁 ${escHtml(n.folder)}</span>`:''}
+        </div>
+        <div class="note-actions">
+          <button class="note-action-btn" onclick="event.stopPropagation();sendToBacklog('note',${n.id})" title="↩ Backlog" style="color:var(--violet-light)">↩</button>
+          <button class="note-action-btn" onclick="event.stopPropagation();duplicateNote(${n.id})" title="Duplicar" style="color:var(--muted)">⧉</button>
+          <button class="note-action-btn" onclick="event.stopPropagation();deleteNote(${n.id})" title="Excluir" style="color:var(--red)">✕</button>
+        </div>
       </div>
     </div>`;
 }
@@ -5036,9 +5195,22 @@ function loadNoteImage(input) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    newNoteImage = e.target.result;
-    const preview = document.getElementById('note-new-img-preview');
-    if (preview) preview.innerHTML = `<img src="${newNoteImage}" style="max-height:120px;border-radius:6px;max-width:100%">`;
+    const img = new Image();
+    img.onload = function() {
+      const MAX = 500;
+      let w = img.width, h = img.height;
+      if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      newNoteImage = canvas.toDataURL('image/jpeg', 0.6);
+      const preview = document.getElementById('note-new-img-preview');
+      if (preview) preview.innerHTML = `<img src="${newNoteImage}" style="max-height:120px;border-radius:6px;max-width:100%;display:block">`;
+      const kb = Math.round(newNoteImage.length * 0.75 / 1024);
+      showToast('📷 Imagem comprimida (' + kb + 'KB)');
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -5048,9 +5220,22 @@ function loadModalImage(input) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    modalNoteImage = e.target.result;
-    const area = document.getElementById('mnote-img-area');
-    if (area) area.innerHTML = `<img src="${modalNoteImage}" style="max-height:160px;border-radius:6px;max-width:100%;display:block">`;
+    const img = new Image();
+    img.onload = function() {
+      const MAX = 500;
+      let w = img.width, h = img.height;
+      if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      modalNoteImage = canvas.toDataURL('image/jpeg', 0.6);
+      const area = document.getElementById('mnote-img-area');
+      if (area) area.innerHTML = `<img src="${modalNoteImage}" style="max-height:160px;border-radius:6px;max-width:100%;display:block">`;
+      const kb = Math.round(modalNoteImage.length * 0.75 / 1024);
+      showToast('📷 Imagem comprimida (' + kb + 'KB)');
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -13188,6 +13373,97 @@ function debounceRelRender() {
   if (_debRelRender) clearTimeout(_debRelRender);
   _debRelRender = setTimeout(finRelRender, 220);
 }
+
+// ── Backlog: toggle opções ⋮ ──
+function toggleBacklogOpts(id, e) {
+  if (e) e.stopPropagation();
+  var el = document.getElementById('opts-' + id);
+  if (!el) return;
+  var open = el.style.display !== 'none';
+  // Fecha todos os outros abertos
+  document.querySelectorAll('[id^="opts-"]').forEach(function(x){ x.style.display = 'none'; });
+  el.style.display = open ? 'none' : 'flex';
+}
+// Fecha ao clicar fora
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.item-actions-wrap')) {
+    document.querySelectorAll('[id^="opts-"]').forEach(function(x){ x.style.display='none'; });
+  }
+});
+
+// ── Gmail bar toggle ──
+function toggleGmailBar() {
+  var body  = document.getElementById('gmail-bar-body');
+  var arrow = document.getElementById('gmail-bar-arrow');
+  if (!body) return;
+  var open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  if (arrow) arrow.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function openNoteFromBacklog(originId, text) {
+  openNoteModal(null);
+  setTimeout(function() {
+    var titleEl = document.getElementById('mnote-title');
+    if (titleEl) titleEl.value = text || '';
+    // Remove o item do backlog ao salvar
+    var origSave = document.querySelector('#modal-note .btn-primary');
+    if (origSave) {
+      var _prev = origSave.onclick;
+      origSave.onclick = function() {
+        saveNoteModal();
+        removeFromBacklog(originId);
+      };
+    }
+  }, 50);
+}
+
+// ── Listas: toggle opções de item ──
+function toggleListItemOpts(listId, itemId) {
+  var optsId = 'li-opts-' + listId + '-' + itemId;
+  var el = document.getElementById(optsId);
+  if (!el) return;
+  var isOpen = el.classList.contains('open');
+  // Fecha todos os outros abertos desta lista
+  document.querySelectorAll('.list-item-actions.open').forEach(function(x){ x.classList.remove('open'); });
+  if (!isOpen) el.classList.add('open');
+}
+
+// Fecha ao clicar fora
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.list-item') && !e.target.closest('.list-item-actions')) {
+    document.querySelectorAll('.list-item-actions.open').forEach(function(x){ x.classList.remove('open'); });
+  }
+});
+
+// ── Listas: botão ➕ no footer ──
+function addListItemBtn(listId) {
+  var inp = document.getElementById('add-inp-' + listId);
+  if (!inp) return;
+  var text = inp.value.trim();
+  if (!text) { inp.focus(); return; }
+  var list = lists.find(function(l){ return l.id === listId; });
+  if (list) list.items.push({id: nextListItemId++, text: text, tag: '', done: false});
+  inp.value = '';
+  inp.focus();
+  lsSave(); scheduleSave();
+  renderLists();
+}
+
+// ── Financeiro: toggle opções de linha ──
+function finToggleOpts(id, e) {
+  if (e) e.stopPropagation();
+  var el = document.getElementById('fin-opts-' + id);
+  if (!el) return;
+  var isOpen = el.classList.contains('open');
+  document.querySelectorAll('.fin-acts-menu.open').forEach(function(x){ x.classList.remove('open'); });
+  if (!isOpen) el.classList.add('open');
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.col-acts')) {
+    document.querySelectorAll('.fin-acts-menu.open').forEach(function(x){ x.classList.remove('open'); });
+  }
+});
 
 document.addEventListener('DOMContentLoaded', function() {
   ensureDefaultCategories();
