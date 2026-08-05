@@ -5621,6 +5621,7 @@ function deleteNote(id) {
   if (!confirm('Excluir esta nota?')) return;
   notes = notes.filter(n => n.id !== id);
   lsSave();
+  scheduleSave();
   renderNotes();
   showToast('🗑️ Nota excluída');
 }
@@ -5837,12 +5838,11 @@ function focusNewNote() {
 }
 
 function saveNewNote() {
-  lsSave();
   const title = document.getElementById('note-new-title').value.trim();
   const body  = document.getElementById('note-new-body').value.trim();
   const tag   = document.getElementById('note-new-tag').value.trim();
   const folder= document.getElementById('note-new-folder').value;
-  if (!title && !body && !newNoteChecklist.length) { cancelNewNote(); return; }
+  if (!title && !body && !newNoteChecklist.length && !newNoteImage) { cancelNewNote(); return; }
   notes.unshift({
     id: nextNoteId++,
     title, body,
@@ -5851,11 +5851,14 @@ function saveNewNote() {
     folder: folder || '',
     pinned: false,
     checklist: [...newNoteChecklist],
-    image: newNoteImage,
+    image: newNoteImage || null,
+    link: '',
     created: Date.now(),
   });
   cancelNewNote();
   renderNotes();
+  lsSave();
+  scheduleSave();           // ← sincroniza com o Firebase
   showToast('📝 Nota salva');
 }
 
@@ -5948,8 +5951,6 @@ function closeNoteModal() {
 }
 
 function saveNoteModal() {
-  lsSave();
-  scheduleSave();
   const title  = document.getElementById('mnote-title').value.trim();
   const body   = document.getElementById('mnote-body').value.trim();
   const tagRaw = document.getElementById('mnote-tag').value.trim();
@@ -5957,6 +5958,7 @@ function saveNoteModal() {
   const tags   = tagRaw ? tagRaw.split(/[,\s]+/).filter(Boolean).map(t=>t.replace(/^#/,'')) : [];
   const link   = document.getElementById('mnote-link').value.trim();
 
+  const wasNew = (currentNoteId === null);
   if (currentNoteId !== null) {
     // Edit existing
     const n = notes.find(x => x.id === currentNoteId);
@@ -5964,7 +5966,9 @@ function saveNoteModal() {
       n.title = title; n.body = body; n.tags = tags; n.folder = folder;
       n.pinned = modalNotePin; n.color = modalNoteColor;
       n.checklist = JSON.parse(JSON.stringify(modalNoteChecklist));
-      n.image = modalNoteImage; n.link = link;
+      n.image = modalNoteImage || null;   // preserva URL do Storage ou base64
+      n.link = link;
+      n.updatedAt = Date.now();
     }
   } else {
     // New
@@ -5972,13 +5976,16 @@ function saveNoteModal() {
       id: nextNoteId++, title, body, tags, folder, link,
       pinned: modalNotePin, color: modalNoteColor,
       checklist: JSON.parse(JSON.stringify(modalNoteChecklist)),
-      image: modalNoteImage, created: Date.now(),
+      image: modalNoteImage || null,      // URL do Storage ou base64 ou null
+      created: Date.now(),
     });
   }
 
   closeNoteModal();
   renderNotes();
-  showToast(currentNoteId !== null ? '✏️ Nota atualizada' : '📝 Nota criada');
+  lsSave();          // salva localmente com os dados já atualizados
+  scheduleSave();    // envia para o Firebase com os dados já atualizados
+  showToast(wasNew ? '📝 Nota criada' : '✏️ Nota atualizada');
 }
 
 // ── Folders management ──
@@ -7007,7 +7014,13 @@ async function fbCloudSave() {
     const ok = await fbInit();
     if (!ok) throw new Error('Firebase não inicializado');
     const notesClean = (typeof notes !== 'undefined' ? notes : []).map(function(n) {
-      return n.image ? Object.assign({}, n, {image: '__local__'}) : n;
+      if (!n.image) return n;
+      // URL do Storage: envia direto (curta, cross-device)
+      if (n.image.startsWith('http')) return n;
+      // Base64 local: envia até 200KB (evita estourar o doc do Firestore ~1MB)
+      if (n.image.length < 200000) return n;
+      // Base64 muito grande: omite do Firestore (fica só no localStorage)
+      return Object.assign({}, n, {image: '__local__'});
     });
     const payload = {
       savedAt: new Date().toISOString(),
@@ -7219,9 +7232,15 @@ async function fbCloudLoad(forceLoad) {
       var localNotes = [];
       try { localNotes = JSON.parse(localStorage.getItem("painel_dados_v1")||"{}").notes||[]; } catch(_){}
       notes = d.notes.map(function(n){
-        if (n.image === "__local__") {
+        if (!n.image) return n;
+        // URL do Storage (https://...): usa diretamente em qualquer device
+        if (n.image.startsWith('http')) return n;
+        // Base64 completo: usa direto
+        if (n.image.startsWith('data:image')) return n;
+        // '__local__': tenta recuperar do localStorage deste device
+        if (n.image === '__local__') {
           var ln = localNotes.find(function(x){ return x.id === n.id; });
-          return ln ? Object.assign({},n,{image:ln.image}) : Object.assign({},n,{image:null});
+          return ln && ln.image ? Object.assign({},n,{image:ln.image}) : Object.assign({},n,{image:null});
         }
         return n;
       });
