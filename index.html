@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<script>
+  (function(){
+    var t = localStorage.getItem('painel_theme');
+    if (t === 'light') document.documentElement.classList.add('light-theme-pre');
+  })();
+</script>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
@@ -17,6 +23,193 @@
   --green:#10B981; --red:#EF4444; --blue:#3B82F6; --cyan:#06B6D4;
   --sidebar-w:68px; --topbar-h:56px; --bottom-h:60px;
   --radius:12px; --radius-sm:8px; --radius-xs:6px;
+
+/* ══════════════════════════════
+   LIGHT THEME
+══════════════════════════════ */
+body.light-theme,
+html.light-theme-pre body {
+  --bg:      #F3F4F6;
+  --surface: #FFFFFF;
+  --card:    #FFFFFF;
+  --card-hover: #F9FAFB;
+
+  --border:      #D1D5DB;
+  --border-soft: #E5E7EB;
+
+  --text:       #111827;
+  --text-muted: #6B7280;  /* alias → --muted */
+  --muted:      #6B7280;
+  --text-dim:   #9CA3AF;
+  --dim:        #9CA3AF;
+
+  /* Acents mantidos — apenas ajuste de glow */
+  --violet-glow: rgba(124,58,237,0.10);
+
+  /* Sidebar e topbar */
+  color-scheme: light;
+}
+
+/* Sidebar no light */
+body.light-theme .sidebar,
+html.light-theme-pre body .sidebar {
+  background: #FFFFFF;
+  border-right: 1px solid #E5E7EB;
+}
+body.light-theme .nav-btn,
+html.light-theme-pre body .nav-btn {
+  color: #6B7280;
+}
+body.light-theme .nav-btn:hover,
+body.light-theme .nav-btn.active,
+html.light-theme-pre body .nav-btn:hover,
+html.light-theme-pre body .nav-btn.active {
+  background: rgba(124,58,237,0.08);
+  color: #7C3AED;
+}
+
+/* Topbar no light */
+body.light-theme .topbar,
+html.light-theme-pre body .topbar {
+  background: #FFFFFF;
+  border-bottom: 1px solid #E5E7EB;
+}
+body.light-theme .topbar-title,
+html.light-theme-pre body .topbar-title { color: #111827; }
+body.light-theme .topbar-sub,
+html.light-theme-pre body .topbar-sub   { color: #6B7280; }
+
+/* Bottom nav light */
+body.light-theme .bottom-nav,
+html.light-theme-pre body .bottom-nav {
+  background: #FFFFFF;
+  border-top: 1px solid #E5E7EB;
+}
+body.light-theme .bnav-btn,
+html.light-theme-pre body .bnav-btn { color: #6B7280; }
+body.light-theme .bnav-btn.active,
+html.light-theme-pre body .bnav-btn.active { color: #7C3AED; }
+
+/* Modais no light */
+body.light-theme .modal,
+html.light-theme-pre body .modal {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+}
+body.light-theme .modal-overlay,
+html.light-theme-pre body .modal-overlay {
+  background: rgba(0,0,0,0.35);
+}
+
+/* Inputs e selects */
+body.light-theme .form-input,
+body.light-theme .form-select,
+body.light-theme .form-textarea,
+html.light-theme-pre body .form-input,
+html.light-theme-pre body .form-select,
+html.light-theme-pre body .form-textarea {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+  color: #111827;
+}
+body.light-theme .form-input:focus,
+body.light-theme .form-select:focus,
+html.light-theme-pre body .form-input:focus,
+html.light-theme-pre body .form-select:focus {
+  border-color: #7C3AED;
+  background: #FFFFFF;
+}
+
+/* Botões ghost */
+body.light-theme .btn-ghost,
+html.light-theme-pre body .btn-ghost {
+  border-color: #D1D5DB;
+  color: #374151;
+}
+body.light-theme .btn-ghost:hover,
+html.light-theme-pre body .btn-ghost:hover {
+  background: #F3F4F6;
+  color: #111827;
+}
+
+/* Kanban cards */
+body.light-theme .k-card,
+html.light-theme-pre body .k-card {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* Fin cards saldo */
+body.light-theme .fin-card,
+html.light-theme-pre body .fin-card {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+
+/* Search overlay */
+body.light-theme .search-overlay,
+html.light-theme-pre body .search-overlay {
+  background: rgba(0,0,0,0.3);
+}
+body.light-theme #search-box,
+html.light-theme-pre body #search-box {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+}
+
+/* Calendário */
+body.light-theme .cal-cell,
+html.light-theme-pre body .cal-cell {
+  background: #FFFFFF;
+}
+body.light-theme .cal-cell.today,
+html.light-theme-pre body .cal-cell.today {
+  background: rgba(124,58,237,0.06);
+}
+
+/* Scrollbar light */
+body.light-theme ::-webkit-scrollbar-track,
+html.light-theme-pre body ::-webkit-scrollbar-track { background: #F3F4F6; }
+body.light-theme ::-webkit-scrollbar-thumb,
+html.light-theme-pre body ::-webkit-scrollbar-thumb { background: #D1D5DB; }
+body.light-theme ::-webkit-scrollbar-thumb:hover,
+html.light-theme-pre body ::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+/* Botão de theme na sidebar */
+.theme-toggle-btn {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+.theme-toggle-btn:hover {
+  background: var(--card-hover);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+/* Botão theme no topbar (mobile) */
+.theme-toggle-topbar {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border-soft);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  transition: background-color 0.15s, color 0.15s;
+}
+.theme-toggle-topbar:hover {
+  background: var(--card-hover);
+  color: var(--text);
+}
 }
 /* Safe viewport height para tablets */
 :root{--app-h:100vh}
@@ -50,7 +243,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .topbar-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
 
 /* ── BOTTOM NAV (mobile) ── */
-.bottom-nav{display:none;height:var(--bottom-h);background:var(--surface);border-top:1px solid var(--border-soft);align-items:center;justify-content:space-around;padding:0;flex-shrink:0;z-index:100;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.bottom-nav{display:none;height:var(--bottom-h);background:var(--surface);border-top:1px solid var(--border-soft);align-items:center;justify-content:space-around;padding:0;flex-shrink:0;z-index:200;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .bnav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 8px;border:none;background:transparent;color:var(--text-dim);cursor:pointer;border-radius:var(--radius-sm);transition:background-color 0.15s,color 0.15s,border-color 0.15s,opacity 0.15s,transform 0.15s;font-size:18px;position:relative;flex-shrink:0;min-width:60px}
 .bnav-btn span{font-size:9px;font-weight:600;letter-spacing:0.03em;text-transform:uppercase}
 .bnav-btn.active{color:var(--violet-light);background:var(--violet-glow)}
@@ -388,10 +581,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .notes-masonry{columns:3;column-gap:14px}
 .note-card{break-inside:avoid;margin-bottom:14px;border-radius:var(--radius);border:1px solid var(--border-soft);overflow:hidden;cursor:pointer;transition:background-color 0.15s,border-color 0.15s,box-shadow 0.2s,transform 0.15s;position:relative;display:inline-block;width:100%}
 .note-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.28);border-color:var(--border)}
-.note-card.pinned{border-top:2px solid var(--amber)}
+.note-card.pinned{/* indicação de fixado apenas via ícone */}
 .note-card-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
-.note-title{font-size:13px;font-weight:600;color:var(--text);flex:1;line-height:1.4;word-break:break-word}
-.note-pin{font-size:14px;cursor:pointer;opacity:0.5;transition:opacity 0.12s;flex-shrink:0;background:none;border:none;color:var(--amber);padding:0}
+.note-title{font-size:13px;font-weight:700;color:var(--text);flex:1;line-height:1.45;word-break:break-word;letter-spacing:-.01em}
+.note-pin{font-size:14px;cursor:pointer;opacity:0.5;transition:opacity 0.12s;flex-shrink:0;background:none;border:none;color:var(--amber);padding:0;outline:none}
 .note-pin:hover,.note-card.pinned .note-pin{opacity:1}
 .note-body{font-size:12px;color:var(--text-muted);line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:200px;overflow:hidden;mask-image:linear-gradient(to bottom,black 80%,transparent 100%)}
 .note-body.expanded{max-height:none;mask-image:none}
@@ -400,21 +593,21 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .note-checklist li.done{color:var(--text-dim);text-decoration:line-through}
 .note-checklist li input[type=checkbox]{accent-color:var(--violet);flex-shrink:0;margin-top:2px;cursor:pointer}
 .note-image{width:100%;border-radius:0;object-fit:cover;max-height:180px;display:block;margin-bottom:0}
-.note-footer{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
-.note-tag{padding:2px 6px;border-radius:3px;font-size:10px;font-weight:700;background:var(--surface);border:1px solid var(--border-soft);color:var(--text-dim);cursor:pointer}
+.note-footer{display:flex;align-items:center;gap:5px;margin-top:8px;flex-wrap:wrap}
+.note-tag{padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;background:var(--surface);color:var(--muted);cursor:pointer;transition:background-color 0.15s,color 0.15s;border:none}
 .note-tag:hover{border-color:var(--violet);color:var(--violet-light)}
 .note-folder{font-size:10px;color:var(--text-dim);margin-left:auto;font-style:italic}
 .note-actions{display:flex;gap:4px;margin-top:10px;justify-content:flex-end;padding:0 2px}
 /* note-actions always visible */
 .note-action-btn{width:28px;height:28px;border-radius:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:background-color 0.15s,color 0.15s;flex-shrink:0}
 .note-action-btn:hover{background:var(--card-hover);color:var(--text)}
-.note-new-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:20px;cursor:text}
+.note-new-card{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius);padding:20px 22px 16px;margin-bottom:24px;cursor:text;box-shadow:0 1px 4px rgba(0,0,0,.12);transition:box-shadow 0.2s,border-color 0.2s}
 .note-new-title{width:100%;background:transparent;border:none;outline:none;font-size:14px;font-weight:600;color:var(--text);font-family:'Inter',sans-serif;margin-bottom:6px}
 .note-new-title::placeholder{color:var(--text-dim)}
 .note-new-body{width:100%;background:transparent;border:none;outline:none;font-size:13px;color:var(--text-muted);font-family:'Inter',sans-serif;resize:none;min-height:40px;line-height:1.5}
 .note-new-body::placeholder{color:var(--text-dim)}
-.note-new-toolbar{display:flex;align-items:center;gap:6px;margin-top:10px;border-top:1px solid var(--border-soft);padding-top:10px;flex-wrap:wrap}
-.color-dot{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform 0.12s;flex-shrink:0}
+.note-new-toolbar{display:flex;align-items:center;gap:8px;margin-top:14px;border-top:1px solid var(--border-soft);padding-top:12px;flex-wrap:wrap;justify-content:space-between}
+.color-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform 0.15s,border-color 0.15s;flex-shrink:0;touch-action:manipulation}
 .color-dot:hover,.color-dot.active{transform:scale(1.25);border-color:rgba(255,255,255,0.5)}
 .pinned-section{margin-bottom:4px}
 .notes-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-dim);margin-bottom:10px;padding-left:2px}
@@ -564,7 +757,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 
 @media(max-width:1024px){
   .sidebar{display:none}
-  .bottom-nav{display:flex}
+  .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0}
+  .content{padding-bottom:calc(var(--bottom-h) + 12px)}
   body{flex-direction:column}
   .app-shell{flex-direction:row}
   .topbar{padding:0 14px}
@@ -1224,7 +1418,7 @@ canvas{transform:translateZ(0)}
 .list-add-btn:hover{background:rgba(124,58,237,.08);color:var(--violet-light)}
 
 /* ── Notas Keep-style ── */
-.note-card-content{padding:12px 14px 10px}
+.note-card-content{padding:12px 16px 10px}
 .note-card .note-card-header{margin-bottom:6px}
 .note-card .note-footer{margin-top:6px}
 .note-card .note-actions{padding-top:4px;border-top:1px solid rgba(255,255,255,.06)}
@@ -1313,6 +1507,115 @@ canvas{transform:translateZ(0)}
     justify-content:center;
   }
 }
+
+/* ── note-new-card focus ── */
+.note-new-card:focus-within{
+  border-color:var(--border);
+  box-shadow:0 2px 12px rgba(0,0,0,.18);
+}
+
+/* ── Toolbar: grupo de cores ── */
+.note-color-group{
+  display:flex;gap:6px;align-items:center;
+  background:var(--surface);
+  border-radius:20px;
+  padding:4px 8px;
+}
+
+/* ── Toolbar: botões ícone (sem texto) ── */
+.note-tool-btn{
+  width:32px;height:32px;
+  border-radius:8px;
+  border:none;
+  background:transparent;
+  color:var(--muted);
+  cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:16px;
+  transition:background-color 0.15s,color 0.15s;
+  flex-shrink:0;
+  touch-action:manipulation;
+}
+.note-tool-btn:hover{
+  background:var(--card-hover);
+  color:var(--text);
+}
+
+/* ── Tag e Pasta ── */
+.note-meta-input{
+  background:var(--surface);
+  border:1px solid transparent;
+  border-radius:20px;
+  font-size:11px;
+  padding:5px 11px;
+  color:var(--text-muted);
+  font-family:'Inter',sans-serif;
+  outline:none;
+  transition:border-color 0.15s,background 0.15s;
+  cursor:pointer;
+}
+.note-meta-input::placeholder{color:var(--dim)}
+.note-meta-input:focus,.note-meta-input:hover{
+  border-color:var(--border);
+  background:var(--card);
+  color:var(--text);
+}
+
+/* ── Toolbar: grupo direito (meta+ações) ── */
+.note-toolbar-right{
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+}
+
+/* ── Botão Cancelar fantasma ── */
+.note-cancel-btn{
+  background:none;
+  border:none;
+  color:var(--muted);
+  font-size:12px;
+  cursor:pointer;
+  padding:6px 8px;
+  border-radius:6px;
+  font-family:'Inter',sans-serif;
+  transition:color 0.15s;
+}
+.note-cancel-btn:hover{color:var(--text)}
+
+/* ── Placeholder title maior ── */
+.note-new-title::placeholder{color:var(--dim);font-weight:400}
+.note-new-body::placeholder{color:var(--dim)}
+
+/* ── Notas: dot de cor no QA → cores vivas ── */
+#note-new-card .color-dot[style*="background:#3B82F6"],.color-dot[onclick*="blue"] {background:#3B82F6!important}
+#note-new-card .color-dot[style*="background:#F59E0B"],.color-dot[onclick*="amber"]{background:#F59E0B!important}
+#note-new-card .color-dot[style*="background:#10B981"],.color-dot[onclick*="green"]{background:#10B981!important}
+#note-new-card .color-dot[style*="background:#F43F5E"],.color-dot[onclick*="rose"] {background:#F43F5E!important}
+#note-new-card .color-dot[style*="background:#8B5CF6"],.color-dot[onclick*="violet"]{background:#8B5CF6!important}
+
+/* ── Linha lateral: ajuste do layout quando tem accent ── */
+.note-card[style*="border-left:4px"]{
+  padding-left:0;
+}
+.note-card[style*="border-left:4px"] .note-card-content{
+  padding-left:14px;
+}
+
+/* ── note-tag hover ── */
+.note-tag:hover{background:var(--card-hover);color:var(--text)}
+
+/* ── note-actions: botões levemente maiores ── */
+.note-action-btn{width:30px;height:30px;border-radius:7px;border:none;background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background-color 0.15s,color 0.15s;flex-shrink:0}
+.note-action-btn:hover{background:var(--surface);color:var(--text)}
+
+/* ── note-actions: separador top ── */
+.note-actions{border-top:1px solid var(--border-soft);padding-top:6px;margin-top:8px}
+
+/* ── light theme: cards com sombra mais evidente ── */
+body.light-theme .note-card,html.light-theme-pre body .note-card{
+  box-shadow:0 1px 6px rgba(0,0,0,.07);
+}
+body.light-theme .note-card:hover,html.light-theme-pre body .note-card:hover{
+  box-shadow:0 3px 14px rgba(0,0,0,.11);
+}
 </style>
 
   <!-- PWA -->
@@ -1381,6 +1684,7 @@ canvas{transform:translateZ(0)}
   </div>
   <div class="sidebar-bottom">
     <button class="nav-btn" title="Configurações" onclick="openSettingsModal()"><span class="ico" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span></button>
+    <button class="theme-toggle-btn" id="theme-btn-sidebar" onclick="toggleTheme()" title="Alternar tema"></button>
     <div class="avatar">F</div>
   </div>
 </nav>
@@ -1391,6 +1695,7 @@ canvas{transform:translateZ(0)}
     <span class="topbar-title" id="topbar-title">Inbox</span>
     <span class="topbar-sub" id="topbar-sub">— captura rápida</span>
     <div class="topbar-actions">
+      <button class="theme-toggle-topbar" id="theme-btn-topbar" onclick="toggleTheme()" title="Alternar tema"></button>
       <button class="btn btn-ghost btn-sm" id="search-toggle-btn" onclick="toggleSearch()" title="Buscar (/)"><span class="ico" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span></button>
       <button class="btn btn-ghost btn-sm" id="filter-toggle-btn" onclick="toggleFilterPanel()"><span class="ico" style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg></span><span class="filter-label"> Filtrar</span></button>
 <button class="cloud-btn off" id="cloud-btn" onclick="openCloudModal()" title="Sincronização na nuvem">☁️ <span id="cloud-text">Nuvem</span></button>
@@ -1524,7 +1829,7 @@ canvas{transform:translateZ(0)}
 
       <div id="fin-area-lancamentos">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;flex-wrap:wrap;gap:8px 8px">
           <button class="btn btn-ghost btn-sm" onclick="openFinModal(null,null)">+ Lançamento</button>
           <button class="btn btn-ghost btn-sm" onclick="openFinParcelado(null)" style="color:var(--cyan);border-color:rgba(6,182,212,.3)">⊞ Parcelado</button>
           <button class="btn btn-ghost btn-sm" onclick="openRecorrentes()" style="color:var(--green);border-color:rgba(16,185,129,.3)">↻ Recorrentes</button>
@@ -1725,33 +2030,68 @@ canvas{transform:translateZ(0)}
     <!-- ═══ NOTAS ═══ -->
     <div class="view" id="view-notes">
       <!-- Quick-add card -->
-      <div class="note-new-card" id="note-new-card" onclick="focusNewNote()">
-        <input class="note-new-title" id="note-new-title" placeholder="Título" onkeydown="if(event.key==='Enter'){document.getElementById('note-new-body').focus()}">
-        <textarea class="note-new-body" id="note-new-body" rows="2" placeholder="Escreva uma nota…" style="display:none"></textarea>
+      <div class="note-new-card" id="note-new-card" onclick="if(document.getElementById('note-new-extra').style.display==='none')focusNewNote()">
+        <input class="note-new-title" id="note-new-title" placeholder="Título da nota…"
+          onclick="event.stopPropagation()"
+          onmousedown="event.stopPropagation()"
+          onkeydown="event.stopPropagation();if(event.key==='Enter'){document.getElementById('note-new-body').focus()}">
+        <textarea class="note-new-body" id="note-new-body" rows="3"
+          placeholder="Escreva aqui…" style="display:none"
+          onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></textarea>
+
         <div id="note-new-extra" style="display:none">
-          <div id="note-new-checklist" style="margin:6px 0"></div>
-          <div class="note-new-toolbar">
-            <div style="display:flex;gap:5px;align-items:center">
-              <!-- color dots -->
-              <button class="color-dot active" id="ndot-default" style="background:var(--card)" onclick="selectNoteColor('default',this)" title="Padrão"></button>
-              <button class="color-dot" style="background:#1e3a5f" onclick="selectNoteColor('blue',this)" title="Azul"></button>
-              <button class="color-dot" style="background:#3d2a00" onclick="selectNoteColor('amber',this)" title="Âmbar"></button>
-              <button class="color-dot" style="background:#1a3d2b" onclick="selectNoteColor('green',this)" title="Verde"></button>
-              <button class="color-dot" style="background:#3d1a2b" onclick="selectNoteColor('rose',this)" title="Rosa"></button>
-              <button class="color-dot" style="background:#2a1a3d" onclick="selectNoteColor('violet',this)" title="Violeta"></button>
+          <div id="note-new-checklist" style="margin:8px 0" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></div>
+
+          <div class="note-new-toolbar" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">
+            <!-- Esquerda: cores + ferramentas -->
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+
+              <!-- Grupo de cores -->
+              <div class="note-color-group">
+                <button class="color-dot active" id="ndot-default"
+                  style="background:var(--border)" onclick="selectNoteColor('default',this)" title="Padrão"></button>
+                <button class="color-dot" style="background:#3B82F6"
+                  onclick="selectNoteColor('blue',this)" title="Azul"></button>
+                <button class="color-dot" style="background:#F59E0B"
+                  onclick="selectNoteColor('amber',this)" title="Âmbar"></button>
+                <button class="color-dot" style="background:#10B981"
+                  onclick="selectNoteColor('green',this)" title="Verde"></button>
+                <button class="color-dot" style="background:#F43F5E"
+                  onclick="selectNoteColor('rose',this)" title="Rosa"></button>
+                <button class="color-dot" style="background:#8B5CF6"
+                  onclick="selectNoteColor('violet',this)" title="Violeta"></button>
+              </div>
+
+              <!-- Separador -->
+              <div style="width:1px;height:18px;background:var(--border-soft)"></div>
+
+              <!-- Checklist -->
+              <button class="note-tool-btn" onclick="addChecklistItem()" title="Checklist">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                </svg>
+              </button>
+
+              <!-- Imagem -->
+              <button class="note-tool-btn" onclick="document.getElementById('note-img-input').click()" title="Imagem">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+              </button>
+              <input type="file" id="note-img-input" accept="image/*" style="display:none" onchange="loadNoteImage(this)">
             </div>
-            <div style="width:1px;height:16px;background:var(--border)"></div>
-            <button class="btn btn-ghost btn-sm" onclick="addChecklistItem()" title="Adicionar item de checklist">☑ Checklist</button>
-            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('note-img-input').click()" title="Adicionar imagem">🖼 Imagem</button>
-            <input type="file" id="note-img-input" accept="image/*" style="display:none" onchange="loadNoteImage(this)">
-            <div style="display:flex;gap:4px;align-items:center;margin-left:auto">
-              <input id="note-new-tag" class="form-input" style="width:100px;font-size:11px;padding:4px 7px" placeholder="#tag">
-              <select id="note-new-folder" class="form-select" style="font-size:11px;padding:4px 7px;width:110px"></select>
+
+            <!-- Direita: meta + ações -->
+            <div class="note-toolbar-right">
+              <input id="note-new-tag" class="note-meta-input" style="width:88px" placeholder="# tag">
+              <select id="note-new-folder" class="note-meta-input" style="width:110px"></select>
+              <button class="note-cancel-btn" onclick="cancelNewNote()">Cancelar</button>
+              <button class="btn btn-primary btn-sm" onclick="saveNewNote()" style="padding:7px 18px">Salvar</button>
             </div>
-            <button class="btn btn-primary btn-sm" onclick="saveNewNote()">Salvar</button>
-            <button class="btn btn-ghost btn-sm" onclick="cancelNewNote()">Cancelar</button>
           </div>
-          <div id="note-new-img-preview" style="margin-top:8px"></div>
+
+          <div id="note-new-img-preview" style="margin-top:10px"></div>
         </div>
       </div>
 
@@ -4938,12 +5278,12 @@ gcalSetStatus = function(state, text) {
 //  NOTAS (Keep-style)
 // ══════════════════════════════════════════
 const NOTE_COLORS = {
-  default: {bg:'var(--card)',       border:'var(--border-soft)'},
-  blue:    {bg:'#1e3a5f',           border:'#2a4f7a'},
-  amber:   {bg:'#3d2a00',           border:'#5a4000'},
-  green:   {bg:'#1a3d2b',           border:'#255a3f'},
-  rose:    {bg:'#3d1a2b',           border:'#5a2540'},
-  violet:  {bg:'#2a1a3d',           border:'#3d2a5a'},
+  default: {bg:'var(--card)', border:'var(--border-soft)', accent:'transparent'},
+  blue:    {bg:'var(--card)', border:'var(--border-soft)', accent:'#3B82F6'},
+  amber:   {bg:'var(--card)', border:'var(--border-soft)', accent:'#F59E0B'},
+  green:   {bg:'var(--card)', border:'var(--border-soft)', accent:'#10B981'},
+  rose:    {bg:'var(--card)', border:'var(--border-soft)', accent:'#F43F5E'},
+  violet:  {bg:'var(--card)', border:'var(--border-soft)', accent:'#8B5CF6'},
 };
 
 let notes = [
@@ -5052,7 +5392,7 @@ function renderNoteCard(n) {
 
   return `
     <div class="note-card${n.pinned?' pinned':''}"
-      style="background:${c.bg};border-color:${c.border}"
+      style="background:${c.bg};border-color:${c.border};border-left:${c.accent!=='transparent'?'4px solid '+c.accent:'1px solid var(--border-soft)'}"
       onclick="openNoteModal(${n.id})">
       ${n.image ? `<div class="note-card-img-wrap"><img src="${n.image}" alt="imagem"></div>` : ''}
       <div class="note-card-content">
@@ -5135,33 +5475,71 @@ function selectModalColor(color, btn) {
   modalNoteColor = color;
   document.querySelectorAll('#modal-note-inner .color-dot').forEach(d => d.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  const c = NOTE_COLORS[color] || NOTE_COLORS.default;
-  const header = document.getElementById('modal-note-header');
-  const inner  = document.getElementById('modal-note-inner');
-  if (inner)  inner.style.background = c.bg;
-  if (header) inner.style.borderColor = c.border;
+  const nc = NOTE_COLORS[color] || NOTE_COLORS.default;
+  const inner = document.getElementById('modal-note-inner');
+  if (inner) {
+    // Fundo neutro sempre; linha lateral como preview
+    inner.style.background = nc.bg;
+    inner.style.borderLeft = nc.accent !== 'transparent'
+      ? '4px solid ' + nc.accent
+      : '';
+  }
 }
 
 // ── Checklist ──
 function addChecklistItem() {
   newNoteChecklist.push({text:'', done:false});
-  renderNewNoteChecklist();
   document.getElementById('note-new-body').style.display = 'block';
   document.getElementById('note-new-extra').style.display = 'block';
+  renderNewNoteChecklist(newNoteChecklist.length - 1);
 }
 
-function renderNewNoteChecklist() {
+function renderNewNoteChecklist(focusIdx) {
   const el = document.getElementById('note-new-checklist');
   if (!el) return;
   el.innerHTML = newNoteChecklist.map((item, i) =>
-    `<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
-      <input type="checkbox" ${item.done?'checked':''} onchange="newNoteChecklist[${i}].done=this.checked" style="accent-color:var(--violet)">
-      <input class="form-input" style="flex:1;font-size:12px;padding:4px 7px" value="${escHtml(item.text)}"
-        placeholder="Item…" oninput="newNoteChecklist[${i}].text=this.value"
-        onkeydown="if(event.key==='Enter'){event.preventDefault();addChecklistItem()}">
-      <button onclick="newNoteChecklist.splice(${i},1);renderNewNoteChecklist()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px">✕</button>
+    `<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px"
+          onclick="event.stopPropagation()"
+          onmousedown="event.stopPropagation()">
+      <input type="checkbox" ${item.done?'checked':''} style="accent-color:var(--violet);flex-shrink:0;width:16px;height:16px;cursor:pointer"
+        onclick="event.stopPropagation()"
+        onchange="event.stopPropagation();newNoteChecklist[${i}].done=this.checked">
+      <input class="form-input ncl-inp" data-idx="${i}"
+        style="flex:1;font-size:12px;padding:5px 8px"
+        value="${escHtml(item.text)}"
+        placeholder="Item…"
+        onclick="event.stopPropagation()"
+        onmousedown="event.stopPropagation()"
+        onfocus="event.stopPropagation()"
+        onkeydown="event.stopPropagation();
+          if(event.key==='Enter'){event.preventDefault();addChecklistItem();return;}
+          if(event.key==='Backspace'&&this.value===''){event.preventDefault();newNoteChecklist.splice(${i},1);renderNewNoteChecklist(Math.max(0,${i}-1));}">
+      <button
+        onclick="event.stopPropagation();newNoteChecklist.splice(${i},1);renderNewNoteChecklist(Math.max(0,${i}-1))"
+        onmousedown="event.stopPropagation()"
+        style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;flex-shrink:0;padding:2px 4px">✕</button>
     </div>`
   ).join('');
+  // Atualiza array via eventos delegados — sem re-render ao digitar
+  el.querySelectorAll('.ncl-inp').forEach(function(inp) {
+    inp.addEventListener('input', function(e) {
+      e.stopPropagation();
+      var i = parseInt(this.dataset.idx);
+      if (newNoteChecklist[i] !== undefined) newNoteChecklist[i].text = this.value;
+    });
+    inp.addEventListener('click',      function(e){ e.stopPropagation(); });
+    inp.addEventListener('mousedown',  function(e){ e.stopPropagation(); });
+    inp.addEventListener('focus',      function(e){ e.stopPropagation(); });
+  });
+  // Restaura foco no item correto após re-render estrutural
+  if (focusIdx !== undefined) {
+    var inputs = el.querySelectorAll('.ncl-inp');
+    if (inputs[focusIdx]) {
+      inputs[focusIdx].focus();
+      var len = inputs[focusIdx].value.length;
+      try { inputs[focusIdx].setSelectionRange(len, len); } catch(e) {}
+    }
+  }
 }
 
 function addModalChecklistItem() {
@@ -5315,9 +5693,12 @@ function openNoteModal(id) {
   }
 
   // Apply color
-  const c = NOTE_COLORS[modalNoteColor] || NOTE_COLORS.default;
+  const nc = NOTE_COLORS[modalNoteColor] || NOTE_COLORS.default;
   const inner = document.getElementById('modal-note-inner');
-  if (inner) { inner.style.background = c.bg; inner.style.borderColor = c.border; }
+  if (inner) {
+    inner.style.background = nc.bg;
+    inner.style.borderLeft = nc.accent !== 'transparent' ? '4px solid ' + nc.accent : '';
+  }
   document.querySelectorAll('#modal-note-inner .color-dot').forEach(d => d.classList.remove('active'));
   const activeDot = document.querySelector(`#modal-note-inner .color-dot[onclick*="${modalNoteColor}"]`);
   if (activeDot) activeDot.classList.add('active');
@@ -5341,7 +5722,7 @@ function closeNoteModal() {
   closeModal('modal-note');
   currentNoteId = null;
   const inner = document.getElementById('modal-note-inner');
-  if (inner) { inner.style.background = ''; inner.style.borderColor = ''; }
+  if (inner) { inner.style.background = ''; inner.style.borderLeft = ''; }
 }
 
 function saveNoteModal() {
@@ -13459,6 +13840,52 @@ document.addEventListener('click', function(e) {
   }
 });
 
+// ══════════════════════════════════════════
+//  TEMA CLARO / ESCURO
+// ══════════════════════════════════════════
+var _isLight = false;
+
+function _updateThemeIcons() {
+  var icon = _isLight ? '☀️' : '🌙';
+  var title = _isLight ? 'Modo Claro (clique para Escuro)' : 'Modo Escuro (clique para Claro)';
+  ['theme-btn-sidebar','theme-btn-topbar'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) { el.textContent = icon; el.title = title; }
+  });
+}
+
+function toggleTheme() {
+  _isLight = !_isLight;
+  if (_isLight) {
+    document.body.classList.add('light-theme');
+    document.documentElement.classList.add('light-theme-pre');
+    localStorage.setItem('painel_theme', 'light');
+  } else {
+    document.body.classList.remove('light-theme');
+    document.documentElement.classList.remove('light-theme-pre');
+    localStorage.setItem('painel_theme', 'dark');
+  }
+  _updateThemeIcons();
+  // Re-renderiza gráficos com cores corretas
+  if (typeof renderAllCharts === 'function') {
+    setTimeout(renderAllCharts, 50);
+  }
+}
+
+// Aplica tema salvo ao carregar
+(function() {
+  var saved = localStorage.getItem('painel_theme');
+  if (saved === 'light') {
+    _isLight = true;
+    document.body.classList.add('light-theme');
+    document.documentElement.classList.add('light-theme-pre');
+  }
+  // Ícones são aplicados após DOM pronto
+  document.addEventListener('DOMContentLoaded', function() {
+    _updateThemeIcons();
+  });
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
   ensureDefaultCategories();
   setTimeout(renderOrcamentos, 2000);
@@ -13570,43 +13997,78 @@ function setAppHeight() {}
 
 <!-- ══ MODAL — NOTA ══ -->
 <div class="modal-overlay" id="modal-note">
-  <div class="modal" style="max-width:560px" id="modal-note-inner">
-    <div class="modal-header" style="border-bottom:none;padding-bottom:8px">
-      <input class="form-input" id="mnote-title" placeholder="Título" style="font-size:15px;font-weight:600;border:none;background:transparent;padding:0;flex:1">
-      <button id="mnote-pin-btn" onclick="toggleModalPin()" title="Fixar" style="font-size:14px;cursor:pointer;opacity:0.5;background:none;border:none;color:var(--amber)">📌</button>
+  <div class="modal" style="max-width:580px;padding:0;overflow:hidden" id="modal-note-inner">
+
+    <!-- Header: título + pin + fechar -->
+    <div style="display:flex;align-items:center;gap:10px;padding:20px 24px 0">
+      <input id="mnote-title" placeholder="Título da nota…"
+        style="flex:1;background:transparent;border:none;outline:none;font-size:16px;font-weight:700;color:var(--text);font-family:'Inter',sans-serif;letter-spacing:-.01em"
+        autocomplete="off">
+      <button id="mnote-pin-btn" onclick="toggleModalPin()" title="Fixar"
+        style="font-size:16px;cursor:pointer;opacity:0.4;background:none;border:none;outline:none;color:var(--amber);padding:4px;border-radius:6px;transition:opacity 0.15s">📌</button>
       <button class="modal-close" onclick="closeNoteModal()">✕</button>
     </div>
-    <div class="modal-body" style="padding-top:4px">
-      <textarea class="form-textarea" id="mnote-body" placeholder="Nota…" style="min-height:120px;margin-bottom:10px"></textarea>
-      <div id="mnote-checklist-area" style="margin-bottom:10px"></div>
+
+    <!-- Corpo: textarea fluido -->
+    <div style="padding:10px 24px 0">
+      <textarea id="mnote-body" placeholder="Escreva sua nota…"
+        style="width:100%;background:transparent;border:none;outline:none;font-size:13px;color:var(--text-muted);font-family:'Inter',sans-serif;resize:none;min-height:110px;line-height:1.65"></textarea>
+    </div>
+
+    <!-- Checklist e imagem -->
+    <div style="padding:0 24px">
+      <div id="mnote-checklist-area" style="margin-bottom:8px"></div>
       <div id="mnote-img-area" style="margin-bottom:10px"></div>
-      <div style="display:flex;gap:6px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
-        <span style="font-size:11px;color:var(--text-dim)">Cor:</span>
-        <button style="width:18px;height:18px;border-radius:50%;cursor:pointer;background:var(--card);border:2px solid transparent" onclick="selectModalColor('default',this)"></button>
-        <button style="width:18px;height:18px;border-radius:50%;cursor:pointer;background:#1e3a5f;border:2px solid transparent" onclick="selectModalColor('blue',this)"></button>
-        <button style="width:18px;height:18px;border-radius:50%;cursor:pointer;background:#3d2a00;border:2px solid transparent" onclick="selectModalColor('amber',this)"></button>
-        <button style="width:18px;height:18px;border-radius:50%;cursor:pointer;background:#1a3d2b;border:2px solid transparent" onclick="selectModalColor('green',this)"></button>
-        <button style="width:18px;height:18px;border-radius:50%;cursor:pointer;background:#3d1a2b;border:2px solid transparent" onclick="selectModalColor('rose',this)"></button>
-        <button style="width:18px;height:18px;border-radius:50%;cursor:pointer;background:#2a1a3d;border:2px solid transparent" onclick="selectModalColor('violet',this)"></button>
-        <div style="width:1px;height:16px;background:var(--border);margin:0 4px"></div>
-        <button class="btn btn-ghost btn-sm" onclick="addModalChecklistItem()">☑ Item</button>
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mnote-img-input').click()">🖼 Imagem</button>
-        <input type="file" id="mnote-img-input" accept="image/*" style="display:none" onchange="loadModalImage(this)">
-      </div>
-      <div class="form-row" style="margin-bottom:10px">
-        <label>🔗 Link</label>
-        <input class="form-input" id="mnote-link" placeholder="https://docs.google.com/…" type="url">
-      </div>
-      <div class="form-grid" style="gap:8px">
-        <div class="form-row" style="margin-bottom:0"><label>Tag</label><input class="form-input" id="mnote-tag" placeholder="#tag"></div>
-        <div class="form-row" style="margin-bottom:0"><label>Pasta</label><select class="form-select" id="mnote-folder"></select></div>
-      </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-danger btn-sm" id="mnote-delete-btn" style="margin-right:auto;display:none" onclick="deleteCurrentNote()">🗑️ Excluir</button>
-      <button class="btn btn-ghost" onclick="closeNoteModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveNoteModal()">Salvar nota</button>
+
+    <!-- Barra de ferramentas -->
+    <div style="display:flex;align-items:center;gap:6px;padding:10px 24px;border-top:1px solid var(--border-soft);flex-wrap:wrap">
+
+      <!-- Grupo de cores -->
+      <div style="display:flex;gap:5px;align-items:center;background:var(--surface);border-radius:20px;padding:4px 8px" id="mdot-default-wrap">
+        <button class="color-dot" id="mdot-default" style="background:var(--border)" onclick="selectModalColor('default',this)" title="Padrão"></button>
+        <button class="color-dot" style="background:#3B82F6" onclick="selectModalColor('blue',this)"   title="Azul"></button>
+        <button class="color-dot" style="background:#F59E0B" onclick="selectModalColor('amber',this)"  title="Âmbar"></button>
+        <button class="color-dot" style="background:#10B981" onclick="selectModalColor('green',this)"  title="Verde"></button>
+        <button class="color-dot" style="background:#F43F5E" onclick="selectModalColor('rose',this)"   title="Rosa"></button>
+        <button class="color-dot" style="background:#8B5CF6" onclick="selectModalColor('violet',this)" title="Violeta"></button>
+      </div>
+
+      <!-- Separador -->
+      <div style="width:1px;height:18px;background:var(--border-soft)"></div>
+
+      <!-- Checklist -->
+      <button class="note-tool-btn" onclick="addModalChecklistItem()" title="Checklist">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+        </svg>
+      </button>
+
+      <!-- Imagem -->
+      <button class="note-tool-btn" onclick="document.getElementById('mnote-img-input').click()" title="Imagem">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+      </button>
+      <input type="file" id="mnote-img-input" accept="image/*" style="display:none" onchange="loadModalImage(this)">
+
+      <!-- Meta: tag + pasta -->
+      <input id="mnote-tag" class="note-meta-input" style="width:90px" placeholder="# tag">
+      <select id="mnote-folder" class="note-meta-input" style="width:120px"></select>
+
+      <!-- Link discreto -->
+      <input id="mnote-link" class="note-meta-input" style="width:130px" placeholder="🔗 Link" type="url">
     </div>
+
+    <!-- Footer: ações -->
+    <div style="display:flex;align-items:center;gap:8px;padding:12px 24px 16px">
+      <button class="btn btn-danger btn-sm" id="mnote-delete-btn" style="display:none" onclick="deleteCurrentNote()">🗑️ Excluir</button>
+      <div style="flex:1"></div>
+      <button class="note-cancel-btn" onclick="closeNoteModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveNoteModal()" style="padding:8px 22px">Salvar nota</button>
+    </div>
+
   </div>
 </div>
 
