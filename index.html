@@ -256,7 +256,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .fin-cal-stat-label{font-size:10px;color:var(--text-dim);margin-bottom:2px}
 .fin-cal-stat-val{font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace}
 @media(max-width:1024px){.fin-cal-cell{min-height:40px;padding:3px}.fin-cal-val{font-size:8px}.fin-cal-day{font-size:9px}.fin-cal-stat-val{font-size:12px}}
-.fin-transactions{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden}
+.fin-transactions{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);overflow-x:auto;-webkit-overflow-scrolling:touch}
 /* table-header removido */
 @media(max-width:1024px){
 .table-header{display:none!important}
@@ -1246,65 +1246,7 @@ canvas{transform:translateZ(0)}
 .fin-acts-menu.open{display:flex}
 
 /* ── Financeiro: cartão de transação no mobile ── */
-@media(max-width:768px){
-  .fin-table thead{display:none}
-  .fin-table,
-  .fin-table tbody,
-  .fin-table tr,
-  .fin-table td{display:block;width:100%}
-  .fin-table tr{
-    background:var(--card);
-    border:1px solid var(--border-soft);
-    border-radius:12px;
-    margin-bottom:8px;
-    padding:0;
-    position:relative;
-    overflow:hidden;
-  }
-  .fin-table tr.tx-pendente{border-left:3px solid var(--amber)}
-  .fin-table tr.tx-parcela{border-left:3px solid var(--cyan)}
-  /* Layout do cartão: topo com desc+valor, baixo com meta+status */
-  .fin-table .col-desc{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    padding:12px 14px 6px;
-    border-bottom:none;
-  }
-  .fin-table .col-valor{
-    position:absolute;
-    top:12px;
-    right:14px;
-    text-align:right;
-    font-size:15px;
-    font-weight:800;
-    padding:0;
-  }
-  .fin-table .col-data,
-  .fin-table .col-forma{
-    display:inline-block;
-    width:auto;
-    padding:0 14px;
-    font-size:10px;
-    color:var(--muted);
-    border-bottom:none;
-  }
-  .fin-table .col-forma{padding-left:4px}
-  .fin-table .col-status{
-    padding:6px 14px;
-    border-bottom:1px solid var(--border-soft);
-  }
-  .fin-table .col-acts{
-    padding:8px 14px;
-    text-align:left;
-    width:100%;
-  }
-  .fin-table .col-desc .tx-nome{
-    font-size:13px;
-    font-weight:600;
-    padding-right:80px; /* espaço para o valor absoluto */
-  }
-}
+/* cartões mobile removidos: tabela restaurada */
 
 /* ── Modal financeiro: botão Registrar full-width no mobile ── */
 @media(max-width:768px){
@@ -1319,6 +1261,58 @@ canvas{transform:translateZ(0)}
 #fin-graficos-wrap{margin-bottom:24px!important}
 .fin-cal{margin-bottom:24px}
 .fin-saude-grid{gap:12px}
+
+@media(max-width:768px){
+  /* ── Gráficos: 1 coluna, respiro ── */
+  #fin-graficos-wrap{
+    grid-template-columns:1fr!important;
+    gap:12px;
+  }
+  #fin-graficos-wrap .fin-card[style*="grid-column:1/-1"]{
+    grid-column:1!important;
+    display:block!important;
+    grid-template-columns:1fr!important;
+  }
+  #fin-graficos-wrap canvas{
+    min-height:220px;
+  }
+
+  /* ── Tabela: thead visível, scroll horizontal, células com espaço ── */
+  .fin-table thead{display:table-header-group}
+  .fin-table{min-width:560px}
+  .fin-table td, .fin-table th{
+    padding:12px 10px;
+    white-space:nowrap;
+  }
+  .col-desc{min-width:160px;white-space:normal}
+  .col-status{min-width:130px}
+  .col-acts{min-width:80px}
+
+  /* Status-opt: touch target ≥ 44px de altura total */
+  .status-opt{
+    padding:6px 8px;
+    font-size:10px;
+    min-height:32px;
+    display:inline-flex;
+    align-items:center;
+  }
+
+  /* Botão ⋮: 44×44px mínimo */
+  .fin-acts-btn{
+    width:44px;
+    height:44px;
+    font-size:20px;
+  }
+
+  /* Lembrete */
+  .btn-lembrete{
+    min-width:36px;
+    min-height:36px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+}
 </style>
 
   <!-- PWA -->
