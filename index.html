@@ -2810,11 +2810,9 @@ function renderBacklog() {
   const filtB = filteredBacklog();
   document.getElementById('backlog-list').innerHTML = activeFiltersPillsHtml() + filtB.map(item => `
     <div class="backlog-item" id="bi-${item.id}" onclick="editBacklog(${item.id})">
-      ${(item.photo && item.photo !== '__local__' && item.photo.startsWith('data:image'))
+      ${(item.photo && item.photo.startsWith('data:image'))
         ? '<div style="width:100%;overflow:hidden;line-height:0;border-radius:var(--radius) var(--radius) 0 0"><img src="' + item.photo + '" style="width:100%;height:200px;object-fit:cover;display:block"></div>'
-        : (item.photo === '__local__'
-            ? '<div style="width:100%;height:52px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--dim);border-bottom:1px solid var(--border-soft)">🖼 Foto salva em outro dispositivo</div>'
-            : '')}
+        : ''}
       <div class="backlog-content">
         <div class="backlog-header">
           <span class="item-text" id="bit-${item.id}">${escHtml(item.text)}</span>
@@ -4035,7 +4033,6 @@ function addToBacklogFull() {
   if (photoBtn) photoBtn.style.color = '';
   closeTagAC();
   lsSave();
-  saveBacklogPhotos();
   scheduleSave();
   renderBacklog();
 }
@@ -6733,13 +6730,11 @@ function fbDocRef() { return _fbDb.collection('flow_painel').doc('dados'); }
 
 function lsSave() {
   try {
-    // Remove fotos do backlog antes de salvar no localStorage (evita quota exceeded)
-    const backlogSemFoto = backlog.map(function(i){ return i.photo ? Object.assign({},i,{photo:'__local__'}) : i; });
     localStorage.setItem('painel_dados_v1', JSON.stringify({
       savedAt: new Date().toISOString(),
       events, nextEventId,
       studyBacklog, nextStudyBlogId,
-      backlog: backlogSemFoto, nextBacklogId,
+      backlog, nextBacklogId,
       tasks, nextTaskId,
       kanbanCols, nextColId,
       finances, nextFinId, finCategories, customPayMethods, recorrentes, orcamentos, cartoesCredito,
@@ -6755,25 +6750,13 @@ function lsSave() {
       parcelamentos, nextParcId, economias, nextEcoId,
       jogoXP, jogoMoedas, jogoStreak, jogoLastDay,
     }));
-    saveBacklogPhotos();
   } catch(e) { console.warn('lsSave:', e); }
 }
 
 // Salva fotos do backlog separadamente (fora do JSON principal)
-function saveBacklogPhotos() {
-  try {
-    const photos = {};
-    backlog.forEach(function(i){ if (i.photo && i.photo !== '__local__') photos[i.id] = i.photo; });
-    localStorage.setItem('painel_backlog_photos', JSON.stringify(photos));
-  } catch(e) { console.warn('saveBacklogPhotos:', e); }
-}
+// saveBacklogPhotos: removida — foto inclusa diretamente no item
 
-function loadBacklogPhotos() {
-  try {
-    const photos = JSON.parse(localStorage.getItem('painel_backlog_photos') || '{}');
-    backlog.forEach(function(i){ if (i.photo === '__local__' && photos[i.id]) i.photo = photos[i.id]; });
-  } catch(e) {}
-}
+// loadBacklogPhotos: removida — foto inclusa diretamente no item
 
 function lsLoad() {
   try {
@@ -6799,11 +6782,7 @@ function lsLoad() {
     if (d.events)           { events = d.events; nextEventId = d.nextEventId || nextEventId; }
     if (d.backlog) {
       backlog = d.backlog; nextBacklogId = d.nextBacklogId || nextBacklogId;
-      // Restaura fotos do backlog (salvas em chave separada)
-      try {
-        var bp = JSON.parse(localStorage.getItem('painel_backlog_photos') || '{}');
-        backlog.forEach(function(i){ if (i.photo === '__local__' && bp[i.id]) i.photo = bp[i.id]; });
-      } catch(_) {}
+      // fotos incluídas diretamente nos itens
     }
     if (d.tasks)            { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
     if (d.kanbanCols)       { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
@@ -6896,7 +6875,7 @@ async function fbCloudSave() {
     const payload = {
       savedAt: new Date().toISOString(),
       events: typeof events!=='undefined'?events:[], nextEventId: typeof nextEventId!=='undefined'?nextEventId:300,
-      backlog: (typeof backlog!=='undefined'?backlog:[]).map(function(i){ return i.photo ? Object.assign({},i,{photo:'__local__'}) : i; }), nextBacklogId: typeof nextBacklogId!=='undefined'?nextBacklogId:8,
+      backlog: (typeof backlog!=='undefined'?backlog:[]), nextBacklogId: typeof nextBacklogId!=='undefined'?nextBacklogId:8,
       tasks: typeof tasks!=='undefined'?tasks:[], nextTaskId: typeof nextTaskId!=='undefined'?nextTaskId:200,
       kanbanCols: typeof kanbanCols!=='undefined'?kanbanCols:[], nextColId: typeof nextColId!=='undefined'?nextColId:10,
       finances: typeof finances!=='undefined'?finances:[],
@@ -7084,11 +7063,7 @@ async function fbCloudLoad(forceLoad) {
     if (d.backlog) {
       backlog = d.backlog;
       nextBacklogId = d.nextBacklogId || nextBacklogId;
-      // Restaura fotos que ficam só no localStorage
-      try {
-        var bphotos = JSON.parse(localStorage.getItem('painel_backlog_photos') || '{}');
-        backlog.forEach(function(i){ if (i.photo === '__local__' && bphotos[i.id]) i.photo = bphotos[i.id]; });
-      } catch(_) {}
+      // fotos incluídas diretamente nos itens
     }
     if (d.tasks)             { tasks = d.tasks; nextTaskId = d.nextTaskId || nextTaskId; }
     if (d.kanbanCols)        { kanbanCols = d.kanbanCols; nextColId = d.nextColId || nextColId; }
