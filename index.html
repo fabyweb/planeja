@@ -1567,7 +1567,25 @@ canvas{transform:translateZ(0)}
         <div class="fin-cats" id="fin-cats-panel"></div>
       </div>
       </div>
-    </div>
+
+      </div><!-- /fin-area-lancamentos -->
+
+      <!-- Área de Orçamentos -->
+      <div id="fin-area-orcamentos" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <span style="font-size:12px;color:var(--muted)">Gerencie seus limites por categoria ou forma de pagamento</span>
+          <button class="btn btn-primary btn-sm" onclick="openOrcModal(null)">+ Novo orçamento</button>
+        </div>
+        <div id="orc-list"></div>
+        <div id="orc-empty" style="display:none;text-align:center;padding:40px 20px;color:var(--dim)">
+          <div style="font-size:32px;margin-bottom:8px">📊</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px">Nenhum orçamento cadastrado</div>
+          <div style="font-size:11px;margin-bottom:16px">Defina limites por categoria ou forma de pagamento</div>
+          <button class="btn btn-primary" onclick="openOrcModal(null)">+ Criar primeiro orçamento</button>
+        </div>
+      </div><!-- /fin-area-orcamentos -->
+
+    </div><!-- /view-finance -->
 
     <!-- ═══ LISTAS ═══ -->
     <div class="view" id="view-lists">
@@ -1632,24 +1650,9 @@ canvas{transform:translateZ(0)}
       </div>
       <!-- Single content area — re-rendered on tab switch -->
       <div id="estudos-tab-content"></div>
-      </div><!-- /fin-area-lancamentos -->
 
-      <!-- Área de Orçamentos -->
-      <div id="fin-area-orcamentos" style="display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <span style="font-size:12px;color:var(--muted)">Gerencie seus limites por categoria ou forma de pagamento</span>
-          <button class="btn btn-primary btn-sm" onclick="openOrcModal(null)">+ Novo orçamento</button>
-        </div>
-        <div id="orc-list"></div>
-        <div id="orc-empty" style="display:none;text-align:center;padding:40px 20px;color:var(--dim)">
-          <div style="font-size:32px;margin-bottom:8px">📊</div>
-          <div style="font-size:13px;font-weight:600;margin-bottom:4px">Nenhum orçamento cadastrado</div>
-          <div style="font-size:11px;margin-bottom:16px">Defina limites por categoria ou forma de pagamento</div>
-          <button class="btn btn-primary" onclick="openOrcModal(null)">+ Criar primeiro orçamento</button>
-        </div>
-      </div><!-- /fin-area-orcamentos -->
+    </div><!-- /view-estudos -->
 
-    </div><!-- /view-finance -->
 
 
     <!-- ═══ JOGO DE QUITAÇÃO ═══ -->
