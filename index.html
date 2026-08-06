@@ -5513,11 +5513,11 @@ function renderNotes() {
 
   if (pinned.length) {
     html += '<div class="notes-section-label">📌 Fixadas</div>';
-    html += '<div class="notes-masonry">' + pinned.map(renderNoteCard).join('') + '</div>';
+    html += '<div class="notes-masonry">' + pinned.map(function(n){ try { return renderNoteCard(n); } catch(e) { console.error("Erro ao renderizar nota id=" + (n&&n.id), e); return ''; } }).join('') + '</div>';
   }
   if (unpinned.length) {
     if (pinned.length) html += '<div class="notes-section-label" style="margin-top:16px">Outras</div>';
-    html += '<div class="notes-masonry">' + unpinned.map(renderNoteCard).join('') + '</div>';
+    html += '<div class="notes-masonry">' + unpinned.map(function(n){ try { return renderNoteCard(n); } catch(e) { console.error("Erro ao renderizar nota id=" + (n&&n.id), e); return ''; } }).join('') + '</div>';
   }
   if (!filtered.length) {
     html = '<p style="color:var(--text-dim);font-size:13px;padding:24px 0;text-align:center">Nenhuma nota encontrada.</p>';
@@ -5541,58 +5541,84 @@ function renderNotes() {
 }
 
 function renderNoteCard(n) {
-  const c = NOTE_COLORS[n.color] || NOTE_COLORS.default;
-  const tagsHtml = (n.tags||[]).map(t =>
-    `<span class="note-tag" onclick="event.stopPropagation();filterNoteTag('${escHtml(t)}')">#${escHtml(t)}</span>`
-  ).join('');
+  // Fallbacks defensivos para todos os campos
+  var nid       = n.id       || 0;
+  var title     = n.title    || '';
+  var body      = n.body     || '';
+  var color     = n.color    || 'default';
+  var tags      = Array.isArray(n.tags)      ? n.tags      : [];
+  var checklist = Array.isArray(n.checklist) ? n.checklist : [];
+  var folder    = n.folder   || '';
+  var pinned    = !!n.pinned;
+  var link      = n.link     || '';
 
-  const checkHtml = (n.checklist||[]).length
-    ? '<ul class="note-checklist" style="margin-bottom:6px">' +
-      (n.checklist||[]).slice(0,5).map((item,i) =>
-        `<li class="${item.done?'done':''}">
-          <input type="checkbox" class="note-check" data-nid="${n.id}" data-idx="${i}" ${item.done?'checked':''}>
-          <span>${escHtml(item.text)}</span>
-        </li>`
-      ).join('') +
-      ((n.checklist||[]).length > 5 ? `<li style="color:var(--text-dim);font-size:11px">+${n.checklist.length-5} mais…</li>` : '') +
-      '</ul>'
+  var clr = NOTE_COLORS[color] || NOTE_COLORS.default;
+
+  // Tags
+  var tagsHtml = tags.map(function(t) {
+    return '<span class="note-tag" onclick="event.stopPropagation();filterNoteTag(\'' + escHtml(t) + '\')">#' + escHtml(t) + '</span>';
+  }).join('');
+
+  // Checklist
+  var checkHtml = '';
+  if (checklist.length) {
+    checkHtml = '<ul class="note-checklist" style="margin-bottom:6px">';
+    checklist.slice(0, 5).forEach(function(item, i) {
+      var done = (item && item.done) ? 'done' : '';
+      var chk  = (item && item.done) ? ' checked' : '';
+      var txt  = (item && item.text) ? escHtml(item.text) : '';
+      checkHtml += '<li class="' + done + '"><input type="checkbox" class="note-check" data-nid="' + nid + '" data-idx="' + i + '"' + chk + '><span>' + txt + '</span></li>';
+    });
+    if (checklist.length > 5) checkHtml += '<li style="color:var(--text-dim);font-size:11px">+' + (checklist.length - 5) + ' mais\u2026</li>';
+    checkHtml += '</ul>';
+  }
+
+  // Imagem — só https://, sem template literal aninhado, sem base64
+  var imgSrc = (n.image && typeof n.image === 'string' && n.image.includes('http')) ? n.image : null;
+  var imgHtml = imgSrc
+    ? '<div class="note-card-img-wrap"><img src="' + imgSrc + '" class="note-image" style="width:100%;object-fit:cover;max-height:180px" loading="lazy"></div>'
     : '';
 
-  // Imagem: só renderiza URL real (https://) ou base64 válido; ignora '__local__'
-  const validImg = n.image && n.image !== '__local__' &&
-                   (n.image.startsWith('http') || n.image.startsWith('data:image'));
-  const imgWrapHtml = validImg
-    ? '<div class="note-card-img-wrap"><img src="' + n.image + '" alt="imagem" loading="lazy"></div>'
-    : '';
+  // Body
+  var bodyHtml = body ? '<div class="note-body">' + escHtml(body) + '</div>' : '';
 
-  const bodyHtml = n.body
-    ? `<div class="note-body">${escHtml(n.body)}</div>`
-    : '';
+  // Link
+  var linkHtml = '';
+  if (link) {
+    try {
+      var domain = link.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '');
+      linkHtml = '<a href="' + link + '" target="_blank" rel="noopener noreferrer" class="note-link" onclick="event.stopPropagation()">&#128279; ' + escHtml(domain) + '</a>';
+    } catch(_) {}
+  }
 
-  return `
-    <div class="note-card${n.pinned?' pinned':''}"
-      style="background:${c.bg};border-color:${c.border};border-left:${c.accent!=='transparent'?'4px solid '+c.accent:'1px solid var(--border-soft)'}"
-      onclick="openNoteModal(${n.id})">
-      ${imgWrapHtml}
-      <div class="note-card-content">
-        <div class="note-card-header">
-          <div class="note-title">${escHtml(n.title||'')}</div>
-          <button class="note-pin" onclick="event.stopPropagation();toggleNotePin(${n.id})" title="${n.pinned?'Desafixar':'Fixar'}" style="opacity:${n.pinned?'1':'0.35'}">📌</button>
-        </div>
-        ${checkHtml}
-        ${bodyHtml}
-        ${n.link?`<a href="${n.link}" target="_blank" rel="noopener noreferrer" class="note-link" onclick="event.stopPropagation()">🔗 ${n.link.replace(/^https?:\/\//,'').split('/')[0].replace(/^www\./,'')}</a>`:''}
-        <div class="note-footer">
-          ${tagsHtml}
-          ${n.folder?`<span class="note-folder">📁 ${escHtml(n.folder)}</span>`:''}
-        </div>
-        <div class="note-actions">
-          <button class="note-action-btn" onclick="event.stopPropagation();sendToBacklog('note',${n.id})" title="↩ Backlog" style="color:var(--violet-light)">↩</button>
-          <button class="note-action-btn" onclick="event.stopPropagation();duplicateNote(${n.id})" title="Duplicar" style="color:var(--muted)">⧉</button>
-          <button class="note-action-btn" onclick="event.stopPropagation();deleteNote(${n.id})" title="Excluir" style="color:var(--red)">✕</button>
-        </div>
-      </div>
-    </div>`;
+  // Folder
+  var folderHtml = folder ? '<span class="note-folder">&#128193; ' + escHtml(folder) + '</span>' : '';
+
+  // Borda esquerda
+  var borderLeft = (clr.accent && clr.accent !== 'transparent')
+    ? '4px solid ' + clr.accent
+    : '1px solid var(--border-soft)';
+
+  return '<div class="note-card' + (pinned ? ' pinned' : '') + '"'
+    + ' style="background:' + clr.bg + ';border-color:' + clr.border + ';border-left:' + borderLeft + '"'
+    + ' onclick="openNoteModal(' + nid + ')">'
+    + imgHtml
+    + '<div class="note-card-content">'
+    + '<div class="note-card-header">'
+    + '<div class="note-title">' + escHtml(title) + '</div>'
+    + '<button class="note-pin" onclick="event.stopPropagation();toggleNotePin(' + nid + ')" title="' + (pinned ? 'Desafixar' : 'Fixar') + '" style="opacity:' + (pinned ? '1' : '0.35') + '">\uD83D\uDCCC</button>'
+    + '</div>'
+    + checkHtml
+    + bodyHtml
+    + linkHtml
+    + '<div class="note-footer">' + tagsHtml + folderHtml + '</div>'
+    + '<div class="note-actions">'
+    + '<button class="note-action-btn" onclick="event.stopPropagation();sendToBacklog(\'note\',' + nid + ')" title="\u21A9 Backlog" style="color:var(--violet-light)">\u21A9</button>'
+    + '<button class="note-action-btn" onclick="event.stopPropagation();duplicateNote(' + nid + ')" title="Duplicar" style="color:var(--muted)">\u29C9</button>'
+    + '<button class="note-action-btn" onclick="event.stopPropagation();deleteNote(' + nid + ')" title="Excluir" style="color:var(--red)">\u2715</button>'
+    + '</div>'
+    + '</div>'
+    + '</div>';
 }
 
 function setNotesFolder(f) {
