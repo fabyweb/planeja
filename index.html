@@ -14350,6 +14350,35 @@ async function uploadImageToStorage(base64DataURL, folder) {
   }
 }
 
+// ══════════════════════════════════════════
+//  LIMPAR CACHE E FORÇAR ATUALIZAÇÃO
+// ══════════════════════════════════════════
+async function clearCacheAndReload() {
+  var btn = document.getElementById('btn-clear-cache');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Limpando…'; }
+
+  // 1. Desregistra Service Workers ativos
+  if ('serviceWorker' in navigator) {
+    try {
+      var regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(function(r){ return r.unregister(); }));
+    } catch(e) { console.warn('SW unregister:', e); }
+  }
+
+  // 2. Limpa Cache API (arquivos em cache pelo browser/SW)
+  if ('caches' in window) {
+    try {
+      var keys = await caches.keys();
+      await Promise.all(keys.map(function(k){ return caches.delete(k); }));
+    } catch(e) { console.warn('Cache API clear:', e); }
+  }
+
+  // 3. Recarrega forçando download de nova versão (burla cache HTTP)
+  //    localStorage é preservado — dados do usuário ficam intactos
+  window.location.href = window.location.pathname
+    + '?nocache=' + Date.now();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   ensureDefaultCategories();
   setTimeout(renderOrcamentos, 2000);
@@ -14742,6 +14771,25 @@ function setAppHeight() {}
         <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px">📌 Abas visíveis</div>
         <div id="settings-tabs-list"></div>
         <div style="font-size:11px;color:var(--dim);margin-top:8px">As abas ocultas ficam acessíveis pelo botão ⋮ Mais.</div>
+      </div>
+
+      <!-- Limpar Cache -->
+      <div style="padding:12px 18px;border-bottom:1px solid var(--border-soft)">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text)">🔄 Limpar cache e atualizar</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Força o download da versão mais recente. Seus dados no localStorage são preservados.</div>
+          </div>
+          <button id="btn-clear-cache" onclick="clearCacheAndReload()"
+            style="flex-shrink:0;padding:8px 14px;border-radius:8px;border:1px solid var(--border);
+                   background:var(--surface);color:var(--text);font-size:12px;font-weight:600;
+                   cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;
+                   transition:background-color .15s,border-color .15s;min-height:36px;touch-action:manipulation"
+            onmouseover="this.style.background='var(--card-hover)'"
+            onmouseout="this.style.background='var(--surface)'">
+            🔄 Atualizar
+          </button>
+        </div>
       </div>
 
       <!-- Dados -->
@@ -15378,6 +15426,16 @@ function setAppHeight() {}
       <button class="modal-close" onclick="closeModal('modal-more-tabs')">✕</button>
     </div>
     <div class="modal-body" id="more-tabs-body" style="padding:8px 0"></div>
+    <div style="border-top:1px solid var(--border-soft);padding:10px 8px">
+      <button onclick="closeModal('modal-more-tabs');clearCacheAndReload()"
+        style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;
+               border:1px solid var(--border);border-radius:8px;background:var(--surface);
+               color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;
+               font-family:'Inter',sans-serif;touch-action:manipulation">
+        <span style="font-size:18px">🔄</span>
+        <span>Limpar cache e atualizar</span>
+      </button>
+    </div>
   </div>
 </div>
 </body>
