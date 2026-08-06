@@ -7413,8 +7413,18 @@ function importData(input) {
 }
 
 function resetAllData() {
-  if (!confirm('Apagar TODOS os dados do painel? Esta ação não pode ser desfeita.')) return;
-  localStorage.removeItem('painel_dados_v1');
+  // Primeira barreira
+  if (!confirm('⚠️ ATENÇÃO: Você tem certeza absoluta?\n\nIsso apagará TODOS os seus dados locais e não pode ser desfeito!\n\nClique em OK apenas se tiver certeza.')) return;
+  // Segunda barreira — digitação de confirmação via prompt
+  var confirmacao = prompt('Para confirmar, digite exatamente: APAGAR');
+  if (confirmacao === null) return;  // cancelou
+  if (confirmacao.trim().toUpperCase() !== 'APAGAR') {
+    alert('Texto incorreto. Operação cancelada.');
+    return;
+  }
+  // Apaga só os dados locais (keys conhecidas do painel)
+  var keys = Object.keys(localStorage).filter(function(k){ return k.startsWith('painel_'); });
+  keys.forEach(function(k){ localStorage.removeItem(k); });
   location.reload();
 }
 
@@ -14793,14 +14803,31 @@ function setAppHeight() {}
       </div>
 
       <!-- Dados -->
-      <div style="padding:14px 18px">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border-soft)">
         <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">🗄️ Dados locais</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-settings');lockChangePassword()">🔑 Alterar senha</button>
           <button class="btn btn-ghost btn-sm" onclick="exportData()">📤 Exportar JSON</button>
           <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()">📥 Importar JSON</button>
           <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
-          <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="resetAllData()">🗑️ Limpar tudo</button>
+        </div>
+      </div>
+
+      <!-- ⚠️ ZONA DE PERIGO -->
+      <div style="margin:16px 18px 18px;border:1.5px solid rgba(239,68,68,0.35);border-radius:10px;overflow:hidden">
+        <div style="background:rgba(239,68,68,0.07);padding:10px 14px;border-bottom:1px solid rgba(239,68,68,0.2);display:flex;align-items:center;gap:7px">
+          <span style="font-size:14px">⚠️</span>
+          <span style="font-size:12px;font-weight:700;color:var(--red);letter-spacing:.03em;text-transform:uppercase">Zona de Perigo</span>
+        </div>
+        <div style="padding:12px 14px">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">
+            <strong style="color:var(--text)">Limpar todos os dados locais</strong><br>
+            Apaga permanentemente todos os seus dados do <code style="background:rgba(239,68,68,0.1);padding:1px 5px;border-radius:3px;color:var(--red);font-size:11px">localStorage</code>. Esta ação é irreversível e não pode ser desfeita.
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="resetAllData()"
+            style="width:100%;justify-content:center;padding:10px;font-size:13px;font-weight:700;touch-action:manipulation">
+            🗑️ Apagar todos os dados locais
+          </button>
         </div>
       </div>
 
