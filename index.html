@@ -5558,8 +5558,11 @@ function renderNoteCard(n) {
       '</ul>'
     : '';
 
-  const imgHtml = n.image
-    ? `<img src="${n.image}" class="note-image" alt="imagem">`
+  // Imagem: só renderiza URL real (https://) ou base64 válido; ignora '__local__'
+  const validImg = n.image && n.image !== '__local__' &&
+                   (n.image.startsWith('http') || n.image.startsWith('data:image'));
+  const imgWrapHtml = validImg
+    ? '<div class="note-card-img-wrap"><img src="' + n.image + '" alt="imagem" loading="lazy"></div>'
     : '';
 
   const bodyHtml = n.body
@@ -5570,7 +5573,7 @@ function renderNoteCard(n) {
     <div class="note-card${n.pinned?' pinned':''}"
       style="background:${c.bg};border-color:${c.border};border-left:${c.accent!=='transparent'?'4px solid '+c.accent:'1px solid var(--border-soft)'}"
       onclick="openNoteModal(${n.id})">
-      ${n.image ? `<div class="note-card-img-wrap"><img src="${n.image}" alt="imagem"></div>` : ''}
+      ${imgWrapHtml}
       <div class="note-card-content">
         <div class="note-card-header">
           <div class="note-title">${escHtml(n.title||'')}</div>
