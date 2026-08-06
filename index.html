@@ -2252,14 +2252,29 @@ body.light-theme .note-card:hover,html.light-theme-pre body .note-card:hover{
 
     <!-- ═══ ESTUDOS ═══ -->
     <div class="view" id="view-estudos">
-      <!-- Tabs -->
-      <div class="estudos-tabs" style="flex-shrink:0">
-        <button class="estudos-tab active" onclick="switchEstudosTab('painel',this)">📊 Painel</button>
-        <button class="estudos-tab" onclick="switchEstudosTab('desempenho',this)">📈 Desempenho</button>
-        <button class="estudos-tab" onclick="switchEstudosTab('consistencia',this)">📅 Consistência</button>
-        <button class="estudos-tab" onclick="switchEstudosTab('kanban-estudo',this)">🗂️ Kanban</button>
+      <!-- Cabeçalho: toggle Modo Foco / Modo Completo -->
+      <div id="estudos-header" style="display:flex;align-items:center;gap:12px;flex-shrink:0;padding:0 0 4px">
+        <div style="display:flex;background:var(--surface);border:1px solid var(--border-soft);border-radius:10px;padding:3px;gap:3px" id="estudos-mode-toggle">
+          <button id="btn-modo-foco"
+            onclick="setEstudosModo('foco')"
+            style="padding:7px 16px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:'Inter',sans-serif;transition:background-color .15s,color .15s;touch-action:manipulation">
+            ⚡ Modo Foco
+          </button>
+          <button id="btn-modo-completo"
+            onclick="setEstudosModo('completo')"
+            style="padding:7px 16px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;transition:background-color .15s,color .15s;touch-action:manipulation">
+            🔬 Modo Completo
+          </button>
+        </div>
+        <!-- Tabs do Modo Completo (ocultas no Modo Foco) -->
+        <div class="estudos-tabs" id="estudos-tabs-completo" style="flex-shrink:0;display:none">
+          <button class="estudos-tab active" onclick="switchEstudosTab('painel',this)">📊 Painel</button>
+          <button class="estudos-tab" onclick="switchEstudosTab('desempenho',this)">📈 Desempenho</button>
+          <button class="estudos-tab" onclick="switchEstudosTab('consistencia',this)">📅 Consistência</button>
+          <button class="estudos-tab" onclick="switchEstudosTab('kanban-estudo',this)">🗂️ Kanban</button>
+        </div>
       </div>
-      <!-- Single content area — re-rendered on tab switch -->
+      <!-- Área de conteúdo única -->
       <div id="estudos-tab-content"></div>
 
     </div><!-- /view-estudos -->
@@ -6149,22 +6164,8 @@ function populateEstudosSelects() {
 
 // ── Main render ──
 function renderEstudos() {
-  // Route to active tab
-  const container = document.getElementById('estudos-tab-content');
-  if (!container) return;
-  if (estudosActiveTab === 'desempenho') {
-    if (!document.getElementById('dese-root')) container.innerHTML = buildDesempenhoHTML();
-    renderDesempenho();
-  } else if (estudosActiveTab === 'consistencia') {
-    if (!document.getElementById('consist-root')) container.innerHTML = '<div id="consist-root"></div>';
-    renderConsistencia();
-  } else if (estudosActiveTab === 'kanban-estudo') {
-    if (!document.getElementById('kbe-root')) container.innerHTML = '<div id="kbe-root" style="height:100%;min-height:0"></div>';
-    renderKanbanEstudo();
-  } else {
-    if (!container.querySelector('#timer-display')) container.innerHTML = buildEstudosPainelHTML();
-    renderEstudosPainel();
-  }
+  // Aplica o modo (foco/completo) salvo e renderiza
+  setTimeout(aplicarEstudosModo, 0);
 }
 
 // ── Meta ring ──
@@ -6550,7 +6551,9 @@ function switchEstudosTab(tab, btn) {
   const container = document.getElementById('estudos-tab-content');
   if (!container) return;
 
-  if (tab === 'painel') {
+  if (tab === 'foco') {
+    renderFocoTab();
+  } else if (tab === 'painel') {
     container.innerHTML = buildEstudosPainelHTML();
     renderEstudosPainel();
   } else if (tab === 'desempenho') {
@@ -14387,6 +14390,570 @@ async function clearCacheAndReload() {
   //    localStorage é preservado — dados do usuário ficam intactos
   window.location.href = window.location.pathname
     + '?nocache=' + Date.now();
+}
+
+// ══════════════════════════════════════════
+//  MODO FOCO — ESTUDOS
+// ══════════════════════════════════════════
+function buildFocoHTML() {
+  var hoje = todayLocal();
+  var mats = curriculo.map(function(m){
+    return '<option value="' + m.id + '">' + escHtml(m.nome) + '</option>';
+  }).join('');
+
+  return '<div style="max-width:520px;margin:0 auto;padding:8px 0">'
+
+    // Header
+    + '<div style="text-align:center;margin-bottom:24px">'
+    +   '<div style="font-size:28px;margin-bottom:6px">⚡</div>'
+    +   '<div style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-.02em">Modo Foco</div>'
+    +   '<div style="font-size:12px;color:var(--muted);margin-top:4px">Registre sua sessão de estudos de forma rápida</div>'
+    + '</div>'
+
+    // Card do formulário
+    + '<div style="background:var(--card);border:1px solid var(--border-soft);border-radius:16px;overflow:hidden">'
+
+      // Data + Matéria
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--border-soft)">'
+        + '<div style="padding:16px 18px;border-right:1px solid var(--border-soft)">'
+        +   '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px">📅 Data</div>'
+        +   '<input type="date" id="foco-data" value="' + hoje + '" style="width:100%;background:transparent;border:none;outline:none;font-size:14px;font-weight:600;color:var(--text);font-family:inherit">'
+        + '</div>'
+        + '<div style="padding:16px 18px">'
+        +   '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px">📚 Matéria</div>'
+        +   '<select id="foco-mat" onchange="focoUpdateMat()" style="width:100%;background:transparent;border:none;outline:none;font-size:13px;font-weight:600;color:var(--text);font-family:inherit;cursor:pointer">'
+        +     '<option value="">Selecione…</option>' + mats
+        +   '</select>'
+        + '</div>'
+      + '</div>'
+
+      // Tempo
+      + '<div style="padding:16px 18px;border-bottom:1px solid var(--border-soft)">'
+      +   '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px">⏱ Tempo estudado</div>'
+      +   '<div style="display:flex;align-items:center;justify-content:center;gap:12px">'
+      +     '<div style="text-align:center">'
+      +       '<input type="number" id="foco-horas" min="0" max="12" value="1" style="width:70px;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:24px;font-weight:700;color:var(--text);font-family:inherit">'
+      +       '<div style="font-size:11px;color:var(--muted);margin-top:4px">horas</div>'
+      +     '</div>'
+      +     '<div style="font-size:28px;color:var(--muted);font-weight:700;margin-bottom:18px">:</div>'
+      +     '<div style="text-align:center">'
+      +       '<input type="number" id="foco-minutos" min="0" max="59" value="0" style="width:70px;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:24px;font-weight:700;color:var(--text);font-family:inherit">'
+      +       '<div style="font-size:11px;color:var(--muted);margin-top:4px">minutos</div>'
+      +     '</div>'
+      +   '</div>'
+      + '</div>'
+
+      // Questões
+      + '<div style="border-bottom:1px solid var(--border-soft)">'
+      +   '<div style="padding:16px 18px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">🎯 Questões</div>'
+      +   '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0">'
+      
+      +     '<div style="padding:8px 18px 16px;text-align:center;border-right:1px solid var(--border-soft)">'
+      +       '<div style="font-size:11px;color:var(--muted);margin-bottom:6px">Resolvidas</div>'
+      +       '<input type="number" id="foco-total" min="0" value="0" oninput="focoCalcAcerto()" style="width:100%;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;font-size:20px;font-weight:700;color:var(--text);font-family:inherit">'
+      +     '</div>'
+
+      +     '<div style="padding:8px 18px 16px;text-align:center;border-right:1px solid var(--border-soft)">'
+      +       '<div style="font-size:11px;color:var(--muted);margin-bottom:6px">Certas</div>'
+      +       '<input type="number" id="foco-certas" min="0" value="0" oninput="focoCalcAcerto()" style="width:100%;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;font-size:20px;font-weight:700;color:var(--green);font-family:inherit">'
+      +     '</div>'
+
+      +     '<div style="padding:8px 18px 16px;text-align:center">'
+      +       '<div style="font-size:11px;color:var(--muted);margin-bottom:6px">% Acerto</div>'
+      +       '<div id="foco-acerto-display" style="padding:8px;font-size:20px;font-weight:800;color:var(--violet-light);line-height:1.4">—</div>'
+      +     '</div>'
+
+      +   '</div>'
+      + '</div>'
+
+      // Tema opcional
+      + '<div style="padding:14px 18px;border-bottom:1px solid var(--border-soft)">'
+      +   '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px">📝 Assunto estudado <span style="font-weight:400;color:var(--dim)">(opcional)</span></div>'
+      +   '<input type="text" id="foco-tema" placeholder="Ex: Prescrição e Decadência…" style="width:100%;background:transparent;border:none;border-bottom:1px solid var(--border-soft);outline:none;padding:4px 0;font-size:13px;color:var(--text);font-family:inherit">'
+      + '</div>'
+
+      // Botão Salvar
+      + '<div style="padding:18px">'
+      +   '<button onclick="focoSalvar()" style="width:100%;padding:16px;background:var(--violet);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:-.01em;transition:background-color .15s;touch-action:manipulation" onmouseover="this.style.background=\'var(--violet-light)\'" onmouseout="this.style.background=\'var(--violet)\'">'
+      +     '✓ Registrar sessão'
+      +   '</button>'
+      + '</div>'
+
+    + '</div>'
+
+    // Últimas sessões
+    + '<div style="margin-top:20px">'
+    +   '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px">Últimas sessões</div>'
+    +   '<div id="foco-historico"></div>'
+    + '</div>'
+
+    + '</div>';
+}
+
+// Calcula % de acerto em tempo real
+function focoCalcAcerto() {
+  var total  = parseInt(document.getElementById('foco-total').value) || 0;
+  var certas = parseInt(document.getElementById('foco-certas').value) || 0;
+  var disp   = document.getElementById('foco-acerto-display');
+  if (!disp) return;
+  if (total <= 0) { disp.textContent = '—'; disp.style.color = 'var(--violet-light)'; return; }
+  if (certas > total) { certas = total; document.getElementById('foco-certas').value = total; }
+  var pct = Math.round(certas / total * 100);
+  disp.textContent = pct + '%';
+  disp.style.color = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+}
+
+function focoUpdateMat() {
+  // Reservado para feedback visual futuro
+}
+
+function focoSalvar() {
+  var data   = document.getElementById('foco-data').value;
+  var matId  = parseInt(document.getElementById('foco-mat').value) || 0;
+  var horas  = parseInt(document.getElementById('foco-horas').value) || 0;
+  var mins   = parseInt(document.getElementById('foco-minutos').value) || 0;
+  var total  = parseInt(document.getElementById('foco-total').value) || 0;
+  var certas = parseInt(document.getElementById('foco-certas').value) || 0;
+  var tema   = (document.getElementById('foco-tema').value || '').trim();
+
+  if (!data) { showToast('⚠️ Informe a data'); return; }
+  if (!matId){ showToast('⚠️ Selecione a matéria'); return; }
+  if (horas === 0 && mins === 0 && total === 0) { showToast('⚠️ Informe tempo ou questões'); return; }
+
+  var mat    = curriculo.find(function(m){ return m.id === matId; });
+  var nome   = mat ? mat.nome : 'Desconhecida';
+  var durMin = horas * 60 + mins;
+  if (certas > total) certas = total;
+  var acerto = total > 0 ? Math.round(certas / total * 100) : 0;
+
+  // ── MODO EDIÇÃO: atualiza registros existentes ──
+  if (_focoEditQId !== null || _focoEditSId !== null) {
+    if (_focoEditQId !== null) {
+      var q = questaoSessoes.find(function(x){ return x.id === _focoEditQId; });
+      if (q) {
+        q.data = data; q.disciplina = nome; q.matId = matId;
+        q.total = total; q.acertos = certas; q.acerto = acerto;
+        q.tema = tema || 'Modo Foco — ' + nome;
+      }
+    }
+    if (_focoEditSId !== null) {
+      var s = sessoes.find(function(x){ return x.id === _focoEditSId; });
+      if (s) {
+        s.data = data; s.disciplina = nome; s.matId = matId;
+        s.durMin = durMin;
+        s.fim = s.inicio + durMin * 60000;
+      }
+    } else if (durMin > 0 && _focoEditQId !== null) {
+      // Tinha questão mas não tinha tempo — cria sessão de tempo agora
+      sessoes.push({
+        id: nextSessaoId++, disciplina: nome, data: data, durMin: durMin,
+        tipo: 'Modo Foco', matId: matId, fonte: 'Modo Foco',
+        inicio: new Date(data + 'T08:00:00').getTime(),
+        fim: new Date(data + 'T08:00:00').getTime() + durMin * 60000,
+      });
+    }
+    lsSave(); scheduleSave();
+    showToast('✏️ Registro atualizado!');
+    focoCancelarEdicao();
+
+  // ── MODO NOVO: cria registros ──
+  } else {
+    if (durMin > 0) {
+      sessoes.push({
+        id: nextSessaoId++, disciplina: nome, data: data, durMin: durMin,
+        tipo: 'Modo Foco', matId: matId, fonte: 'Modo Foco',
+        inicio: new Date(data + 'T08:00:00').getTime(),
+        fim: new Date(data + 'T08:00:00').getTime() + durMin * 60000,
+      });
+    }
+    if (total > 0) {
+      questaoSessoes.push({
+        id: nextQId++, disciplina: nome, matId: matId, data: data,
+        total: total, acertos: certas, acerto: acerto,
+        tema: tema || 'Modo Foco — ' + nome, fonte: 'Modo Foco',
+      });
+    }
+    lsSave(); scheduleSave();
+    showToast('✅ Sessão registrada!');
+
+    // Reset campos apenas no modo novo
+    document.getElementById('foco-total').value   = '0';
+    document.getElementById('foco-certas').value  = '0';
+    document.getElementById('foco-horas').value   = '1';
+    document.getElementById('foco-minutos').value = '0';
+    document.getElementById('foco-tema').value    = '';
+    document.getElementById('foco-data').value    = todayLocal();
+    focoCalcAcerto();
+  }
+
+  // Atualiza todos os cards em tempo real
+  focoRenderHistorico();
+  focoRenderDesempenhoEmbed();
+  renderConsistencia();
+}
+
+function focoRenderHistorico() {
+  var el = document.getElementById('foco-historico');
+  if (!el) return;
+
+  // Agrupa por data de registro: une questões + tempo do mesmo "lançamento" pelo id
+  // Cada entrada do histórico é baseada numa questaoSessao do Modo Foco
+  // e tenta encontrar a sessão de tempo com a mesma data e matéria
+  var entries = [];
+
+  questaoSessoes.filter(function(q){ return q.fonte === 'Modo Foco'; })
+    .forEach(function(q){
+      // Busca sessão de tempo correspondente (mesmo matId e data)
+      var s = sessoes.find(function(s){
+        return s.fonte === 'Modo Foco' && s.matId === q.matId && s.data === q.data;
+      });
+      entries.push({
+        qId: q.id, sId: s ? s.id : null,
+        data: q.data, disc: q.disciplina, matId: q.matId,
+        tipo: 'questoes', total: q.total, acertos: q.acertos,
+        acerto: q.acerto, tema: q.tema,
+        durMin: s ? s.durMin : 0,
+      });
+    });
+
+  // Sessões de tempo sem questão correspondente
+  sessoes.filter(function(s){
+    if (s.fonte !== 'Modo Foco') return false;
+    return !entries.some(function(e){ return e.sId === s.id; });
+  }).forEach(function(s){
+    entries.push({ qId: null, sId: s.id, data: s.data, disc: s.disciplina,
+      matId: s.matId, tipo: 'tempo', durMin: s.durMin, total:0, acertos:0, acerto:0, tema:'' });
+  });
+
+  entries.sort(function(a,b){ return b.data.localeCompare(a.data); });
+  entries = entries.slice(0, 15);
+
+  if (!entries.length) {
+    el.innerHTML = '<p style="color:var(--dim);font-size:12px;text-align:center;padding:12px 0">Nenhuma sessão registrada ainda.</p>';
+    return;
+  }
+
+  el.innerHTML = entries.map(function(e) {
+    var cor = e.tipo === 'questoes'
+      ? (e.acerto >= 70 ? 'var(--green)' : e.acerto >= 50 ? 'var(--amber)' : 'var(--red)')
+      : 'var(--cyan)';
+    var badge = e.tipo === 'questoes'
+      ? e.acerto + '% (' + e.acertos + '/' + e.total + ')'
+      : '';
+    if (e.durMin > 0) {
+      var durStr = Math.floor(e.durMin/60) + 'h' + (e.durMin%60 ? (e.durMin%60)+'min' : '');
+      badge = badge ? badge + ' · ' + durStr : durStr;
+    }
+    var icon = e.tipo === 'questoes' ? '🎯' : '⏱';
+    var qId = e.qId !== null ? e.qId : '';
+    var sId = e.sId !== null ? e.sId : '';
+
+    return '<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--card);border:1px solid var(--border-soft);border-radius:10px;margin-bottom:6px">'
+      + '<span style="font-size:13px;flex-shrink:0">' + icon + '</span>'
+      + '<div style="flex:1;min-width:0">'
+      +   '<div style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(e.disc) + '</div>'
+      +   '<div style="font-size:10px;color:var(--muted)">' + e.data + (e.tema ? ' · ' + escHtml(e.tema).substring(0,35) : '') + '</div>'
+      + '</div>'
+      + '<div style="font-size:11px;font-weight:700;color:' + cor + ';flex-shrink:0;margin-right:4px">' + badge + '</div>'
+      + '<button data-qid="' + qId + '" data-sid="' + sId + '" onclick="focoEditar(this.dataset.qid,this.dataset.sid)" '
+      +   'style="flex-shrink:0;padding:4px 8px;border-radius:6px;border:1px solid var(--border);'
+      +   'background:var(--surface);color:var(--muted);font-size:10px;font-weight:600;'
+      +   'cursor:pointer;font-family:inherit;touch-action:manipulation;white-space:nowrap" '
+      +   'title="Editar este registro">✏️</button>'
+      + '<button data-qid="' + qId + '" data-sid="' + sId + '" onclick="focoExcluir(this.dataset.qid,this.dataset.sid)" '
+      +   'style="flex-shrink:0;padding:4px 8px;border-radius:6px;border:1px solid rgba(239,68,68,.35);'
+      +   'background:rgba(239,68,68,.08);color:var(--red);font-size:10px;font-weight:600;'
+      +   'cursor:pointer;font-family:inherit;touch-action:manipulation;white-space:nowrap;margin-left:4px" '
+      +   'title="Excluir este registro">✕</button>'
+      + '</div>';
+  }).join('');
+}
+
+function renderFocoTab() {
+  var container = document.getElementById('estudos-tab-content');
+  if (!container) return;
+
+  // Layout: 2 colunas no desktop, 1 no mobile
+  container.innerHTML =
+    '<div id="foco-layout" style="display:grid;grid-template-columns:420px 1fr;gap:18px;align-items:start">'
+    + '<div id="foco-col-form">' + buildFocoHTML() + '</div>'
+    + '<div id="foco-col-right" style="display:flex;flex-direction:column;gap:16px">'
+    +   '<div id="foco-desempenho-wrap"></div>'
+    +   '<div id="foco-consist-wrap" style="background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:16px">'
+    +     '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:12px">📅 Constância</div>'
+    +     '<div id="consist-root"></div>'
+    +   '</div>'
+    + '</div>'
+    + '</div>';
+
+  // MQ mobile — colapsa para 1 coluna
+  if (window.innerWidth < 900) {
+    var fl = document.getElementById('foco-layout');
+    if (fl) fl.style.gridTemplateColumns = '1fr';
+  }
+
+  focoRenderHistorico();
+  focoRenderDesempenhoEmbed();
+  renderConsistencia();
+}
+
+// Renderiza card de Desempenho embutido no Modo Foco
+function focoRenderDesempenhoEmbed() {
+  var wrap = document.getElementById('foco-desempenho-wrap');
+  if (!wrap) return;
+
+  wrap.innerHTML =
+    '<div style="background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:16px">'
+    + '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:12px">🎯 Desempenho por disciplina</div>'
+    + '<div id="foco-desempenho-embed"></div>'
+    + '</div>'
+    + '<div style="background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:16px;margin-top:16px">'
+    +   '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:12px">⏱ Horas por disciplina</div>'
+    +   '<div id="foco-horas-embed"></div>'
+    + '</div>';
+
+  focoRenderDesempenho();
+  focoRenderHoras();
+}
+
+function focoRenderHoras() {
+  var el = document.getElementById('foco-horas-embed');
+  if (!el) return;
+  if (!sessoes.length) {
+    el.innerHTML = '<p style="color:var(--text-dim);font-size:12px">Nenhuma sessão de tempo registrada.</p>';
+    return;
+  }
+  var map = {};
+  sessoes.forEach(function(s) {
+    if (!map[s.disciplina]) map[s.disciplina] = 0;
+    map[s.disciplina] += (s.durMin || 0);
+  });
+  var maxMin = Math.max.apply(null, Object.values(map)) || 1;
+  var sorted = Object.entries(map).sort(function(a,b){ return b[1]-a[1]; });
+  el.innerHTML = sorted.map(function(entry) {
+    var disc = entry[0], durMin = entry[1];
+    var h = Math.floor(durMin/60), m = durMin%60;
+    var label = h > 0 ? h+'h'+(m?m+'min':'') : m+'min';
+    var pct = Math.round(durMin/maxMin*100);
+    return '<div style="margin-bottom:7px">'
+      + '<div style="display:flex;justify-content:space-between;margin-bottom:3px">'
+      +   '<span style="font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px" title="'+escHtml(disc)+'">'+escHtml(disc)+'</span>'
+      +   '<span style="font-size:11px;font-weight:700;color:var(--violet-light);flex-shrink:0;margin-left:8px">'+label+'</span>'
+      + '</div>'
+      + '<div style="height:5px;background:var(--border-soft);border-radius:3px;overflow:hidden">'
+      +   '<div style="width:'+pct+'%;height:100%;background:var(--violet);border-radius:3px"></div>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+// ── Modo Foco: Desempenho em barras horizontais (mesmo padrão visual que Horas) ──
+function focoRenderDesempenho() {
+  var el = document.getElementById('foco-desempenho-embed');
+  if (!el) return;
+  if (!questaoSessoes.length) {
+    el.innerHTML = '<p style="color:var(--text-dim);font-size:12px">Nenhuma questão registrada ainda.</p>';
+    return;
+  }
+  var map = {};
+  questaoSessoes.forEach(function(s) {
+    if (!map[s.disciplina]) map[s.disciplina] = {total:0, acertos:0};
+    map[s.disciplina].total   += (s.total  || 0);
+    var acerts = s.acertos != null ? s.acertos
+      : (s.total && s.acerto != null ? Math.round(s.total * s.acerto / 100) : 0);
+    map[s.disciplina].acertos += acerts;
+  });
+  var sorted = Object.entries(map).map(function(entry) {
+    var disc = entry[0], v = entry[1];
+    var pct = v.total ? Math.round(v.acertos / v.total * 100) : 0;
+    return {disc: disc, pct: pct, total: v.total, acertos: v.acertos};
+  }).sort(function(a, b) { return b.pct - a.pct; });
+
+  el.innerHTML = sorted.map(function(row) {
+    var cor = row.pct >= 70 ? 'var(--green)' : row.pct >= 50 ? 'var(--amber)' : 'var(--red)';
+    return '<div style="margin-bottom:7px">'
+      + '<div style="display:flex;justify-content:space-between;margin-bottom:3px">'
+      +   '<span style="font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px" title="'+escHtml(row.disc)+'">'+escHtml(row.disc)+'</span>'
+      +   '<span style="font-size:11px;font-weight:700;color:'+cor+';flex-shrink:0;margin-left:8px">'+row.pct+'% <span style="font-weight:400;color:var(--muted)">('+row.acertos+'/'+row.total+')</span></span>'
+      + '</div>'
+      + '<div style="height:5px;background:var(--border-soft);border-radius:3px;overflow:hidden">'
+      +   '<div style="width:'+row.pct+'%;height:100%;background:'+cor+';border-radius:3px;transition:width .4s ease"></div>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+
+// ══════════════════════════════════════════
+//  TOGGLE MODO FOCO / MODO COMPLETO
+// ══════════════════════════════════════════
+var _estudosModo = localStorage.getItem('estudos_mode') || 'foco';
+
+function setEstudosModo(modo) {
+  _estudosModo = modo;
+  localStorage.setItem('estudos_mode', modo);
+  aplicarEstudosModo();
+}
+
+function aplicarEstudosModo() {
+  var btnFoco     = document.getElementById('btn-modo-foco');
+  var btnCompleto = document.getElementById('btn-modo-completo');
+  var tabsCompleto = document.getElementById('estudos-tabs-completo');
+  if (!btnFoco) return;
+
+  if (_estudosModo === 'foco') {
+    // Estilo botão Foco (ativo)
+    btnFoco.style.background    = 'var(--violet)';
+    btnFoco.style.color         = '#fff';
+    btnFoco.style.boxShadow     = '0 1px 4px rgba(124,58,237,.35)';
+    // Estilo botão Completo (inativo)
+    btnCompleto.style.background = 'transparent';
+    btnCompleto.style.color      = 'var(--muted)';
+    btnCompleto.style.boxShadow  = 'none';
+    // Oculta tabs do Modo Completo
+    if (tabsCompleto) tabsCompleto.style.display = 'none';
+    // Renderiza Modo Foco
+    renderFocoTab();
+  } else {
+    // Estilo botão Completo (ativo)
+    btnCompleto.style.background = 'var(--surface)';
+    btnCompleto.style.color      = 'var(--text)';
+    btnCompleto.style.boxShadow  = '0 1px 3px rgba(0,0,0,.2)';
+    // Estilo botão Foco (inativo)
+    btnFoco.style.background    = 'transparent';
+    btnFoco.style.color         = 'var(--muted)';
+    btnFoco.style.boxShadow     = 'none';
+    // Exibe tabs do Modo Completo
+    if (tabsCompleto) tabsCompleto.style.display = 'flex';
+    // Renderiza tab padrão do Modo Completo
+    var activeTab = document.querySelector('#estudos-tabs-completo .estudos-tab.active');
+    if (!activeTab) {
+      activeTab = document.querySelector('#estudos-tabs-completo .estudos-tab');
+      if (activeTab) activeTab.classList.add('active');
+    }
+    var tabName = 'painel';
+    if (activeTab) {
+      var onclick = activeTab.getAttribute('onclick') || '';
+      var m = onclick.match(/'([^']+)'/);
+      if (m) tabName = m[1];
+    }
+    switchEstudosTab(tabName, activeTab);
+  }
+}
+
+// ── Modo Foco: estado de edição ──
+var _focoEditQId = null;  // id em questaoSessoes sendo editado (ou null)
+var _focoEditSId = null;  // id em sessoes sendo editado (ou null)
+
+function focoEditar(qId, sId) {
+  _focoEditQId = qId !== '' ? parseInt(qId) : null;
+  _focoEditSId = sId !== '' ? parseInt(sId) : null;
+
+  // Carrega dados da questaoSessao (se existir)
+  var q = _focoEditQId !== null
+    ? questaoSessoes.find(function(x){ return x.id === _focoEditQId; })
+    : null;
+
+  // Carrega dados da sessão de tempo (se existir)
+  var s = _focoEditSId !== null
+    ? sessoes.find(function(x){ return x.id === _focoEditSId; })
+    : null;
+
+  var ref = q || s;
+  if (!ref) { showToast('⚠️ Registro não encontrado'); return; }
+
+  // Preenche o formulário com os dados do registro
+  var data  = ref.data || todayLocal();
+  var matId = ref.matId || '';
+  var horas = 0, mins = 0;
+  if (s) { horas = Math.floor(s.durMin/60); mins = s.durMin % 60; }
+
+  var dataEl = document.getElementById('foco-data');
+  var matEl  = document.getElementById('foco-mat');
+  var hEl    = document.getElementById('foco-horas');
+  var mEl    = document.getElementById('foco-minutos');
+  var totEl  = document.getElementById('foco-total');
+  var cerEl  = document.getElementById('foco-certas');
+  var temaEl = document.getElementById('foco-tema');
+  var saveBtn= document.querySelector('[onclick="focoSalvar()"]');
+
+  if (dataEl)  dataEl.value  = data;
+  if (matEl)   matEl.value   = matId ? String(matId) : '';
+  if (hEl)     hEl.value     = horas;
+  if (mEl)     mEl.value     = mins;
+  if (totEl)   totEl.value   = q ? (q.total  || 0) : 0;
+  if (cerEl)   cerEl.value   = q ? (q.acertos|| 0) : 0;
+  if (temaEl)  temaEl.value  = q ? (q.tema || '').replace(/^Modo Foco — .*/, '') : '';
+
+  focoCalcAcerto();
+
+  // Altera o botão para indicar modo de edição
+  if (saveBtn) {
+    saveBtn.textContent = '✏️ Atualizar registro';
+    saveBtn.style.background = 'var(--amber)';
+    saveBtn.style.color = '#000';
+  }
+
+  // Cancela edição ao clicar fora (via botão cancelar se existir)
+  var cancelLink = document.getElementById('foco-cancel-edit');
+  if (!cancelLink) {
+    var btnDiv = saveBtn ? saveBtn.parentElement : null;
+    if (btnDiv) {
+      var cl = document.createElement('button');
+      cl.id = 'foco-cancel-edit';
+      cl.textContent = 'Cancelar edição';
+      cl.style.cssText = 'width:100%;padding:10px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:6px;touch-action:manipulation';
+      cl.onclick = focoCancelarEdicao;
+      btnDiv.appendChild(cl);
+    }
+  }
+
+  // Rola até o formulário
+  var card = document.querySelector('.foco-card, #foco-col-form');
+  if (card) card.scrollIntoView({behavior:'smooth', block:'start'});
+
+  showToast('✏️ Editando — ajuste e clique em Atualizar');
+}
+
+function focoCancelarEdicao() {
+  _focoEditQId = null;
+  _focoEditSId = null;
+  var saveBtn = document.querySelector('[onclick="focoSalvar()"]');
+  if (saveBtn) {
+    saveBtn.textContent = '✓ Registrar sessão';
+    saveBtn.style.background = 'var(--violet)';
+    saveBtn.style.color = '#fff';
+  }
+  var cl = document.getElementById('foco-cancel-edit');
+  if (cl) cl.remove();
+  // Reseta campos
+  var dataEl = document.getElementById('foco-data');
+  var totEl  = document.getElementById('foco-total');
+  var cerEl  = document.getElementById('foco-certas');
+  var hEl    = document.getElementById('foco-horas');
+  var mEl    = document.getElementById('foco-minutos');
+  var temaEl = document.getElementById('foco-tema');
+  if (dataEl) dataEl.value = todayLocal();
+  if (totEl)  totEl.value  = '0';
+  if (cerEl)  cerEl.value  = '0';
+  if (hEl)    hEl.value    = '1';
+  if (mEl)    mEl.value    = '0';
+  if (temaEl) temaEl.value = '';
+  focoCalcAcerto();
+}
+
+// ── Modo Foco: excluir registro ──
+function focoExcluir(qId, sId) {
+  qId = qId !== '' && qId !== 'null' ? parseInt(qId) : null;
+  sId = sId !== '' && sId !== 'null' ? parseInt(sId) : null;
+  if (!confirm('Excluir este registro de estudo?')) return;
+  if (qId !== null) questaoSessoes = questaoSessoes.filter(function(x){ return x.id !== qId; });
+  if (sId !== null) sessoes        = sessoes.filter(function(x){ return x.id !== sId; });
+  lsSave();
+  scheduleSave();
+  focoRenderHistorico();
+  focoRenderDesempenhoEmbed();
+  renderConsistencia();
+  showToast('Registro excluído');
 }
 
 document.addEventListener('DOMContentLoaded', function() {
